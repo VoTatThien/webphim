@@ -45,7 +45,7 @@ if (is_array($loadone_lc)) {
                     </div>
 
                     <div class="col-lg-6 col-12 mb-30">
-                        <input class="form-control" type="date" name="nc" value="<?= $ngay_chieu ?>">
+                        <input class="form-control" type="date" name="nc" value="<?= $ngay_chieu ?>" min="<?= date('Y-m-d') ?>" required />
                     </div>
                 </div>
 

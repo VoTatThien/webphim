@@ -205,8 +205,40 @@ try {
  * Gửi email xác nhận thanh toán cho customer
  */
 function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $seats, $ticket_code, $amount, $points) {
+    require_once dirname(__DIR__) . '/PHPMailer/src/Exception.php';
+    require_once dirname(__DIR__) . '/PHPMailer/src/PHPMailer.php';
+    require_once dirname(__DIR__) . '/PHPMailer/src/SMTP.php';
+
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
     try {
-        $subject = "✓ Xác nhận thanh toán vé xem phim - Galaxy Studio";
+        require_once dirname(__DIR__) . '/config/mail_config.php';
+
+        $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+        $mail->isSMTP();
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = SMTP_USERNAME;
+        $mail->Password   = SMTP_PASSWORD;
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = SMTP_PORT;
+
+        $mail->setFrom(SMTP_USERNAME, SMTP_FROM_NAME);
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = "=?UTF-8?B?" . base64_encode("✓ Xác nhận thanh toán vé xem phim - Galaxy Studio") . "?=";
+
+        $base_path = '';
+        if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+            $base_path = '/' . $matches[1];
+        }
+
+        // Generate QR code URL
+        // Match ticket ID by query or extracting numbers from ticket_code
+        $ticket_id_numeric = preg_replace('/[^0-9]/', '', $ticket_code);
+        $qr_data = urlencode("http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $ticket_id_numeric);
+        $qr_code_url = ($_SERVER['REQUEST_SCHEME'] ?? 'http') . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/view/qr.php?data=" . $qr_data . "&t=" . time();
 
         $message = "
         <html>
@@ -248,7 +280,10 @@ function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $
                         <p><strong>Điểm thưởng:</strong> <span class='highlight'>+ " . number_format($points, 0, ',', '.') . " điểm</span></p>
                     </div>
                     
-                    <p>✓ Vé của bạn đã sẵn sàng! Vui lòng mang theo mã vé hoặc xuất vé để nhập cửa.</p>
+                    <p>✓ Vé của bạn đã sẵn sàng! Vui lòng mang theo mã vé hoặc quét mã QR bên dưới để check-in.</p>
+                    <div style='text-align: center; margin: 20px 0;'>
+                        <img src='" . $qr_code_url . "' alt='QR Code' style='width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px;'>
+                    </div>
                     <p>Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ chúng tôi.</p>
                     
                     <div class='footer'>
@@ -261,11 +296,8 @@ function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $
         </html>
         ";
 
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-        $headers .= "From: Galaxy Studio <" . MAIL_FROM_EMAIL . ">\r\n";
-
-        mail($email, $subject, $message, $headers);
+        $mail->Body = $message;
+        $mail->send();
 
     } catch (Exception $e) {
         error_log("Email error: " . $e->getMessage());

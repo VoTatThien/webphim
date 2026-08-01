@@ -169,3 +169,100 @@ function ve_sum_by_staff($id_nv, $id_rap, $from_date, $to_date){
     );
     return $row ?: ['so_ve'=>0,'doanh_thu'=>0];
 }
+
+if (!function_exists('gui_mail_ve')) {
+    function gui_mail_ve($load_ve_tt, $recipient_email = null, $recipient_name = null) {
+        require_once dirname(dirname(__DIR__)) . '/Trang-nguoi-dung/PHPMailer/src/Exception.php';
+        require_once dirname(dirname(__DIR__)) . '/Trang-nguoi-dung/PHPMailer/src/PHPMailer.php';
+        require_once dirname(dirname(__DIR__)) . '/Trang-nguoi-dung/PHPMailer/src/SMTP.php';
+
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+        try {
+            // Determine recipient details
+            $email = $recipient_email;
+            if (empty($email)) {
+                $email = $_SESSION['user']['email'] ?? '';
+            }
+            
+            $name = $recipient_name;
+            if (empty($name)) {
+                $name = $_SESSION['user']['name'] ?? 'Khách hàng';
+            }
+
+            // Verify email exists
+            if (empty($email)) {
+                error_log("❌ ERROR: Email khách hàng không tồn tại");
+                return false;
+            }
+
+            // Server settings
+            $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'tatthiendh123@gmail.com';
+            $mail->Password   = 'qjca onic cfks clad';
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            // Email sender/recipient
+            $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+            $mail->addAddress($email);
+
+            // Determine base path dynamically
+            $base_path = '';
+            if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+                $base_path = '/' . $matches[1];
+            }
+
+            // Generate QR code URL
+            $qr_data = urlencode("http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $load_ve_tt['id']);
+            $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . $qr_data;
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = 'Thank you for booking movie tickets';
+            
+            $price_val = isset($load_ve_tt['thanh_tien']) ? $load_ve_tt['thanh_tien'] : ($load_ve_tt['price'] ?? 0);
+            $ngay_tt_val = isset($load_ve_tt['ngay_tt']) ? $load_ve_tt['ngay_tt'] : ($load_ve_tt['ngay_dat'] ?? date('Y-m-d H:i:s'));
+            $ten_rap_val = !empty($load_ve_tt['ten_rap']) ? $load_ve_tt['ten_rap'] : (!empty($load_ve_tt['tenrap']) ? $load_ve_tt['tenrap'] : 'Galaxy Studio');
+
+            $mail->Body    = 'Xác nhận Đặt Vé Xem Phim Thành Công <br><hr>
+                                 Chào '.$name.',<br><br>
+                                 Chúng tôi xin chân thành cảm ơn bạn đã chọn Galaxy Studio để trải nghiệm bộ phim tuyệt vời. Chúc mừng! Đơn đặt vé của bạn đã được xác nhận thành công. 
+                                 Dưới đây là thông tin chi tiết về đơn đặt vé của bạn:<br>
+                                 - Mã đặt vé: ' . $load_ve_tt['id'] . ' <br>
+                                 - Tên phim: ' . $load_ve_tt['tieu_de'] . '<br>
+                                 - Rạp : ' . $ten_rap_val . ' <br>
+                                 - Phòng: ' . $load_ve_tt['tenphong'] . '<br>
+                                 - Xuất chiếu: ' . $load_ve_tt['thoi_gian_chieu'] . ' --- ' . $load_ve_tt['ngay_chieu'] . '<br>
+                                 - Ghế ngồi: ' . $load_ve_tt['ghe'] . '<br>
+                                 - Combo: ' . $load_ve_tt['combo'] . '<br>
+                                 - Ngày thanh toán: ' . $ngay_tt_val . '<br>
+                                 - Thành tiền: ' . number_format($price_val) . ' VND<br>
+                                 <hr>
+                                 <strong>Mã QR của vé:</strong><br>
+                                 <img src="' . $qr_code_url . '" alt="QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px;"><br>
+                                 <em>Vui lòng mang theo mã vé hoặc quét mã QR này tại quầy vé để checkin khi vào phòng chiếu!</em><br>
+                                 <hr>
+                                 Lưu ý quan trọng:<br>
+                                 Hãy đảm bảo bạn đến sớm trước thời gian chiếu để có đủ thời gian kiểm tra vé và chọn ghế.<br>
+                                 Mã đặt vé trên có thể được sử dụng để kiểm tra thông tin đặt vé tại quầy vé hoặc máy tự động tại rạp.<br>
+                                 Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ gì thêm, vui lòng liên hệ với chúng tôi qua số điện thoại 0384104942 hoặc email huyhung@gmail.com.<br>
+                                 Chúng tôi rất mong đợi sự xuất hiện của bạn và hy vọng bạn sẽ có một trải nghiệm thú vị tại rạp phim của chúng tôi.<br><br>
+                                 Trân trọng,<br>
+                                 Galaxy Studio';
+
+            $mail->send();
+            
+            // Log success
+            error_log("✅ Email sent successfully to {$email}");
+            
+            return true;
+        } catch (Exception $e) {
+            error_log("❌ Mail Error: {$mail->ErrorInfo}");
+            return false;
+        }
+    }
+}

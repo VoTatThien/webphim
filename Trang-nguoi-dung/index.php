@@ -1,10 +1,18 @@
 <?php
 session_start();
+// Force trailing slash for directory URL so that relative assets load correctly
+if (preg_match('/Trang-nguoi-dung$/', $_SERVER['REQUEST_URI'])) {
+    $queryString = $_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : '';
+    header('Location: ' . $_SERVER['REQUEST_URI'] . '/' . $queryString);
+    exit;
+}
 
 // Set timezone to Vietnam
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 include "model/pdo.php";
+include "model/lang.php";
+init_language();
 
 // Luôn reload session user từ database để lấy dữ liệu mới nhất (điểm vừa được cộng)
 if (isset($_SESSION['user']) && isset($_SESSION['user']['id'])) {
@@ -24,6 +32,79 @@ include "model/hoadon.php";
 include "model/rap.php";
 include "model/combo.php";
 date_default_timezone_set("Asia/Ho_Chi_Minh");
+
+// AJAX check email (realtime) trước khi nạp Header để tránh lỗi parse JSON
+if (isset($_GET['act']) && $_GET['act'] === 'kiemtra_email_ajax') {
+    $email = trim($_GET['email'] ?? $_POST['email'] ?? '');
+    $result = ['valid' => false, 'message' => ''];
+    $verify = verify_gmail($email);
+    if ($verify['valid']) {
+        $result['valid'] = true;
+    } else {
+        $result['message'] = __("Email không tồn tại, vui lòng nhập lại");
+    }
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($result);
+    exit;
+}
+
+// AJAX claim mission before loading Header to prevent parse errors
+if (isset($_GET['act']) && $_GET['act'] === 'claim_mission_ajax') {
+    header('Content-Type: application/json; charset=utf-8');
+    if (!isset($_SESSION['user'])) {
+        echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập!']);
+        exit;
+    }
+    
+    $id_tk = (int)$_SESSION['user']['id'];
+    $mission = $_GET['mission'] ?? '';
+    $thang = (int)date('m');
+    $nam = (int)date('Y');
+    
+    $points_map = [
+        'mission_phim' => 100,
+        'mission_combo' => 50,
+        'mission_sub' => 150
+    ];
+    
+    if (!isset($points_map[$mission])) {
+        echo json_encode(['success' => false, 'message' => 'Nhiệm vụ không hợp lệ!']);
+        exit;
+    }
+    
+    $diem_thuong = $points_map[$mission];
+    
+    // Check if already claimed
+    $check_sql = "SELECT id FROM claimed_missions WHERE id_tk = ? AND mission_key = ? AND thang = ? AND nam = ?";
+    $check = pdo_query_one($check_sql, $id_tk, $mission, $thang, $nam);
+    
+    if ($check) {
+        echo json_encode(['success' => false, 'message' => 'Nhiệm vụ này đã được nhận thưởng trong tháng!']);
+        exit;
+    }
+    
+    // Insert claim record and add points to user account
+    try {
+        pdo_execute(
+            "INSERT INTO claimed_missions (id_tk, mission_key, thang, nam, diem_thuong) VALUES (?, ?, ?, ?, ?)",
+            $id_tk, $mission, $thang, $nam, $diem_thuong
+        );
+        
+        pdo_execute(
+            "UPDATE taikhoan SET diem_tich_luy = diem_tich_luy + ? WHERE id = ?",
+            $diem_thuong, $id_tk
+        );
+        
+        // Update session points
+        $_SESSION['user']['diem_tich_luy'] += $diem_thuong;
+        
+        echo json_encode(['success' => true, 'points' => $diem_thuong]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
 $loadloai = loadall_loaiphim();
 $loadphim = loadall_phim();
 $loadphimhot = loadall_phim_hot();
@@ -34,21 +115,16 @@ $activeRaps = load_active_raps();
 $allRaps = loadall_rap();
 include "view/header.php";
 ?>
-<!-- Chèn script ngoài phần PHP -->
-<script>
-  (function () {
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `http://localhost:3000/bot.js?webhookUrl=https://aidemo.workai.vn/webhook/bc6301f8-91ae-4357-be1f-4a99696fcd65/chat&title=Galaxy 
-    Studio&subtitle=&messageBot=Chúng tôi hỗ trợ được gì cho anh chị.&welcomeBot=Chatbot hỗ trợ thông tin phim Galaxy studio.`;
-    document.body.appendChild(script);
-  })();
-</script>
+
 
 <?php
 if(isset($_GET['act']) && $_GET['act']!=""){
     $act = $_GET['act'];
     switch ($act) {
+        case "claim_mission_ajax":
+            // Handled at the top of index.php before header template loads
+            exit;
+
         case "ctphim":  //Chi tiết phim
             if (isset($_GET['id']) && $_GET['id'] > 0) {
                 $phim = loadone_phim($_GET['id']);
@@ -87,8 +163,38 @@ if(isset($_GET['act']) && $_GET['act']!=""){
             include "view/phimdc.php";
             break;
         case "lienhe":
+            $thongbao = "";
+            $thongbao_type = "";
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $ten_khach = trim($_POST['user-name'] ?? '');
+                $email = trim($_POST['user-email'] ?? '');
+                $tin_nhan = trim($_POST['user-message'] ?? '');
+                
+                if (empty($ten_khach) || empty($email) || empty($tin_nhan) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $thongbao = __("Vui lòng điền đầy đủ thông tin và nhập email hợp lệ!");
+                    $thongbao_type = "error";
+                } else {
+                    $parts = explode('@', $email);
+                    $domain = array_pop($parts);
+                    if (!checkdnsrr($domain, 'MX')) {
+                        $thongbao = __("Email không tồn tại thực tế trên hệ thống Internet!");
+                        $thongbao_type = "error";
+                    } else {
+                        try {
+                            $sql = "INSERT INTO `lien_he` (`ten_khach`, `email`, `tin_nhan`, `trang_thai`) VALUES (?, ?, ?, 0)";
+                            pdo_execute($sql, $ten_khach, $email, $tin_nhan);
+                            $thongbao = __("Gửi tin nhắn thành công! Chúng tôi sẽ phản hồi sớm nhất qua email của bạn.");
+                            $thongbao_type = "success";
+                        } catch (Exception $e) {
+                            $thongbao = __("Có lỗi xảy ra, vui lòng thử lại!");
+                            $thongbao_type = "error";
+                        }
+                    }
+                }
+            }
             include "view/lienhe.php";
             break;
+
         case "tintuc":
             include "view/tintuc-big.php";
             break;
@@ -107,6 +213,60 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     ORDER BY km.ngay_bat_dau DESC";
             $ds_khuyenmai = pdo_query($sql);
             include "view/khuyenmai.php";
+            break;
+
+        case "cinepass_sub":
+            include "view/login/cinepass_sub.php";
+            break;
+            
+        case "buy_cinepass_sub":
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $sub_type = $_POST['sub_type'] ?? '';
+                $amount = (int)($_POST['amount'] ?? 0);
+                
+                if (isset($_SESSION['user']['id']) && !empty($sub_type)) {
+                    include "view/login/cinepass_sub_checkout.php";
+                    exit;
+                }
+            }
+            header("Location: index.php?act=cinepass_sub");
+            exit;
+            break;
+
+        case "activate_cinepass_sub":
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $sub_type = $_POST['sub_type'] ?? '';
+                $amount = (int)($_POST['amount'] ?? 0);
+                
+                if (isset($_SESSION['user']['id']) && !empty($sub_type)) {
+                    $user_id = $_SESSION['user']['id'];
+                    $success = activate_cinepass_subscription($user_id, $sub_type);
+                    if ($success) {
+                        // Reload user session
+                        $user_updated = pdo_query_one("SELECT * FROM taikhoan WHERE id = ?", $user_id);
+                        $_SESSION['user'] = $user_updated;
+                        
+                        // Gửi email thông báo cho khách hàng
+                        $tickets = ($sub_type === 'premium') ? 5 : 3;
+                        $combos = ($sub_type === 'premium') ? 2 : 0;
+                        send_cinepass_subscription_email(
+                            $user_updated['email'], 
+                            $user_updated['user'], 
+                            $sub_type, 
+                            $tickets, 
+                            $combos, 
+                            $user_updated['cinepass_expire_date']
+                        );
+                        
+                        echo '<script>alert("' . __("Thanh toán thành công! Gói hội viên CinePass của bạn đã được kích hoạt. Email xác nhận đã được gửi.") . '"); window.location.href="index.php?act=cinepass_sub";</script>';
+                    } else {
+                        echo '<script>alert("' . __("Có lỗi xảy ra trong quá trình thanh toán kích hoạt gói!") . '"); window.location.href="index.php?act=cinepass_sub";</script>';
+                    }
+                    exit;
+                }
+            }
+            header("Location: index.php?act=cinepass_sub");
+            exit;
             break;
         
         case "rapchieu"://rạp chiếu
@@ -158,7 +318,7 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                 
         include "view/login/dangnhap.php";
                 break;
-  
+
             case "dangky": //đăng ký tk
                 $min_password_length = 6;
 
@@ -169,6 +329,8 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     $user = $_POST['user'];
                     $pass = $_POST['pass'];
                     $email = $_POST['email'];
+                    $ngay_sinh = !empty($_POST['ngay_sinh']) ? $_POST['ngay_sinh'] : null;
+                    $gioi_tinh = !empty($_POST['gioi_tinh']) ? $_POST['gioi_tinh'] : null;
 
                     if (
                         !empty($name) && !empty($sdt) &&
@@ -188,7 +350,7 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                                 $thongbao = "Email đã tồn tại!";
                             } else {
                                 // Thêm tài khoản mới
-                                insert_taikhoan($email, $user, $pass, $name, $sdt, $dc);
+                                insert_taikhoan($email, $user, $pass, $name, $sdt, $dc, $ngay_sinh, $gioi_tinh);
                                 $thongbao = "Đăng ký thành công xin mời đăng nhập!";
                             }
                         }
@@ -268,6 +430,7 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     }
                     include "view/login/sua.php";
                     break;
+
                 case "updatetk":
                         if (isset($_GET['idsua'])) 
                         {
@@ -285,8 +448,13 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                                     $email = $_POST['email'];
                                     $sdt = $_POST['phone'];
                                     $dc = $_POST['dia_chi'];
-                                    sua_tk($id, $user, $email, $sdt, $dc);
+                                    $ngay_sinh = !empty($_POST['ngay_sinh']) ? $_POST['ngay_sinh'] : null;
+                                    $gioi_tinh = !empty($_POST['gioi_tinh']) ? $_POST['gioi_tinh'] : null;
+                                    sua_tk($id, $user, $email, $sdt, $dc, $ngay_sinh, $gioi_tinh);
                                     $thongbao= "Sửa thành công ";
+                                    if (isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == $id) {
+                                        $_SESSION['user'] = loadone_taikhoan($id);
+                                    }
                                     } else {
                                         $thongbao= "Tên người dùng không hợp lệ. Tên người dùng không được chứa khoảng trắng và dấu.";
                                     }
@@ -297,9 +465,6 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                         }
                         $loadtk = loadone_taikhoan($id);
                         include "view/login/sua.php";
-                        // } else {
-                        //     include "view/login/sua.php";
-                        // }
                         break;
 
         case "datve": //Đặt vé - Flow: Chọn rạp → Chọn ngày → Chọn giờ
@@ -432,12 +597,15 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     break;
                 }
                 
-                // Validate email
-                if (!filter_var($guest_email, FILTER_VALIDATE_EMAIL)) {
-                    $thongbao['guest_error'] = '❌ Email không hợp lệ!';
+                // Validate email (Gmail only & verify existence)
+                $verify = verify_gmail($guest_email);
+                if (!$verify['valid']) {
+                    $thongbao['guest_error'] = '❌ ' . __('Email không tồn tại, vui lòng nhập lại');
                     include 'view/login/guest_info.php';
                     break;
                 }
+
+
                 
                 // Tạo tài khoản khách vãng lai
                 $guest_account = create_guest_account($guest_name, $guest_phone, $guest_email);
@@ -625,9 +793,17 @@ if(isset($_GET['act']) && $_GET['act']!=""){
             include "view/theloaiphim.php";
             break;
 
-        case "ve" : //Trang vẽ đã mua
+        case "ve" : //Trang vé đã mua
+            $user_id = 0;
             if (isset($_GET['id']) && $_GET['id'] > 0) {
-                $load_ve = load_ve($_GET['id']);
+                $user_id = (int)$_GET['id'];
+            } elseif (isset($_SESSION['user']['id']) && $_SESSION['user']['id'] > 0) {
+                $user_id = (int)$_SESSION['user']['id'];
+            }
+            if ($user_id > 0) {
+                $load_ve = load_ve($user_id);
+            } else {
+                $load_ve = [];
             }
             include "view/ve.php";
             break;
@@ -668,6 +844,11 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     $gia_luu_db = (int)$_SESSION['tong']['gia_ghe'];
                 }
                 
+                $is_cinepass_pay = (isset($_GET['pay_method']) && $_GET['pay_method'] === 'cinepass');
+                if ($is_cinepass_pay) {
+                    $gia_luu_db = 0; // Free ticket from CinePass
+                }
+                
                 error_log("=== DEBUG GIÁ VÉ ===");
                 error_log("SESSION tong_tien: " . ($_SESSION['tong_tien'] ?? "NOT SET"));
                 error_log("SESSION tong[gia_sau_giam]: " . ($_SESSION['tong']['gia_sau_giam'] ?? "NOT SET"));
@@ -680,28 +861,38 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     exit;
                 }
                 
-                // Tạo hóa đơn trước
-                require_once 'model/hoadon.php';
-                $id_hd = them_hoa_don($ngay_tt, $gia_luu_db);
-                
-                if ($id_hd) {
-                    $_SESSION['id_hd'] = $id_hd;
+                try {
+                    // Tạo hóa đơn trước
+                    require_once 'model/hoadon.php';
+                    $id_hd = them_hoa_don($ngay_tt, $gia_luu_db);
                     
-                    // Tạo vé
-                    require_once 'model/ve.php';
-                    $id_ve = them_ve($gia_luu_db, $ngay_tt, $ghe, $id_tk, $id_kgc, $id_hd, $id_lc, $id_phim, $combo, $id_rap);
-                    
-                    if ($id_ve) {
-                        $_SESSION['id_ve'] = $id_ve;
-                        $_SESSION[$da_tao_ve_key] = true; // Đánh dấu đã tạo vé
+                    if ($id_hd) {
+                        $_SESSION['id_hd'] = $id_hd;
                         
-                        error_log("✅ Đã tạo vé #$id_ve và hóa đơn #$id_hd sau thanh toán");
+                        // Tạo vé
+                        require_once 'model/ve.php';
+                        $id_ve = them_ve($gia_luu_db, $ngay_tt, $ghe, $id_tk, $id_kgc, $id_hd, $id_lc, $id_phim, $combo, $id_rap);
+                        
+                        if ($id_ve) {
+                            $_SESSION['id_ve'] = $id_ve;
+                            $_SESSION[$da_tao_ve_key] = true; // Đánh dấu đã tạo vé
+                            
+                            // Trừ số dư thẻ hội viên nếu thanh toán qua CinePass
+                            if ($is_cinepass_pay) {
+                                $tickets_count = count($ten_ghe);
+                                $combos_count = !empty($combo) ? count(explode(',', $combo)) : 0;
+                                deduct_cinepass_balance($id_tk, $tickets_count, $combos_count);
+                            }
+                            
+                            error_log("✅ Đã tạo vé #$id_ve và hóa đơn #$id_hd sau thanh toán");
+                        } else {
+                            throw new Exception("Lỗi khi tạo vé!");
+                        }
                     } else {
-                        echo '<script>alert("Lỗi khi tạo vé!"); window.location.href="index.php";</script>';
-                        exit;
+                        throw new Exception("Lỗi khi tạo hóa đơn!");
                     }
-                } else {
-                    echo '<script>alert("Lỗi khi tạo hóa đơn!"); window.location.href="index.php";</script>';
+                } catch (Exception $e) {
+                    echo '<script>alert("' . addslashes($e->getMessage()) . '"); window.location.href="index.php";</script>';
                     exit;
                 }
             }
@@ -820,6 +1011,13 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     }
                 }
                 
+                // Cập nhật lại thông tin user trong session
+                if (isset($_SESSION['user']['id'])) {
+                    $user_updated = pdo_query_one("SELECT * FROM taikhoan WHERE id = ?", $_SESSION['user']['id']);
+                    if ($user_updated) {
+                        $_SESSION['user'] = $user_updated;
+                    }
+                }
                 gui_mail_ve($load_ve_tt);
                 require_once "view/ve_tt.php";
             } else {

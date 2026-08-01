@@ -1,13 +1,13 @@
 <?php
 // Dashboard cho Quản lý rạp
 if (!isset($_SESSION['user1']) || $_SESSION['user1']['vai_tro'] != ROLE_QUAN_LY_RAP) {
-    echo '<div class="alert alert-danger">Bạn không có quyền truy cập!</div>';
+    echo '<div class="alert alert-danger">' . __('Không có quyền truy cập!') . '</div>';
     return;
 }
 
 $id_rap = $_SESSION['user1']['id_rap'] ?? null;
 if (!$id_rap) {
-    echo '<div class="alert alert-warning">Không thể xác định rạp của bạn!</div>';
+    echo '<div class="alert alert-warning">' . __('Không thể xác định rạp của bạn!') . '</div>';
     return;
 }
 
@@ -295,10 +295,10 @@ if ($id_phim_filter > 0) {
 <div class="content-body">
     <!-- Header with Greeting -->
     <div class="rap-dashboard-header">
-        <h2>Dashboard Quản Lý Rạp</h2>
-        <p>Chào mừng <?= htmlspecialchars($_SESSION['user1']['name'] ?? 'Quản lý rạp') ?> • <?= htmlspecialchars($ten_rap) ?></p>
+        <h2><?php echo __('Dashboard Quản Lý Rạp'); ?></h2>
+        <p><?php echo __('Chào mừng'); ?> <?= htmlspecialchars($_SESSION['user1']['name'] ?? __('Quản lý rạp')) ?> • <?= htmlspecialchars($ten_rap) ?></p>
         <div class="clock">
-            <strong>Thời gian:</strong> <span id="real-time-clock">--:--:--</span>
+            <strong><?php echo __('Thời gian:'); ?></strong> <span id="real-time-clock">--:--:--</span>
         </div>
     </div>
 
@@ -307,17 +307,17 @@ if ($id_phim_filter > 0) {
         <form method="GET" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
             <input type="hidden" name="act" value="home">
             <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label style="font-weight: 600; color: #1f2937; font-size: 14px;">Từ ngày</label>
+                <label style="font-weight: 600; color: #1f2937; font-size: 14px;"><?php echo __('Từ ngày'); ?></label>
                 <input type="date" name="from" value="<?= htmlspecialchars($from_date) ?>" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
             </div>
             <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label style="font-weight: 600; color: #1f2937; font-size: 14px;">Đến ngày</label>
+                <label style="font-weight: 600; color: #1f2937; font-size: 14px;"><?php echo __('Đến ngày'); ?></label>
                 <input type="date" name="to" value="<?= htmlspecialchars($to_date) ?>" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
             </div>
             <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label style="font-weight: 600; color: #1f2937; font-size: 14px;">Phim</label>
+                <label style="font-weight: 600; color: #1f2937; font-size: 14px;"><?php echo __('Phim'); ?></label>
                 <select name="id_phim" style="padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                    <option value="0">-- Tất cả phim --</option>
+                    <option value="0">-- <?php echo __('Tất cả phim'); ?> --</option>
                     <?php foreach ($danh_sach_phim as $phim): ?>
                         <option value="<?= $phim['id'] ?>" <?= $id_phim_filter == $phim['id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($phim['tieu_de']) ?>
@@ -325,8 +325,8 @@ if ($id_phim_filter > 0) {
                     <?php endforeach; ?>
                 </select>
             </div>
-            <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 24px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px;">🔍 Lọc</button>
-            <a href="index.php?act=home" style="background: #f3f4f6; color: #1f2937; padding: 10px 24px; border: 1px solid #d1d5db; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; text-decoration: none;">↺ Đặt lại</a>
+            <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 24px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px;">🔍 <?php echo __('Lọc'); ?></button>
+            <a href="index.php?act=home" style="background: #f3f4f6; color: #1f2937; padding: 10px 24px; border: 1px solid #d1d5db; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; text-decoration: none;">↺ <?php echo __('Đặt lại'); ?></a>
         </form>
     </div>
 
@@ -334,74 +334,74 @@ if ($id_phim_filter > 0) {
     <div class="rap-stats-grid">
         <div class="rap-stat-card">
             <div class="rap-stat-icon">💰</div>
-            <div class="rap-stat-label">Tổng Doanh Thu</div>
+            <div class="rap-stat-label"><?php echo __('Tổng Doanh Thu'); ?></div>
             <div class="rap-stat-value">
                 <?= number_format($tong['tong_doanh_thu'] ?? 0) ?>
             </div>
-            <div class="rap-stat-label">VNĐ</div>
+            <div class="rap-stat-label"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="rap-stat-card">
             <div class="rap-stat-icon">🎟️</div>
-            <div class="rap-stat-label">Tổng Vé Bán</div>
+            <div class="rap-stat-label"><?php echo __('Tổng Vé Bán'); ?></div>
             <div class="rap-stat-value">
                 <?= $tong['tong_so_luong_ve_dat'] ?? '0' ?>
             </div>
-            <div class="rap-stat-label">Vé</div>
+            <div class="rap-stat-label"><?php echo __('Vé'); ?></div>
         </div>
 
         <div class="rap-stat-card">
             <div class="rap-stat-icon">🎬</div>
-            <div class="rap-stat-label">Phim Đang Chiếu</div>
+            <div class="rap-stat-label"><?php echo __('Phim Đang Chiếu'); ?></div>
             <div class="rap-stat-value">
                 <?= $phim_dang_chieu['total_phim'] ?? '0' ?>
             </div>
-            <div class="rap-stat-label">Bộ</div>
+            <div class="rap-stat-label"><?php echo __('Bộ'); ?></div>
         </div>
 
         <div class="rap-stat-card">
             <div class="rap-stat-icon">📅</div>
-            <div class="rap-stat-label">Phim Sắp Chiếu</div>
+            <div class="rap-stat-label"><?php echo __('Phim Sắp Chiếu'); ?></div>
             <div class="rap-stat-value">
                 <?= $phim_sap_chieu['total_phim'] ?? '0' ?>
             </div>
-            <div class="rap-stat-label">Bộ</div>
+            <div class="rap-stat-label"><?php echo __('Bộ'); ?></div>
         </div>
     </div>
 
     <!-- Revenue Report -->
     <div class="rap-report-row">
         <div class="rap-report-box">
-            <div class="rap-report-box-header">Doanh Thu Hôm Nay</div>
+            <div class="rap-report-box-header"><?php echo __('Doanh Thu Hôm Nay'); ?></div>
             <div class="rap-report-box-value">
                 <?= number_format($tong_day['tong_doanh_thu'] ?? 0) ?>
             </div>
-            <div class="rap-report-box-unit">VNĐ</div>
+            <div class="rap-report-box-unit"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="rap-report-box">
-            <div class="rap-report-box-header">Doanh Thu Tuần Này</div>
+            <div class="rap-report-box-header"><?php echo __('Doanh Thu Tuần Này'); ?></div>
             <div class="rap-report-box-value">
                 <?= number_format($tong_tuan['tong_doanh_thu'] ?? 0) ?>
             </div>
-            <div class="rap-report-box-unit">VNĐ</div>
+            <div class="rap-report-box-unit"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="rap-report-box">
-            <div class="rap-report-box-header">Doanh Thu Tháng Này</div>
+            <div class="rap-report-box-header"><?php echo __('Doanh Thu Tháng Này'); ?></div>
             <div class="rap-report-box-value">
                 <?= number_format($tong_thang['tong_doanh_thu'] ?? 0) ?>
             </div>
-            <div class="rap-report-box-unit">VNĐ</div>
+            <div class="rap-report-box-unit"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="rap-report-box">
-            <div class="rap-report-box-header">Combo Top</div>
+            <div class="rap-report-box-header"><?php echo __('Combo Top'); ?></div>
             <div class="rap-report-box-value">
                 <?= htmlspecialchars($best_combo['combo'] ?? 'N/A') ?>
             </div>
             <div class="rap-report-box-unit">
-                <?= $best_combo['so_luong_dat'] ?? '0' ?> đơn
+                <?= $best_combo['so_luong_dat'] ?? '0' ?> <?php echo __('đơn'); ?>
             </div>
         </div>
     </div>
@@ -411,7 +411,7 @@ if ($id_phim_filter > 0) {
         <div class="col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>Biểu Đồ Doanh Thu 30 Ngày Qua</h4>
+                    <h4><?php echo __('Biểu Đồ Doanh Thu 30 Ngày Qua'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="revenueChart" height="80"></canvas>
@@ -424,7 +424,7 @@ if ($id_phim_filter > 0) {
         <div class="col-xlg-6 col-md-6 col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>Phân Bổ Phim Theo Trạng Thái</h4>
+                    <h4><?php echo __('Phân Bổ Phim Theo Trạng Thái'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="movieStatusChart" height="100"></canvas>
@@ -435,7 +435,7 @@ if ($id_phim_filter > 0) {
         <div class="col-xlg-6 col-md-6 col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>Doanh Thu Theo Loại Combo</h4>
+                    <h4><?php echo __('Doanh Thu Theo Loại Combo'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="comboChart" height="100"></canvas>
@@ -503,7 +503,7 @@ if ($id_phim_filter > 0) {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Doanh Thu (VNĐ)',
+                    label: '<?php echo __('Doanh Thu (VNĐ)'); ?>',
                     data: values,
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -550,11 +550,18 @@ if ($id_phim_filter > 0) {
         var values = [];
         var colors = ['#10b981', '#f59e0b', '#ef4444'];
         
+        // Dictionary for JS translation
+        var langMap = {
+            'Đang Chiếu': '<?php echo __('Đang Chiếu'); ?>',
+            'Sắp Chiếu': '<?php echo __('Sắp Chiếu'); ?>',
+            'Kết Thúc': '<?php echo __('Kết Thúc'); ?>'
+        };
+        
         // Chuẩn bị dữ liệu với đầy đủ 3 trạng thái
         var states = ['Đang Chiếu', 'Sắp Chiếu', 'Kết Thúc'];
         states.forEach((state, idx) => {
             var found = data.find(d => d.trang_thai === state);
-            labels.push(state);
+            labels.push(langMap[state] || state);
             values.push(found ? found.so_phim : 0);
         });
         
@@ -591,8 +598,13 @@ if ($id_phim_filter > 0) {
         var values = [];
         var colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b'];
         
+        // Dictionary for JS translation
+        var langMap = {
+            'Không Combo': '<?php echo __('Không Combo'); ?>'
+        };
+        
         data.forEach((item, idx) => {
-            labels.push(item.combo);
+            labels.push(langMap[item.combo] || item.combo);
             values.push(item.doanh_thu);
         });
         
@@ -601,7 +613,7 @@ if ($id_phim_filter > 0) {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Doanh Thu (VNĐ)',
+                    label: '<?php echo __('Doanh Thu (VNĐ)'); ?>',
                     data: values,
                     backgroundColor: colors.slice(0, data.length),
                     borderRadius: 4,

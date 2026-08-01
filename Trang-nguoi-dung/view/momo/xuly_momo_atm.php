@@ -184,6 +184,11 @@ try {
         $showtime_info = pdo_query_one("SELECT ngay_chieu FROM lichchieu WHERE id = ?", $id_ngay_chieu ?? 0) ?? ['ngay_chieu' => 'N/A'];
         $time_info = pdo_query_one("SELECT thoi_gian_chieu FROM khung_gio_chieu WHERE id = ?", $id_gio ?? 0) ?? ['thoi_gian_chieu' => 'N/A'];
         
+        $base_path = '';
+        if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+            $base_path = '/' . $matches[1];
+        }
+
         $message = "
             <html>
             <head>
@@ -207,19 +212,38 @@ try {
                 <p><strong>⭐ Điểm thưởng nhận được: +" . $diem_tang . " điểm</strong></p>
                 
                 <p>Vui lòng đến rạp chiếu trước giờ chiếu 15 phút để check-in với mã vé.</p>
-                <p><a href='http://localhost/webphim/Trang-nguoi-dung/index.php?p=ve_cua_toi'>👉 Xem vé của tôi</a></p>
+                <p><a href='http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?p=ve_cua_toi'>👉 Xem vé của tôi</a></p>
                 
                 <p>Cảm ơn bạn!</p>
             </body>
             </html>
         ";
         
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-        $headers .= "From: noreply@cinepass.com" . "\r\n";
+        require_once dirname(dirname(dirname(__FILE__))) . '/PHPMailer/src/Exception.php';
+        require_once dirname(dirname(dirname(__FILE__))) . '/PHPMailer/src/PHPMailer.php';
+        require_once dirname(dirname(dirname(__FILE__))) . '/PHPMailer/src/SMTP.php';
         
-        @mail($to, $subject, $message, $headers);
-        file_put_contents(__DIR__ . '/momo_debug.log', date('Y-m-d H:i:s') . " - 📧 Email gửi tới: " . $to . "\n", FILE_APPEND);
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        try {
+            $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'tatthiendh123@gmail.com';
+            $mail->Password   = 'qjca onic cfks clad';
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+            
+            $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+            $mail->addAddress($to);
+            $mail->isHTML(true);
+            $mail->Subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";
+            $mail->Body = $message;
+            $mail->send();
+            file_put_contents(__DIR__ . '/momo_debug.log', date('Y-m-d H:i:s') . " - 📧 Email gửi tới: " . $to . " (PHPMailer)\n", FILE_APPEND);
+        } catch (Exception $mailEx) {
+            file_put_contents(__DIR__ . '/momo_debug.log', date('Y-m-d H:i:s') . " - 📧 Lỗi gửi email (PHPMailer): " . $mailEx->getMessage() . "\n", FILE_APPEND);
+        }
     }
     
     // ============ RELOAD SESSION USER ============
@@ -245,7 +269,11 @@ $requestId = time() . "";
 
 // URLs
 $currentHost = $_SERVER['HTTP_HOST'];
-$baseUrl = "http://" . $currentHost . "/webphim/Trang-nguoi-dung";
+$base_path = '';
+if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+    $base_path = '/' . $matches[1];
+}
+$baseUrl = "http://" . $currentHost . $base_path . "/Trang-nguoi-dung";
 $redirectUrl = $baseUrl . "/index.php?act=ve";
 $ipnUrl = $baseUrl . "/view/momo/xuly_callback_momo.php";
 $extraData = "";

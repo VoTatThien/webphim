@@ -198,7 +198,9 @@ extract($phim);
 
 /* Breadcrumb style */
 .booking-breadcrumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #1c181c;
+    border: 1px solid #363033;
+    border-left: 4px solid #ffd564;
     padding: 15px 30px;
     border-radius: 10px;
     margin: 20px 0;
@@ -251,38 +253,38 @@ extract($phim);
         <div class="order-container">
             <div class="order">
                 <img class="order__images" alt='' src="images/tickets.png">
-                <p class="order__title">Đặt vé xem phim <br><span class="order__descript">Tận Hưởng Thời Gian Xem Phim Vui Vẻ</span></p>
+                <p class="order__title"><?= __("Đặt vé xem phim") ?> <br><span class="order__descript"><?= __("Tận Hưởng Thời Gian Xem Phim Vui Vẻ") ?></span></p>
             </div>
         </div>
 
         <!-- Breadcrumb -->
         <div class="booking-breadcrumb">
             <span class="booking-breadcrumb-item <?= $selected_rap == 0 ? 'active' : '' ?>">
-                1. Chọn Rạp
+                <?= __("1. Chọn Rạp") ?>
             </span>
             <?php if ($selected_rap > 0): ?>
                 <span class="booking-breadcrumb-arrow">→</span>
                 <span class="booking-breadcrumb-item <?= empty($selected_date) ? 'active' : '' ?>">
-                    2. Chọn Ngày
+                    <?= __("2. Chọn Ngày") ?>
                 </span>
             <?php endif; ?>
             <?php if (!empty($selected_date)): ?>
                 <span class="booking-breadcrumb-arrow">→</span>
                 <span class="booking-breadcrumb-item active">
-                    3. Chọn Giờ
+                    <?= __("3. Chọn Giờ") ?>
                 </span>
             <?php endif; ?>
         </div>
 
-        <h2 class="page-heading heading--outcontainer">PHIM BẠN CHỌN</h2>
+        <h2 class="page-heading heading--outcontainer"><?= __("PHIM BẠN CHỌN") ?></h2>
         <div class="choose-indector choose-indector--film">
-            <strong>Phim: </strong><span class="choosen-area"><?= htmlspecialchars($tieu_de) ?></span>
+            <strong><?= __("Phim:") ?> </strong><span class="choosen-area"><?= htmlspecialchars(__($tieu_de)) ?></span>
             <?php if (isset($rap_info) && $rap_info): ?>
-                <strong style="margin-left: 30px;">Rạp: </strong>
-                <span class="choosen-area"><?= htmlspecialchars($rap_info['ten_rap']) ?></span>
+                <strong style="margin-left: 30px;"><?= __("Rạp:") ?> </strong>
+                <span class="choosen-area"><?= htmlspecialchars(__($rap_info['ten_rap'])) ?></span>
             <?php endif; ?>
             <?php if (!empty($selected_date)): ?>
-                <strong style="margin-left: 30px;">Ngày: </strong>
+                <strong style="margin-left: 30px;"><?= __("Ngày:") ?> </strong>
                 <span class="choosen-area"><?= date('d/m/Y', strtotime($selected_date)) ?></span>
             <?php endif; ?>
         </div>
@@ -290,24 +292,24 @@ extract($phim);
         <!-- BƯỚC 1: CHỌN RẠP -->
         <?php if ($selected_rap == 0): ?>
             <div class="cinema-selection">
-                <h2 class="page-heading">CHỌN RẠP CHIẾU</h2>
+                <h2 class="page-heading"><?= __("CHỌN RẠP CHIẾU") ?></h2>
                 
                 <?php if (!empty($raps_showing)): ?>
                     <div class="cinema-grid">
                         <?php foreach ($raps_showing as $rap): ?>
                             <div class="cinema-card" 
                                  onclick="window.location.href='index.php?act=datve&id=<?= $id_phim ?>&id_rap=<?= $rap['id'] ?>'">
-                                <div class="cinema-icon">🎬</div>
-                                <h3><?= htmlspecialchars($rap['ten_rap']) ?></h3>
-                                <p class="cinema-address">📍 <?= htmlspecialchars($rap['dia_chi']) ?></p>
-                                <span class="cinema-badge"><?= $rap['so_suat'] ?> suất chiếu</span>
+                                <div class="cinema-icon"><i class="fa fa-film" style="color: #ffd564;"></i></div>
+                                <h3><?= htmlspecialchars(__($rap['ten_rap'])) ?></h3>
+                                <p class="cinema-address"><i class="fa fa-map-marker" style="color: #ffd564; margin-right: 5px;"></i> <?= htmlspecialchars($rap['dia_chi']) ?></p>
+                                <span class="cinema-badge"><?= $rap['so_suat'] ?> <?= __("suất chiếu") ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <div class="info-alert">
-                        <span class="info-alert-icon">ℹ️</span>
-                        Phim này hiện chưa có lịch chiếu tại các rạp.
+                        <span class="info-alert-icon"><i class="fa fa-info-circle" style="color: #ffd564; margin-right: 5px;"></i></span>
+                        <?= __("Phim này hiện chưa có lịch chiếu tại các rạp.") ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -316,30 +318,30 @@ extract($phim);
         <?php elseif ($selected_rap > 0 && empty($selected_date)): ?>
             <div class="date-selection">
                 <h2 class="page-heading">
-                    CHỌN NGÀY CHIẾU TẠI <?= htmlspecialchars($rap_info['ten_rap']) ?>
+                    <?= __("CHỌN NGÀY CHIẾU TẠI") ?> <?= htmlspecialchars(__($rap_info['ten_rap'])) ?>
                 </h2>
                 
                 <?php if (!empty($dates)): ?>
                     <div class="date-grid">
                         <?php foreach ($dates as $date): 
-                            $is_today = ($date['ngay_chieu'] == date('Y-m-d'));
-                            $day_name = get_day_name($date['ngay_chieu']);
+                             $is_today = ($date['ngay_chieu'] == date('Y-m-d'));
+                             $day_name = get_day_name($date['ngay_chieu']);
                         ?>
                             <div class="date-card" 
                                  onclick="window.location.href='index.php?act=datve&id=<?= $id_phim ?>&id_rap=<?= $selected_rap ?>&ngay_chieu=<?= $date['ngay_chieu'] ?>'">
-                                <div class="date-day"><?= $day_name ?></div>
+                                <div class="date-day"><?= __($day_name) ?></div>
                                 <div class="date-number"><?= date('d/m', strtotime($date['ngay_chieu'])) ?></div>
                                 <?php if ($is_today): ?>
-                                    <span class="date-today-badge">Hôm nay</span>
+                                    <span class="date-today-badge"><?= __("Hôm nay") ?></span>
                                 <?php endif; ?>
-                                <div class="date-showtimes"><?= $date['so_suat'] ?> suất</div>
+                                <div class="date-showtimes"><?= $date['so_suat'] ?> <?= __("suất") ?></div>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <div class="info-alert">
-                        <span class="info-alert-icon">ℹ️</span>
-                        Không có lịch chiếu trong 14 ngày tới tại rạp này.
+                        <span class="info-alert-icon"><i class="fa fa-info-circle" style="color: #ffd564; margin-right: 5px;"></i></span>
+                        <?= __("Không có lịch chiếu trong 14 ngày tới tại rạp này.") ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -348,7 +350,7 @@ extract($phim);
         <?php else: ?>
             <div class="time-selection">
                 <h2 class="page-heading">
-                    CHỌN KHUNG GIỜ CHIẾU - <?= date('d/m/Y', strtotime($selected_date)) ?>
+                    <?= __("CHỌN KHUNG GIỜ CHIẾU") ?> - <?= date('d/m/Y', strtotime($selected_date)) ?>
                 </h2>
                 
                 <?php if (!empty($times)): ?>
@@ -362,16 +364,16 @@ extract($phim);
                                  <?php endif; ?>>
                                 <div class="time-hour"><?= date('H:i', strtotime($time['thoi_gian_chieu'])) ?></div>
                                 <div class="time-room">
-                                    🎭 <?= htmlspecialchars($time['ten_phong']) ?>
+                                    <i class="fa fa-desktop" style="color: #ffd564; margin-right: 5px;"></i> <?= htmlspecialchars($time['ten_phong']) ?>
                                     <?php if ($time['loai_phong'] != '2D'): ?>
                                         (<?= $time['loai_phong'] ?>)
                                     <?php endif; ?>
                                 </div>
                                 <div class="time-seats">
                                     <?php if ($is_available): ?>
-                                        ✓ Còn <?= $time['ghe_trong'] ?> ghế
+                                        <i class="fa fa-check" style="color:#28a745; margin-right: 5px;"></i> <?= __("Còn") ?> <?= $time['ghe_trong'] ?> <?= __("ghế") ?>
                                     <?php else: ?>
-                                        ✗ Hết chỗ
+                                        <i class="fa fa-times" style="color:#dc3545; margin-right: 5px;"></i> <?= __("Hết chỗ") ?>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -379,8 +381,8 @@ extract($phim);
                     </div>
                 <?php else: ?>
                     <div class="info-alert">
-                        <span class="info-alert-icon">ℹ️</span>
-                        Không có suất chiếu nào trong ngày này.
+                        <span class="info-alert-icon"><i class="fa fa-info-circle" style="color: #ffd564; margin-right: 5px;"></i></span>
+                        <?= __("Không có suất chiếu nào trong ngày này.") ?>
                     </div>
                 <?php endif; ?>
             </div>

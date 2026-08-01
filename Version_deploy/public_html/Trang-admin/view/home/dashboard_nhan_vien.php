@@ -67,7 +67,7 @@ $phim_hom_nay = pdo_query("
 
 // Lịch chiếu chi tiết hôm nay
 $lich_chieu_hom_nay = pdo_query("
-    SELECT lc.*, p.tieu_de, kg.thoi_gian_chieu, pc.name as phong_chieu
+    SELECT lc.*, p.tieu_de, kg.thoi_gian_chieu, pc.name as phong_chieu, kg.id as id_thoi_gian_chieu
     FROM lichchieu lc
     JOIN phim p ON lc.id_phim = p.id
     JOIN khung_gio_chieu kg ON lc.id = kg.id_lich_chieu
@@ -378,7 +378,12 @@ $ve_theo_ngay = pdo_query("
                             <tbody>
                                 <?php foreach ($lich_chieu_hom_nay as $lich): ?>
                                     <tr>
-                                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><?= htmlspecialchars($lich['thoi_gian_chieu']) ?></td>
+                                        <td style="padding: 12px; border: 1px solid #e5e7eb;">
+                                            <?= htmlspecialchars($lich['thoi_gian_chieu']) ?>
+                                            <span style="margin-left: 8px;">
+                                                <?= get_showtime_traffic_forecast($lich['id_thoi_gian_chieu'])['badge'] ?>
+                                            </span>
+                                        </td>
                                         <td style="padding: 12px; border: 1px solid #e5e7eb;"><?= htmlspecialchars($lich['tieu_de']) ?></td>
                                         <td style="padding: 12px; border: 1px solid #e5e7eb;"><?= htmlspecialchars($lich['phong_chieu']) ?></td>
                                     </tr>

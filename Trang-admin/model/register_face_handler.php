@@ -5,6 +5,7 @@
  */
 
 session_start();
+date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 // Security check
 if (!isset($_SESSION['user1']) || !isset($_SESSION['user1']['id'])) {

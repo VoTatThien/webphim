@@ -1,7 +1,7 @@
 <?php 
 // Trang đăng ký khuôn mặt cho nhân viên
 if (!isset($_SESSION['user1'])) {
-    header('Location: /Trang-admin/login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -328,19 +328,6 @@ $already_registered = !empty($user['face_registered_at']);
     </div>
 
     <script>
-    // Helper function to get dynamic base path
-    function getBasePath() {
-        const pathParts = window.location.pathname.split('/');
-        let basePath = '/';
-        for (let i = 0; i < pathParts.length; i++) {
-            if (pathParts[i] === 'Trang-admin') {
-                basePath = '/' + pathParts.slice(1, i + 1).join('/');
-                break;
-            }
-        }
-        return basePath;
-    }
-
     let registerFaceStream = null;
 
     // Tính toán fingerprint khuôn mặt (histogram của pixel)
@@ -599,11 +586,8 @@ function calculateFaceFingerprint(canvas) {
         formData.append('photo', photoBase64); // Add photo for Haar Cascade face detection
         
         try {
-            // Send to register_face_handler.php - Dynamic URL
-            const basePath = getBasePath();
-            const handlerUrl = basePath + '/model/register_face_handler.php';
-            
-            const response = await fetch(handlerUrl, {
+            // Send to register_face_handler.php
+            const response = await fetch('model/register_face_handler.php', {
                 method: 'POST',
                 body: formData
             });

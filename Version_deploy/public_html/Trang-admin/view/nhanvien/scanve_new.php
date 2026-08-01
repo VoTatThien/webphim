@@ -146,6 +146,17 @@
         | <strong>⏰ Thời gian:</strong> <span id="current-time"></span>
     </div>
 
+    <!-- Scanner Mode Toggle -->
+    <div class="scanner-mode-selector" style="margin-bottom: 20px; display: flex; gap: 15px; background: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); align-items: center; border-left: 5px solid #007bff;">
+        <span style="font-weight: bold; color: #4b5563; font-size: 15px;">🎯 Chế độ soát:</span>
+        <label class="mode-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 15px; margin: 0;">
+            <input type="radio" name="scan_mode" value="ticket" checked onclick="setScanMode('ticket')"> 🎟️ Soát Vé Xem Phim
+        </label>
+        <label class="mode-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 15px; margin: 0; margin-left: 10px;">
+            <input type="radio" name="scan_mode" value="fb" onclick="setScanMode('fb')"> 🍿 Nhận Đồ Ăn F&B Fast Track
+        </label>
+    </div>
+
     <!-- Tabs -->
     <div class="tabs">
         <button class="tab-btn" onclick="switchTab('camera')">📷 Quét QR (Camera)</button>
@@ -175,7 +186,7 @@
         <div class="scanner-container">
             <h5>⌨️ Nhập Mã Vé</h5>
             <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
-                💡 Nhập ID vé hoặc paste URL vé để kiểm tra. Ví dụ: <code>434</code> hoặc <code>https://localhost/webphim/Trang-nguoi-dung/quete.php?id=434</code>
+                💡 Nhập ID vé hoặc paste URL vé để kiểm tra. Ví dụ: <code>434</code> hoặc <code>https://localhost/webphim_hung/Trang-nguoi-dung/quete.php?id=434</code>
             </p>
             <form id="form-manual" style="display: flex; gap: 10px;">
                 <input 
@@ -206,20 +217,16 @@
 </div>
 
 <script>
-    // Helper function to get dynamic base path
-    function getBasePath() {
-        const pathParts = window.location.pathname.split('/');
-        let basePath = '/';
-        for (let i = 0; i < pathParts.length; i++) {
-            if (pathParts[i] === 'Trang-admin') {
-                basePath = '/' + pathParts.slice(1, i + 1).join('/');
-                break;
-            }
-        }
-        return basePath;
-    }
-
     let currentTicket = null;
+    let scanMode = 'ticket'; // 'ticket' or 'fb'
+
+    function setScanMode(mode) {
+        scanMode = mode;
+        const radio = document.querySelector(`input[name="scan_mode"][value="${mode}"]`);
+        if (radio) radio.checked = true;
+        document.getElementById('status-container').innerHTML = '';
+        console.log('🎯 Đã đổi chế độ quét sang:', mode);
+    }
     let cameraStream = null;
     let scanning = false;
     let scanInterval = null;
@@ -331,65 +338,66 @@
             }
             
             try {
+                let qrData = null;
+                
+                // 1. Thử dùng BarcodeDetector API nếu được hỗ trợ
                 if (barcodeDetector) {
-                    // Dùng BarcodeDetector API (tốt nhất, built-in browser)
-                    const barcodes = await barcodeDetector.detect(video);
-                    if (barcodes && barcodes.length > 0) {
-                        const qrData = barcodes[0].rawValue;
-                        console.log('✅ QR detected (BarcodeDetector):', qrData);
-                        const debugText = document.getElementById('debug-text');
-                        if (debugText) debugText.innerHTML += `<br>✅ QR Detected: ${qrData}`;
-                        stopCamera();
-                        checkTicket(qrData);
-                        return;
+                    try {
+                        const barcodes = await barcodeDetector.detect(video);
+                        if (barcodes && barcodes.length > 0) {
+                            qrData = barcodes[0].rawValue;
+                            console.log('✅ QR detected (BarcodeDetector):', qrData);
+                        }
+                    } catch (e) {
+                        console.warn('BarcodeDetector.detect error, falling back to jsQR:', e);
                     }
-                } else {
-                    // Fallback: Dùng Canvas + jsQR
+                }
+                
+                // 2. Nếu BarcodeDetector không phát hiện được hoặc bị lỗi, dùng fallback jsQR
+                if (!qrData) {
                     const canvas = document.createElement('canvas');
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     
-                    if (canvas.width === 0 || canvas.height === 0) {
-                        return; // Canvas không có size, bỏ qua
+                    if (canvas.width > 0 && canvas.height > 0) {
+                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                        if (ctx) {
+                            ctx.drawImage(video, 0, 0);
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            
+                            let code = null;
+                            if (typeof jsQR !== 'undefined') {
+                                code = jsQR(imageData.data, imageData.width, imageData.height, {
+                                    inversionAttempts: 'attemptBoth'
+                                });
+                            }
+                            
+                            if (!code && typeof jsQR !== 'undefined') {
+                                const cropSize = Math.min(canvas.width, canvas.height) * 0.7;
+                                const startX = (canvas.width - cropSize) / 2;
+                                const startY = (canvas.height - cropSize) / 2;
+                                
+                                const croppedData = ctx.getImageData(startX, startY, cropSize, cropSize);
+                                code = jsQR(croppedData.data, cropSize, cropSize, {
+                                    inversionAttempts: 'attemptBoth'
+                                });
+                            }
+                            
+                            if (code && code.data) {
+                                qrData = code.data;
+                                console.log('✅ QR detected (Canvas/jsQR):', qrData);
+                            }
+                        }
                     }
-                    
-                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                    
-                    if (!ctx) return;
-                    
-                    ctx.drawImage(video, 0, 0);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    // Thử decode bằng toàn bộ ảnh
-                    let code = null;
-                    
-                    // Cố gắng 1: Bình thường
-                    if (typeof jsQR !== 'undefined') {
-                        code = jsQR(imageData.data, imageData.width, imageData.height, {
-                            inversionAttempts: 'attemptBoth'
-                        });
-                    }
-                    
-                    // Cố gắng 2: Crop phần giữa
-                    if (!code && typeof jsQR !== 'undefined') {
-                        const cropSize = Math.min(canvas.width, canvas.height) * 0.7;
-                        const startX = (canvas.width - cropSize) / 2;
-                        const startY = (canvas.height - cropSize) / 2;
-                        
-                        const croppedData = ctx.getImageData(startX, startY, cropSize, cropSize);
-                        code = jsQR(croppedData.data, cropSize, cropSize, {
-                            inversionAttempts: 'attemptBoth'
-                        });
-                    }
-                    
-                    if (code && code.data) {
-                        console.log('✅ QR detected (Canvas/jsQR):', code.data);
-                        const debugText = document.getElementById('debug-text');
-                        if (debugText) debugText.innerHTML += `<br>✅ QR Detected: ${code.data}`;
-                        stopCamera();
-                        checkTicket(code.data);
-                        return;
-                    }
+                }
+                
+                // 3. Nếu tìm thấy dữ liệu QR
+                if (qrData) {
+                    const debugText = document.getElementById('debug-text');
+                    if (debugText) debugText.innerHTML += `<br>✅ QR Detected: ${qrData}`;
+                    stopCamera();
+                    checkTicket(qrData);
+                    return;
                 }
             } catch (err) {
                 console.error('Scan error:', err);
@@ -408,6 +416,12 @@
         let ticketCode = maVe.trim();
         
         console.log('🔍 QR Data nhận được:', ticketCode);
+        
+        // Tự động chuyển chế độ nếu phát hiện &fb=1 hoặc fb=1 trong dữ liệu quét
+        if (ticketCode.includes('&fb=1') || ticketCode.includes('?fb=1') || ticketCode.includes('fb=1')) {
+            console.log('⚡ Phát hiện F&B QR code, tự động chuyển sang chế độ Nhận F&B');
+            setScanMode('fb');
+        }
         
         // Cố gắng parse URL nếu nó là URL
         if (ticketCode.startsWith('http://') || ticketCode.startsWith('https://')) {
@@ -439,50 +453,77 @@
         }
 
         const statusContainer = document.getElementById('status-container');
-        statusContainer.innerHTML = '<div style="text-align:center;"><p>⏳ Đang kiểm tra vé...</p></div>';
+        statusContainer.innerHTML = '<div style="text-align:center;"><p>⏳ Đang kiểm tra...</p></div>';
         
-        console.log('📤 Gửi request check-in với mã:', ticketCode);
-        
-        const basePath = getBasePath();
-        fetch(basePath + '/index.php?act=scanve_check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ma_ve: ticketCode })
-        })
-        .then(res => {
-            console.log('📥 Response status:', res.status, res.ok);
-            if (!res.ok) throw new Error('Lỗi kết nối: ' + res.status);
-            return res.text().then(text => {
-                console.log('📥 Raw response:', text);
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error('❌ JSON parse error:', e);
-                    throw new Error('Response không phải JSON: ' + text.substring(0, 100));
-                }
-            });
-        })
-        .then(data => {
-            console.log('✅ Kiểm tra vé:', data);
-            if (data.success && data.ticket) {
-                currentTicket = data.ticket;
-                // Check if ticket is already checked in (trang_thai == 4)
-                if (data.ticket.trang_thai == 4) {
-                    console.log('⏱️ Vé đã check-in');
-                    displayAlreadyCheckedIn(data.ticket);
+        if (scanMode === 'fb') {
+            console.log('📤 Gửi request check F&B với mã:', ticketCode);
+            fetch('index.php?act=scanve_fb_check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ma_ve: ticketCode })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Lỗi kết nối: ' + res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('✅ Kết quả soát F&B:', data);
+                if (data.success) {
+                    displayFBSuccess(data.ticket);
                 } else {
-                    console.log('✅ Vé hợp lệ, hiển thị check-in button');
-                    displayCheckResult(data.ticket);
+                    if (data.details) {
+                        displayFBAlreadyClaimed(data.message, data.details);
+                    } else {
+                        displayError(data.message || 'Lỗi soát F&B');
+                    }
                 }
-            } else {
-                console.error('❌ Response không success:', data);
-                displayError(data.message || 'Vé không hợp lệ hoặc không tồn tại');
-            }
-        })
-        .catch(err => {
-            console.error('❌ Lỗi:', err);
-            displayError('Lỗi kết nối: ' + err.message);
-        });
+            })
+            .catch(err => {
+                console.error('❌ Lỗi F&B:', err);
+                displayError('Lỗi kết nối F&B: ' + err.message);
+            });
+        } else {
+            console.log('📤 Gửi request check-in với mã:', ticketCode);
+            fetch('index.php?act=scanve_check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ma_ve: ticketCode })
+            })
+            .then(res => {
+                console.log('📥 Response status:', res.status, res.ok);
+                if (!res.ok) throw new Error('Lỗi kết nối: ' + res.status);
+                return res.text().then(text => {
+                    console.log('📥 Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('❌ JSON parse error:', e);
+                        throw new Error('Response không phải JSON: ' + text.substring(0, 100));
+                    }
+                });
+            })
+            .then(data => {
+                console.log('✅ Kiểm tra vé:', data);
+                if (data.success && data.ticket) {
+                    currentTicket = data.ticket;
+                    // Check if ticket is already checked in (trang_thai == 4)
+                    if (data.ticket.trang_thai == 4) {
+                        console.log('⏱️ Vé đã check-in');
+                        displayAlreadyCheckedIn(data.ticket);
+                    } else {
+                        console.log('✅ Vé hợp lệ, hiển thị check-in button');
+                        displayCheckResult(data.ticket);
+                    }
+                } else {
+                    console.error('❌ Response không success:', data);
+                    displayError(data.message || 'Vé không hợp lệ hoặc không tồn tại');
+                }
+            })
+            .catch(err => {
+                console.error('❌ Lỗi:', err);
+                displayError('Lỗi kết nối: ' + err.message);
+            });
+        }
     }
 
     // Display check result with button
@@ -501,6 +542,43 @@
                 <button class="button" onclick="confirmCheckin()" style="width:100%; margin-top:15px; padding:15px; font-size:16px; background:linear-gradient(135deg, #4c4f5aff 0%, #534f56ff 100%);">
                     CHECK-IN NGAY
                 </button>
+            </div>
+        `;
+        document.getElementById('status-container').innerHTML = html;
+    }
+
+    function displayFBSuccess(ticket) {
+        const html = `
+            <div class="status-card status-success" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <div class="status-title" style="color: white; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">🍿 NHẬN F&B THÀNH CÔNG</div>
+                <div class="status-subtitle" style="color: rgba(255,255,255,0.9); margin-top: 8px;">Hãy bàn giao đồ ăn cho khách hàng</div>
+                <div class="ticket-info" style="background: rgba(255,255,255,0.2); color: white; margin-top: 15px;">
+                    <p><strong>👤 Khách hàng:</strong> ${escapeHtml(ticket.user_name || 'Khách vãng lai')}</p>
+                    <p><strong>🍿 Combo:</strong> <span style="font-size: 1.15em; font-weight: bold; color: #fef08a;">${escapeHtml(ticket.combo || 'N/A')}</span></p>
+                    <p><strong>🎬 Phim đặt kèm:</strong> ${escapeHtml(ticket.movie_title || 'N/A')}</p>
+                    <p><strong>🎟️ Mã Vé:</strong> #${escapeHtml(ticket.id)}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('status-container').innerHTML = html;
+        
+        // Tự động clear sau 4 giây và quét tiếp
+        setTimeout(() => {
+            document.getElementById('status-container').innerHTML = '';
+            if (!scanning && document.getElementById('tab-camera').classList.contains('active')) {
+                startCamera();
+            }
+        }, 4000);
+    }
+
+    function displayFBAlreadyClaimed(msg, details) {
+        const html = `
+            <div class="status-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: 2px solid #b45309;">
+                <div class="status-title" style="color: white; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">⚠️ COMBO ĐÃ NHẬN RỒI</div>
+                <div class="status-subtitle" style="color: rgba(255,255,255,0.9); margin-top: 8px;">${escapeHtml(msg)}</div>
+                <div class="ticket-info" style="background: rgba(0,0,0,0.15); color: white; margin-top: 15px;">
+                    <p><strong>✓ Chi tiết:</strong> ${escapeHtml(details)}</p>
+                </div>
             </div>
         `;
         document.getElementById('status-container').innerHTML = html;
@@ -550,8 +628,7 @@
         
         console.log('Gửi check-in với ID:', currentTicket.id);
         
-        const basePath = getBasePath();
-        fetch(basePath + '/index.php?act=scanve_new', {
+        fetch('index.php?act=scanve_new', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_ve: currentTicket.id })
@@ -635,8 +712,7 @@
     // Load history
     function loadHistory() {
         const container = document.getElementById('history-container');
-        const basePath = getBasePath();
-        fetch(basePath + '/index.php?act=scanve_history')
+        fetch('index.php?act=scanve_history')
             .then(r => r.json())
             .then(data => {
                 if (data.success && data.history && data.history.length) {
@@ -750,10 +826,5 @@
 </script>
 
 <!-- jsQR Library from Local (không cần CDN) -->
-<script>
-    const basePath = getBasePath();
-    const jsqrScript = document.createElement('script');
-    jsqrScript.src = basePath.replace('/Trang-admin', '') + '/js/jsQR.min.js';
-    document.head.appendChild(jsqrScript);
-</script>
+<script src="../js/jsQR.min.js"></script>
 

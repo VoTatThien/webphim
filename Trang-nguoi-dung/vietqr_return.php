@@ -74,6 +74,12 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
         if ($user_info && !empty($user_info['email'])) {
             $to = $user_info['email'];
             $subject = "✓ Thanh toán thành công - Vé phim CinePass";
+            
+            $base_path = '';
+            if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+                $base_path = '/' . $matches[1];
+            }
+
             $message = "
                 <html>
                 <head>
@@ -93,18 +99,39 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
                     </ul>
                     
                     <p>Vui lòng đến rạp chiếu trước giờ chiếu 15 phút để check-in với vé của bạn.</p>
-                    <p><a href='http://localhost/webphim/Trang-nguoi-dung/index.php?p=ve_cua_toi'>👉 Xem vé của tôi</a></p>
+                    <p><a href='http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?p=ve_cua_toi'>👉 Xem vé của tôi</a></p>
                     
                     <p>Cảm ơn bạn!</p>
                 </body>
                 </html>
             ";
             
-            $headers = "MIME-Version: 1.0" . "\r\n";
-            $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-            $headers .= "From: noreply@cinepass.com" . "\r\n";
+            require_once 'PHPMailer/src/Exception.php';
+            require_once 'PHPMailer/src/PHPMailer.php';
+            require_once 'PHPMailer/src/SMTP.php';
             
-            $mail_sent = @mail($to, $subject, $message, $headers);
+            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+            try {
+                $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'tatthiendh123@gmail.com';
+                $mail->Password   = 'qjca onic cfks clad';
+                $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = 587;
+                
+                $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+                $mail->addAddress($to);
+                $mail->isHTML(true);
+                $mail->Subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";
+                $mail->Body = $message;
+                $mail->send();
+                $mail_sent = true;
+            } catch (Exception $mailEx) {
+                $mail_sent = false;
+                error_log("PHPMailer error in vietqr_return.php: " . $mailEx->getMessage());
+            }
             
             // Debug log
             $log_file = __DIR__ . '/logs/email_log.txt';
@@ -362,10 +389,16 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
 
             <!-- Buttons -->
             <div class="buttons">
-                <a href="/webphim/Trang-nguoi-dung/index.php?p=ve_cua_toi">
+                <?php
+                $base_path = '';
+                if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+                    $base_path = '/' . $matches[1];
+                }
+                ?>
+                <a href="<?= $base_path ?>/Trang-nguoi-dung/index.php?p=ve_cua_toi">
                     <button class="btn-primary">📽️ Xem Vé Của Tôi</button>
                 </a>
-                <a href="/webphim/Trang-nguoi-dung/index.php">
+                <a href="<?= $base_path ?>/Trang-nguoi-dung/index.php">
                     <button class="btn-secondary">← Quay Lại Trang Chủ</button>
                 </a>
             </div>

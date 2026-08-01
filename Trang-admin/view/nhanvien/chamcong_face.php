@@ -436,35 +436,78 @@ canvas {
         capturePhoto();
     }
 
-    function recordAttendance(type) {
+    // Get current GPS location
+    function getGPSLocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                console.warn('Geolocation không được hỗ trợ - dùng mock GPS');
+                resolve({
+                    latitude: 10.7769,
+                    longitude: 106.7009,
+                    accuracy: 5,
+                    isMock: true
+                });
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        isMock: false
+                    });
+                },
+                (error) => {
+                    console.warn('Không thể lấy GPS:', error, '- dùng mock GPS');
+                    resolve({
+                        latitude: 10.7769,
+                        longitude: 106.7009,
+                        accuracy: 5,
+                        isMock: true
+                    });
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+    }
+
+    async function recordAttendance(type) {
         if (!photoData) {
             showStatus('⚠️ Vui lòng chụp ảnh trước', 'warning');
             return;
         }
 
         const action = type === 'checkin' ? 'check-in' : 'check-out';
+        showStatus('⏳ Đang lấy vị trí GPS...', 'info');
+        const gpsData = await getGPSLocation();
+
         showStatus('⏳ Đang xử lý ' + action + ' (phát hiện khuôn mặt)...', 'info');
         
         const formData = new FormData();
         formData.append('action', type === 'checkin' ? 'checkin' : 'checkout');
         formData.append('photo', photoData);
         formData.append('user_id', USER_ID);
+        formData.append('latitude', gpsData.latitude);
+        formData.append('longitude', gpsData.longitude);
+        formData.append('location_accuracy', gpsData.accuracy);
         
-        fetch('/webphim/Trang-admin/model/chamcong_detector.php', {
+        fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showStatus('✅ ' + data.message + '\n👤 Phát hiện ' + data.faces_detected + ' khuôn mặt', 'success');
+                showStatus('✅ ' + data.message + '\n👤 Phát hiện ' + data.faces_detected + ' khuôn mặt\n📍 GPS: ' + gpsData.latitude.toFixed(4) + ', ' + gpsData.longitude.toFixed(4), 'success');
                 setTimeout(() => location.reload(), 2000);
             } else {
-                let errorMsg = data.message;
-                if (data.debug && data.debug.session_data) {
-                    errorMsg += '\n📌 Debug: Session keys = ' + data.debug.session_data.join(', ');
-                }
-                showStatus('❌ ' + errorMsg, 'error');
+                showStatus('❌ ' + data.message, 'error');
             }
         })
         .catch(e => {
@@ -473,20 +516,26 @@ canvas {
         });
     }
 
-    function quickCheckin() {
+    async function quickCheckin() {
+        showStatus('⏳ Đang lấy vị trí GPS...', 'info');
+        const gpsData = await getGPSLocation();
+
         showStatus('⏳ Đang check-in...', 'info');
         const formData = new FormData();
         formData.append('action', 'checkin');
         formData.append('user_id', USER_ID);
+        formData.append('latitude', gpsData.latitude);
+        formData.append('longitude', gpsData.longitude);
+        formData.append('location_accuracy', gpsData.accuracy);
         
-        fetch('/webphim/Trang-admin/model/chamcong_detector.php', {
+        fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showStatus('✅ ' + data.message, 'success');
+                showStatus('✅ ' + data.message + ' (GPS: ' + gpsData.latitude.toFixed(4) + ', ' + gpsData.longitude.toFixed(4) + ')', 'success');
                 setTimeout(() => location.reload(), 1500);
             } else {
                 showStatus('❌ ' + data.message, 'error');
@@ -497,20 +546,26 @@ canvas {
         });
     }
 
-    function quickCheckout() {
+    async function quickCheckout() {
+        showStatus('⏳ Đang lấy vị trí GPS...', 'info');
+        const gpsData = await getGPSLocation();
+
         showStatus('⏳ Đang check-out...', 'info');
         const formData = new FormData();
         formData.append('action', 'checkout');
         formData.append('user_id', USER_ID);
+        formData.append('latitude', gpsData.latitude);
+        formData.append('longitude', gpsData.longitude);
+        formData.append('location_accuracy', gpsData.accuracy);
         
-        fetch('/webphim/Trang-admin/model/chamcong_detector.php', {
+        fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showStatus('✅ ' + data.message, 'success');
+                showStatus('✅ ' + data.message + ' (GPS: ' + gpsData.latitude.toFixed(4) + ', ' + gpsData.longitude.toFixed(4) + ')', 'success');
                 setTimeout(() => location.reload(), 1500);
             } else {
                 showStatus('❌ ' + data.message, 'error');

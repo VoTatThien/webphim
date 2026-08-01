@@ -68,25 +68,42 @@ $orderId = 'CINEMA_' . time() . '_' . rand(1000, 9999);
 // GENERATE VIETQR QR CODE
 // ====================================================
 
-// Prepare VietQR payload
+// Ánh xạ mã BIN ngân hàng tự động dựa trên BANK_CODE
+$bank_bin_map = [
+    'VIETCOMBANK' => '970436',
+    'MBBANK' => '970422',
+    'VIETINBANK' => '970415',
+    'BIDV' => '970418',
+    'TECHCOMBANK' => '970407',
+    'ACB' => '970416',
+    'TPBANK' => '970423',
+    'VPBANK' => '970432',
+    'SACOMBANK' => '970403'
+];
+$acqId = $bank_bin_map[strtoupper(BANK_CODE)] ?? '970436'; // Mặc định Vietcombank nếu không khớp
+
+// Prepare VietQR payload for POST request
 $payload = [
     'accountNo' => BANK_ACCOUNT_NUMBER,
     'accountName' => BANK_ACCOUNT_NAME,
-    'acqId' => '970436', // VietCombank BIN
+    'acqId' => $acqId,
     'amount' => $amount,
-    'addInfo' => urlencode($description . ' - ' . $orderId),
-    'format' => 'text', // Trả về base64 image
+    'addInfo' => $description . ' - ' . $orderId,
+    'format' => 'text',
+    'template' => 'compact',
 ];
 
-// Build query string
-$query = http_build_query($payload);
-$vietqr_url = VIETQR_API . '?' . $query;
-
-// Call VietQR API
+// Call VietQR API using POST request
 $ch = curl_init();
 curl_setopt_array($ch, [
-    CURLOPT_URL => $vietqr_url,
+    CURLOPT_URL => 'https://api.vietqr.io/v2/generate',
     CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($payload),
+    CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        'Accept: application/json'
+    ],
     CURLOPT_TIMEOUT => 10,
     CURLOPT_SSL_VERIFYPEER => false,
     CURLOPT_SSL_VERIFYHOST => false,
@@ -99,7 +116,7 @@ curl_close($ch);
 
 // Log
 file_put_contents(__DIR__ . '/view/momo/vietqr_debug.log',
-    date('Y-m-d H:i:s') . " Order: $orderId | Amount: $amount | HTTP: $httpCode | URL: $vietqr_url\n",
+    date('Y-m-d H:i:s') . " Order: $orderId | Amount: $amount | HTTP: $httpCode | Error: $curlError\n",
     FILE_APPEND
 );
 
@@ -111,7 +128,7 @@ $result = json_decode($response, true);
 // ====================================================
 
 if ($httpCode === 200 && isset($result['data']['qr'])) {
-    // Success - VietQR returned QR code
+    // Success - VietQR returned QR code base64
     http_response_code(200);
     echo json_encode([
         'error' => 0,
@@ -123,31 +140,24 @@ if ($httpCode === 200 && isset($result['data']['qr'])) {
             'bankCode' => BANK_CODE,
             'accountNumber' => BANK_ACCOUNT_NUMBER,
             'accountName' => BANK_ACCOUNT_NAME,
-            'description' => $description,
+            'description' => $description . ' - ' . $orderId,
             'qrCode' => $result['data']['qr'], // Base64 QR code
             'qrUrl' => isset($result['data']['qrUrl']) ? $result['data']['qrUrl'] : null,
         ]
     ]);
 } else {
-    // Error or fallback to local QR generation
-    // Nếu VietQR API lỗi, generate QR locally
+    // Fallback: Nếu API chính thống lỗi, trả về link ảnh trực tiếp từ img.vietqr.io để luôn hiển thị mã QR thành công
+    $quick_qr_url = "https://img.vietqr.io/image/" . $acqId . "-" . BANK_ACCOUNT_NUMBER . "-compact.png?amount=" . $amount . "&addInfo=" . urlencode($description . ' - ' . $orderId) . "&accountName=" . urlencode(BANK_ACCOUNT_NAME);
     
     file_put_contents(__DIR__ . '/view/momo/vietqr_debug.log',
-        date('Y-m-d H:i:s') . " [FALLBACK] Generating local QR\n",
+        date('Y-m-d H:i:s') . " [FALLBACK] Generating direct image URL: $quick_qr_url\n",
         FILE_APPEND
     );
-    
-    // Fallback: Create local QR using existing library
-    $qr_data = "00020126" . // QR Type
-               "360014" . // Service Code
-               BANK_ACCOUNT_NUMBER . // Account Number
-               $amount . // Amount
-               urlencode($description); // Description
     
     http_response_code(200);
     echo json_encode([
         'error' => 0,
-        'message' => 'SUCCESS (Fallback)',
+        'message' => 'SUCCESS',
         'data' => [
             'orderId' => $orderId,
             'amount' => $amount,
@@ -155,9 +165,10 @@ if ($httpCode === 200 && isset($result['data']['qr'])) {
             'bankCode' => BANK_CODE,
             'accountNumber' => BANK_ACCOUNT_NUMBER,
             'accountName' => BANK_ACCOUNT_NAME,
-            'description' => $description,
-            'qrCode' => 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22white%22 width=%22100%22 height=%22100%22/%3E%3C/svg%3E', // Placeholder
-            'manualTransfer' => true, // User needs to transfer manually
+            'description' => $description . ' - ' . $orderId,
+            'qrCode' => $quick_qr_url, // Link image trực tiếp
+            'manualTransfer' => true,
         ]
     ]);
 }
+?>

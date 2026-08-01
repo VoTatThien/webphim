@@ -120,6 +120,10 @@ try {
     // 6. SEND EMAIL
     // ====================================================
     
+    $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $view_tickets_url = $protocol . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/index.php?p=ve_cua_toi';
+
     $to = $user_email;
     $subject = "✓ Thanh Toán Thành Công & Xác Nhận Vé - CinePass Cinema";
     
@@ -196,7 +200,7 @@ try {
                     
                     <!-- CTA -->
                     <div style='text-align: center; margin: 30px 0;'>
-                        <a href='http://" . $_SERVER['HTTP_HOST'] . "/webphim/Trang-nguoi-dung/index.php?p=ve_cua_toi' style='display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold;'>
+                        <a href='" . $view_tickets_url . "' style='display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold;'>
                             👉 Xem Vé Của Tôi
                         </a>
                     </div>
@@ -218,11 +222,32 @@ try {
         </html>
     ";
     
-    $headers = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: no-reply@cinepass.com\r\n";
+    require_once 'PHPMailer/src/Exception.php';
+    require_once 'PHPMailer/src/PHPMailer.php';
+    require_once 'PHPMailer/src/SMTP.php';
     
-    $mail_sent = mail($to, $subject, $message, $headers);
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+    try {
+        $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'tatthiendh123@gmail.com';
+        $mail->Password   = 'qjca onic cfks clad';
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+        
+        $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+        $mail->addAddress($to);
+        $mail->isHTML(true);
+        $mail->Subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";
+        $mail->Body = $message;
+        $mail->send();
+        $mail_sent = true;
+    } catch (Exception $mailEx) {
+        $mail_sent = false;
+        error_log("PHPMailer error in ajax_confirm_ticket_payment.php: " . $mailEx->getMessage());
+    }
     
     // ====================================================
     // 7. RESPONSE

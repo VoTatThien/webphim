@@ -5,13 +5,65 @@
  */
 
 function pdo_get_connection(){
-    $dburl = "mysql:host=localhost;dbname=cinepass;charset=utf8";
-    $username = 'root';
-    $password = '';
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $server_addr = $_SERVER['SERVER_ADDR'] ?? '';
+    
+    $is_local = false;
+    if (DIRECTORY_SEPARATOR === '\\' || strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        $is_local = true;
+    } elseif (
+        strpos($host, 'localhost') !== false ||
+        strpos($host, '127.0.0.1') !== false ||
+        strpos($host, '192.168.') !== false ||
+        strpos($host, '10.') === 0 ||
+        strpos($host, '172.16.') !== false ||
+        strpos($host, '172.17.') !== false ||
+        strpos($host, '172.18.') !== false ||
+        strpos($host, '172.19.') !== false ||
+        strpos($host, '172.20.') !== false ||
+        strpos($host, '172.21.') !== false ||
+        strpos($host, '172.22.') !== false ||
+        strpos($host, '172.23.') !== false ||
+        strpos($host, '172.24.') !== false ||
+        strpos($host, '172.25.') !== false ||
+        strpos($host, '172.26.') !== false ||
+        strpos($host, '172.27.') !== false ||
+        strpos($host, '172.28.') !== false ||
+        strpos($host, '172.29.') !== false ||
+        strpos($host, '172.30.') !== false ||
+        strpos($host, '172.31.') !== false ||
+        $server_addr === '127.0.0.1' ||
+        $server_addr === '::1'
+    ) {
+        $is_local = true;
+    }
 
-    $conn = new PDO($dburl, $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    return $conn;
+    if ($is_local) {
+        // Chạy local: Tự động thử kết nối cổng 3306, nếu thất bại thử 3307
+        $ports = ['3306', '3307'];
+        $username = 'root';
+        $password = '';
+        $last_exception = null;
+        foreach ($ports as $port) {
+            try {
+                $dburl = "mysql:host=127.0.0.1;port=$port;dbname=cinepass;charset=utf8mb4";
+                $conn = new PDO($dburl, $username, $password);
+                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                return $conn;
+            } catch (PDOException $e) {
+                $last_exception = $e;
+            }
+        }
+        throw $last_exception;
+    } else {
+        // Chạy production (live server)
+        $dburl = "mysql:host=localhost;port=3306;dbname=u508775056_cinepass;charset=utf8mb4";
+        $username = 'u508775056_cinepass';
+        $password = 'Kpy123456@@';
+        $conn = new PDO($dburl, $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $conn;
+    }
 }
 /**
  * Thực thi câu lệnh sql thao tác dữ liệu (INSERT, UPDATE, DELETE)

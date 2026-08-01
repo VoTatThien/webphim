@@ -12,43 +12,43 @@
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-film" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Phim:</strong><br>
-                <?= isset($_SESSION['tong']['tieu_de']) ? $_SESSION['tong']['tieu_de'] : 'N/A' ?>
+                <strong><?= __("Phim:") ?></strong><br>
+                <?= isset($_SESSION['tong']['tieu_de']) ? htmlspecialchars(__($_SESSION['tong']['tieu_de'])) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-building" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Rạp:</strong><br>
-                <?= isset($_SESSION['tong']['ten_rap']) ? $_SESSION['tong']['ten_rap'] : 'N/A' ?>
+                <strong><?= __("Rạp:") ?></strong><br>
+                <?= isset($_SESSION['tong']['ten_rap']) ? htmlspecialchars(__($_SESSION['tong']['ten_rap'])) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-map-marker" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Địa chỉ:</strong><br>
-                <?= isset($_SESSION['tong']['dia_chi_rap']) ? $_SESSION['tong']['dia_chi_rap'] : 'N/A' ?>
+                <strong><?= __("Địa chỉ:") ?></strong><br>
+                <?= isset($_SESSION['tong']['dia_chi_rap']) ? htmlspecialchars($_SESSION['tong']['dia_chi_rap']) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-door-open" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Phòng:</strong><br>
-                <?= isset($_SESSION['tong']['ten_phong']) ? $_SESSION['tong']['ten_phong'] : 'N/A' ?>
+                <strong><?= __("Phòng:") ?></strong><br>
+                <?= isset($_SESSION['tong']['ten_phong']) ? htmlspecialchars($_SESSION['tong']['ten_phong']) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-calendar" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Ngày chiếu:</strong><br>
-                <?= isset($_SESSION['tong']['ngay_chieu']) ? $_SESSION['tong']['ngay_chieu'] : 'N/A' ?>
+                <strong><?= __("Ngày chiếu:") ?></strong><br>
+                <?= isset($_SESSION['tong']['ngay_chieu']) ? htmlspecialchars($_SESSION['tong']['ngay_chieu']) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-clock" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Giờ chiếu:</strong><br>
-                <?= isset($_SESSION['tong']['thoi_gian_chieu']) ? $_SESSION['tong']['thoi_gian_chieu'] : 'N/A' ?>
+                <strong><?= __("Giờ chiếu:") ?></strong><br>
+                <?= isset($_SESSION['tong']['thoi_gian_chieu']) ? htmlspecialchars($_SESSION['tong']['thoi_gian_chieu']) : 'N/A' ?>
             </div>
         </div>
     </div>
@@ -57,30 +57,15 @@
 <div class="col-lg-offset-1">
     <div class="tong">
         <form action="index.php?act=dv3" method="post">
-            <!-- Preserve booking data through form submission -->
-            <input type="hidden" name="id_phim" value="<?= htmlspecialchars($_SESSION['tong']['id_phim'] ?? '') ?>">
-            <input type="hidden" name="id_rap" value="<?= htmlspecialchars($_SESSION['tong']['id_rap'] ?? '') ?>">
-            <input type="hidden" name="id_lichchieu" value="<?= htmlspecialchars($_SESSION['tong']['id_lichchieu'] ?? '') ?>">
-            <input type="hidden" name="id_phong" value="<?= htmlspecialchars($_SESSION['tong']['id_phong'] ?? '') ?>">
-            <input type="hidden" name="id_gio" value="<?= htmlspecialchars($_SESSION['tong']['id_gio'] ?? '') ?>">
-            <input type="hidden" name="tieu_de" value="<?= htmlspecialchars($_SESSION['tong']['tieu_de'] ?? '') ?>">
-            <input type="hidden" name="ten_rap" value="<?= htmlspecialchars($_SESSION['tong']['ten_rap'] ?? '') ?>">
-            <input type="hidden" name="ngay_chieu" value="<?= htmlspecialchars($_SESSION['tong']['ngay_chieu'] ?? '') ?>">
-            <input type="hidden" name="thoi_gian_chieu" value="<?= htmlspecialchars($_SESSION['tong']['thoi_gian_chieu'] ?? '') ?>">
-            
-            <h2 class="phim" style="color: #667eea;">Chọn ghế ngồi</h2>
+            <h2 class="phim" style="color: #667eea;"><?= __("Chọn ghế ngồi") ?></h2>
 
             <div style="display: flex">
-                <span>🪑Ghế đã chọn :</span>
+                <span><?= __("🪑Ghế đã chọn :") ?></span>
                 <div class="checked-place">
                     <?php
                     if (isset($_SESSION['tong']['ghe'])) {
                         foreach ($_SESSION['tong']['ghe'] as $ghe) {
                             echo  '<span class="choosen-place">' . implode(', ', $ghe) . '</span>';
-                            // Thêm hidden input để POST tên ghế
-                            foreach ($ghe as $ghe_name) {
-                                echo '<input type="hidden" name="ten_ghe[]" value="' . htmlspecialchars($ghe_name) . '">';
-                            }
                         }
                     }
                     ?>
@@ -89,7 +74,7 @@
 
             <div class="tongtien">
                 <div class="checked-result">
-                    <span>Tổng cộng :</span>
+                    <span><?= __("Tổng cộng :") ?></span>
                     <input name="giaghe" style="width: 80px; font-size: 20px; border: none;" type="text" id="gia_ghe"
                            value="<?php echo isset($_SESSION['tong'][0]) ? $_SESSION['tong'][0] : 0; ?>"> VND
                 </div>
@@ -99,10 +84,10 @@
 
 <div class="booking-pagination">
     <a href="index.php?act=datve&id=<?php echo $_SESSION['tong']['id_phim']; ?>&id_rap=<?php echo isset($_SESSION['tong']['id_rap']) ? $_SESSION['tong']['id_rap'] : ''; ?>&ngay_chieu=<?php echo isset($_SESSION['tong']['ngay_chieu']) ? $_SESSION['tong']['ngay_chieu'] : ''; ?>">
-        <span class="quaylai">QUAY LẠI</span>
+        <span class="quaylai"><?= __("QUAY LẠI") ?></span>
     </a>
     <a href="#" id="tiep_tuc_link">
-        <input type="submit" name="tiep_tuc" class="booking-pagination__button" value="TIẾP TỤC">
+        <input type="submit" name="tiep_tuc" class="booking-pagination__button" value="<?= __("TIẾP TỤC") ?>">
     </a>
 </div>
 

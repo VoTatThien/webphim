@@ -54,10 +54,12 @@ switch ($ticket['trang_thai'] ?? 0) {
 }
 
 // Fix image path
+$base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $img_url = $ticket['img'] ?? '';
 if (!empty($img_url)) {
     if (strpos($img_url, 'http') !== 0 && strpos($img_url, '/') !== 0) {
-        $img_url = 'http://' . $_SERVER['HTTP_HOST'] . '/webphim/Trang-nguoi-dung/imgavt/' . $img_url;
+        $img_url = $protocol . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/imgavt/' . $img_url;
     }
 }
 
@@ -369,7 +371,7 @@ $html = '
                 <div class="qr-section">
                     <div class="qr-label">Mã QR Vé</div>
                     <div class="qr-container">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode('http://' . $_SERVER['HTTP_HOST'] . '/Trang-nguoi-dung/quete.php?id=' . $id) . '" alt="QR Code" class="qr-code">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode($protocol . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/quete.php?id=' . $id) . '" alt="QR Code" class="qr-code">
                     </div>
                     <p class="qr-note">Quét mã QR này để xem thông tin vé</p>
                 </div>

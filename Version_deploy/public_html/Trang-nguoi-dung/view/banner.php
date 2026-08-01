@@ -5,12 +5,14 @@ $video_banner_url = 'video/OFFICIAL TRAILER.mp4'; // Video mặc định
 // Cố gắng lấy từ API config
 if (!function_exists('website_get_banner_video')) {
     try {
-        // Use dynamic protocol instead of hardcoded localhost
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
         $host = $_SERVER['HTTP_HOST'];
+        $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+        $api_url = $protocol . $host . $base_dir . 'Trang-nguoi-dung/api_config.php';
+
         $curl = curl_init();
         curl_setopt_array($curl, [
-            CURLOPT_URL => $protocol . '://' . $host . '/webphim/Trang-nguoi-dung/api_config.php',
+            CURLOPT_URL => $api_url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 3
         ]);

@@ -371,7 +371,7 @@ const ChatSystem = {
         this.isLoadingMessages = true;
         
         try {
-            const response = await fetch('/webphim/Trang-admin/model/tin_nhan.php?action=get_messages&limit=50&offset=0&t=' + Date.now());
+            const response = await fetch('model/tin_nhan.php?action=get_messages&limit=50&offset=0&t=' + Date.now());
             
             if (!response.ok) {
                 throw new Error('HTTP ' + response.status);
@@ -449,7 +449,7 @@ const ChatSystem = {
             formData.append('noi_dung', noi_dung);
             formData.append('id_nguoi_nhan', 0); // 0 = broadcast
             
-            const response = await fetch('/webphim/Trang-admin/model/tin_nhan.php', {
+            const response = await fetch('model/tin_nhan.php', {
                 method: 'POST',
                 body: formData
             });
@@ -477,7 +477,7 @@ const ChatSystem = {
 
     async checkUnreadMessages() {
         try {
-            const response = await fetch('/webphim/Trang-admin/model/tin_nhan.php?action=get_unread_count&t=' + Date.now());
+            const response = await fetch('model/tin_nhan.php?action=get_unread_count&t=' + Date.now());
             
             if (!response.ok) {
                 throw new Error('HTTP ' + response.status);
@@ -509,7 +509,7 @@ const ChatSystem = {
 
     async markAsRead() {
         try {
-            const response = await fetch('/webphim/Trang-admin/model/tin_nhan.php', {
+            const response = await fetch('model/tin_nhan.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'action=mark_as_read'

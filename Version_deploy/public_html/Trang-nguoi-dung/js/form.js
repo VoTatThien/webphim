@@ -27,9 +27,67 @@ if(!Modernizr.input.placeholder){             //placeholder for old brousers and
    })
   });
  }
-  
-$('#contact-form').submit(function(e) {
-      
+  var emailValid = null;
+  var checkingEmail = false;
+  var emailTimeout;
+  var $emailInput = $('#contact-form [type=email]');
+
+  function checkEmailExist(emailVal, callback) {
+    if (!emailVal) {
+      emailValid = false;
+      if (callback) callback(false, 'Email is empty!');
+      return;
+    }
+    var emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(emailVal)) {
+      emailValid = false;
+      if (callback) callback(false, 'Email không đúng định dạng!');
+      return;
+    }
+
+    checkingEmail = true;
+    $.getJSON('index.php?act=kiemtra_email_ajax&email=' + encodeURIComponent(emailVal), function(res) {
+      checkingEmail = false;
+      if (res && res.valid) {
+        emailValid = true;
+        $emailInput.removeClass('invalid_field');
+        $emailInput.parent().find('.inv-em').remove();
+        if (callback) callback(true);
+      } else {
+        emailValid = false;
+        var msg = (res && res.message) ? res.message : 'Email không tồn tại thực tế trên Internet!';
+        createErrTult(msg, $emailInput);
+        if (callback) callback(false, msg);
+      }
+    }).fail(function() {
+      checkingEmail = false;
+      emailValid = false;
+      if (callback) callback(false, 'Lỗi kết nối kiểm tra email!');
+    });
+  }
+
+  $emailInput.on('blur', function() {
+    var emailVal = $(this).val().trim();
+    if (emailVal !== '') {
+      checkEmailExist(emailVal);
+    }
+  });
+
+  $emailInput.on('input', function() {
+    emailValid = null;
+    $emailInput.removeClass('invalid_field');
+    $emailInput.parent().find('.inv-em').remove();
+    
+    clearTimeout(emailTimeout);
+    var emailVal = $(this).val().trim();
+    if (emailVal !== '') {
+      emailTimeout = setTimeout(function() {
+        checkEmailExist(emailVal);
+      }, 1000);
+    }
+  });
+
+  $('#contact-form').submit(function(e) {
 		e.preventDefault();	
 		var error = 0;
 		var self = $(this);
@@ -38,11 +96,10 @@ $('#contact-form').submit(function(e) {
 	    var $email = self.find('[type=email]');
 	    var $message = self.find('[name=user-message]');
 		
-				
 		var emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 		
   		if(!emailRegex.test($email.val())) {
-			createErrTult('Error! Wrong email!', $email)
+			createErrTult('Email không đúng định dạng!', $email);
 			error++;	
 		}
 
@@ -50,7 +107,7 @@ $('#contact-form').submit(function(e) {
 			$name.removeClass('invalid_field');			
 		} 
 		else {
-			createErrTult('Error! Write your name!', $name)
+			createErrTult('Vui lòng nhập tên của bạn!', $name);
 			error++;
 		}
 
@@ -58,23 +115,36 @@ $('#contact-form').submit(function(e) {
 			$message.removeClass('invalid_field');
 		} 
 		else {
-			createErrTult('Error! Write message!', $message)
+			createErrTult('Vui lòng nhập nội dung tin nhắn!', $message);
 			error++;
 		}
 		
-		
-		
-		if (error!=0)return;
-		self.find('[type=submit]').attr('disabled', 'disabled');
+		if (error!=0) return;
 
-		self.children().fadeOut(300,function(){ $(this).remove() })
-		$('<p class="success"><span class="success-huge">Thank you!</span> <br> your message successfully sent</p>').appendTo(self)
-		.hide().delay(300).fadeIn();
+		if (emailValid === true) {
+			submitForm();
+		} else {
+			$email.parent().find('.inv-em').remove();
+			checkEmailExist($email.val().trim(), function(isValid, msg) {
+				if (isValid) {
+					submitForm();
+				}
+			});
+		}
 
+		function submitForm() {
+			self.find('[type=submit]').attr('disabled', 'disabled');
+			self.children().fadeOut(300,function(){ $(this).remove() });
+			
+			var thankYou = "Cảm ơn bạn!";
+			var successMsg = "Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất qua email.";
+			$('<p class="success"><span class="success-huge">' + thankYou + '</span> <br> ' + successMsg + '</p>').appendTo(self)
+			.hide().delay(300).fadeIn();
 
-		var formInput = self.serialize();
-		$.post(self.attr('action'),formInput, function(data){}); // end post
-}); // end submit
+			var formInput = self.serialize();
+			$.post(self.attr('action'), formInput, function(data){});
+		}
+  });
 
 $('.login').submit(function(e) {
       

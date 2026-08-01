@@ -214,7 +214,7 @@
                     <!-- Header Logo (Header Left) Start -->
                     <div class="header-logo col-auto">
                         <a href="index.php">
-                            <h3>Quản Trị Galaxy Studio</h3>
+                            <h3><?= __("Quản Trị Galaxy Studio") ?></h3>
                             <!-- <img src="assets/images/logo/logo.png" alt="">
                             <img src="assets/images/logo/logo-light.png" class="logo-light" alt=""> -->
                         </a>
@@ -240,18 +240,56 @@
                                 <ul class="header-notification-area">
 
                                     <!--Language-->
-                                    <li class="adomx-dropdown position-relative col-auto">
-                                        <a class="toggle" href="#"><img class="lang-flag" src="assets/images/flags/flag-6.jpg" alt="" style="border-radius: 5px"></a>
-
-                                        <!-- Dropdown -->
-
+                                    <li class="adomx-dropdown position-relative col-auto" style="display: flex; align-items: center; font-family: 'Inter', sans-serif;">
+                                        <a href="<?= get_lang_url('vi') ?>" style="color: <?= get_current_lang() === 'vi' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'vi' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 14px; margin-right: 5px;">VI</a>
+                                        <span style="color: rgba(255,255,255,0.3); margin: 0 5px;">|</span>
+                                        <a href="<?= get_lang_url('en') ?>" style="color: <?= get_current_lang() === 'en' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'en' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 14px; margin-left: 5px;">EN</a>
                                     </li>
                                     <!--User-->
                                     <li class="adomx-dropdown col-auto">
                                         <a class="toggle" href="#">
                                             <span class="user">
                                         <span class="avatar">
-                                            <img src="assets/images/avatar/avatar-2.jpg" alt="">
+                                            <?php
+                                            $role_val = isset($_SESSION['user1']['vai_tro']) ? (int)$_SESSION['user1']['vai_tro'] : -1;
+                                            $name_val = $_SESSION['user1']['name'] ?? 'User';
+                                            
+                                            // Determine gradient and initials
+                                            switch ($role_val) {
+                                                case 2: // ROLE_ADMIN_HE_THONG
+                                                    $grad_colors = ['#FF416C', '#FF4B2B'];
+                                                    $label_text = 'AD';
+                                                    break;
+                                                case 4: // ROLE_QUAN_LY_CUM
+                                                    $grad_colors = ['#8A2387', '#F27121'];
+                                                    $label_text = 'CR';
+                                                    break;
+                                                case 3: // ROLE_QUAN_LY_RAP
+                                                    $grad_colors = ['#4776E6', '#8E54E9'];
+                                                    $label_text = 'QL';
+                                                    break;
+                                                case 1: // ROLE_NHAN_VIEN
+                                                    $grad_colors = ['#11998e', '#38ef7d'];
+                                                    $label_text = 'NV';
+                                                    break;
+                                                default:
+                                                    $grad_colors = ['#757F9A', '#D7DDE8'];
+                                                    $label_text = !empty($name_val) ? mb_strtoupper(mb_substr($name_val, 0, 2, 'UTF-8'), 'UTF-8') : 'U';
+                                            }
+                                            
+                                            $svg_avatar = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" style="border-radius: 50%;">
+                                                <defs>
+                                                    <linearGradient id="grad-header-' . $role_val . '" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                        <stop offset="0%" stop-color="' . $grad_colors[0] . '" />
+                                                        <stop offset="100%" stop-color="' . $grad_colors[1] . '" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <circle cx="50" cy="50" r="50" fill="url(#grad-header-' . $role_val . ')" />
+                                                <text x="50" y="55" font-family="\'Inter\', sans-serif" font-size="36" font-weight="800" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">' . $label_text . '</text>
+                                            </svg>';
+                                            $avatar_data_uri = 'data:image/svg+xml;base64,' . base64_encode($svg_avatar);
+                                            ?>
+                                            <img src="<?= $avatar_data_uri ?>" alt="Avatar" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">
                                             <span class="status"></span>
                                             </span>
                                             </span>
@@ -273,7 +311,7 @@
                                                        </div>
                                                          <div class="body">
                                                              <ul>';
-                                                echo '<li><a href="index.php?act=dangxuat"><i class="zmdi zmdi-lock-open"></i>Đăng xuất</a></li>';
+                                                echo '<li><a href="index.php?act=dangxuat"><i class="zmdi zmdi-lock-open"></i>' . __("Đăng xuất") . '</a></li>';
                                                 echo '</ul></div></div>';
                                             }
                                             ?>

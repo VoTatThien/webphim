@@ -21,7 +21,7 @@ async function initializeFaceModels() {
     try {
         console.log('🔄 Loading face detection models...');
         
-        const MODEL_URL = '/webphim/Trang-admin/assets/models/';
+        const MODEL_URL = 'assets/models/';
         
         // Load models from CDN if local models not available
         try {
@@ -265,7 +265,7 @@ async function takeFaceSnapshot(action) {
         formData.append('photo', photoBase64);
         formData.append('user_id', USER_ID);
         
-        const response = await fetch('/webphim/Trang-admin/model/chamcong_detector.php', {
+        const response = await fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         });

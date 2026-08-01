@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+// Load multi-language support
+include_once "../Trang-nguoi-dung/model/lang.php";
+init_language();
+
 // Set timezone to Vietnam
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
@@ -146,6 +150,87 @@ if (isset($_GET['act']) && $_GET['act'] === 'api_lichchieu' && $_SERVER['REQUEST
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
+    exit;
+}
+
+// API: check F&B scan (placed at top to prevent HTML header pollution)
+if (isset($_GET['act']) && $_GET['act'] === 'scanve_fb_check') {
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    header('Content-Type: application/json; charset=utf-8');
+    
+    // Check session
+    if (!isset($_SESSION['user1'])) {
+        echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+        exit;
+    }
+    
+    // Check permission
+    include_once "./helpers/quyen.php";
+    $currentRole = (int)($_SESSION['user1']['vai_tro'] ?? -1);
+    if (!allowed_act('scanve_fb_check', $currentRole)) {
+        echo json_encode(['success' => false, 'message' => 'Không có quyền thực hiện chức năng này']);
+        exit;
+    }
+    
+    include_once "./model/pdo.php";
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    $ma_ve = trim($input['ma_ve'] ?? '');
+    
+    if (empty($ma_ve)) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu mã vé']);
+        exit;
+    }
+    
+    $ticket = pdo_query_one(
+        "SELECT v.*, phim.tieu_de, pc.name as ten_phong, rc.ten_rap, tk.name as user_name 
+         FROM ve v
+         LEFT JOIN phim ON phim.id = v.id_phim
+         LEFT JOIN khung_gio_chieu kgc ON kgc.id = v.id_thoi_gian_chieu
+         LEFT JOIN phongchieu pc ON pc.id = kgc.id_phong
+         LEFT JOIN rap_chieu rc ON rc.id = v.id_rap
+         LEFT JOIN taikhoan tk ON tk.id = v.id_tk
+         WHERE v.id = ? OR v.ma_ve = ?",
+        $ma_ve, $ma_ve
+    );
+    
+    if (!$ticket) {
+        echo json_encode(['success' => false, 'message' => 'Vé không tồn tại']);
+        exit;
+    }
+    
+    if (empty($ticket['combo'])) {
+        echo json_encode(['success' => false, 'message' => 'Vé này không mua kèm Combo F&B!']);
+        exit;
+    }
+    
+    if (!empty($ticket['fb_check_in_luc'])) {
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Combo này đã được nhận trước đó!', 
+            'details' => 'Đã nhận vào lúc: ' . $ticket['fb_check_in_luc']
+        ]);
+        exit;
+    }
+    
+    $id_nhanvien = (int)$_SESSION['user1']['id'];
+    pdo_execute(
+        "UPDATE ve SET fb_check_in_luc = NOW(), fb_check_in_boi = ? WHERE id = ?",
+        $id_nhanvien, $ticket['id']
+    );
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Nhận Combo F&B thành công!',
+        'ticket' => [
+            'id' => $ticket['id'],
+            'user_name' => htmlspecialchars($ticket['user_name']),
+            'combo' => htmlspecialchars($ticket['combo']),
+            'movie_title' => htmlspecialchars($ticket['tieu_de'])
+        ]
+    ]);
     exit;
 }
 
@@ -479,10 +564,16 @@ if (isset($_GET['act']) && $_GET['act'] === 'ql_lichlamviec_calendar' && $_SERVE
                 
                 // Kiểm tra trùng lặp
                 if (!llv_exists($id_nv, $id_rap, $ngay, $gio_bat_dau, $gio_ket_thuc)) {
-                    llv_insert($id_nv, $id_rap, $ngay, $gio_bat_dau, $gio_ket_thuc, 
-                              $ca_lam ? $ca_lam : null, $ghi_chu ? $ghi_chu : null);
-                    $success_count++;
-                    file_put_contents('debug_post.log', "Successfully inserted assignment for ID=$id_nv\n", FILE_APPEND);
+                    try {
+                        llv_insert($id_nv, $id_rap, $ngay, $gio_bat_dau, $gio_ket_thuc, 
+                                  $ca_lam ? $ca_lam : null, $ghi_chu ? $ghi_chu : null);
+                        $success_count++;
+                        file_put_contents('debug_post.log', "Successfully inserted assignment for ID=$id_nv\n", FILE_APPEND);
+                    } catch (Exception $e) {
+                        $errors[] = $e->getMessage();
+                        $error_count++;
+                        file_put_contents('debug_post.log', "Error inserting assignment for ID=$id_nv: " . $e->getMessage() . "\n", FILE_APPEND);
+                    }
                 } else {
                     $errors[] = "Ca làm việc đã tồn tại cho nhân viên ID $id_nv vào $ngay";
                     $error_count++;
@@ -837,6 +928,7 @@ if(isset($_SESSION['user1'])) {
     include "./model/khuyenmai.php";
     include "./model/doihoan.php";
     include "./model/chamcong.php";
+    include "./model/lienhe.php";
     include "./helpers/quyen.php";
     $loadphim = loadall_phim();
     $loadloai = loadall_loaiphim();
@@ -1368,15 +1460,26 @@ if(isset($_SESSION['user1'])) {
 
         $formatted = [];
         foreach ($history as $item) {
-            // Use ma_ve if available, otherwise use ID
             $ma_ve_display = !empty($item['ma_ve']) ? $item['ma_ve'] : 'VE' . str_pad($item['id'], 5, '0', STR_PAD_LEFT);
             
-            $formatted[] = [
-                'ma_ve' => htmlspecialchars($ma_ve_display),
-                'phim' => htmlspecialchars($item['phim']),
-                'check_in_time' => htmlspecialchars($item['check_in_luc']),
-                'staff' => htmlspecialchars($item['staff_name'])
-            ];
+            // Nếu có soát F&B hôm nay
+            if (!empty($item['fb_check_in_luc']) && date('Y-m-d', strtotime($item['fb_check_in_luc'])) === date('Y-m-d')) {
+                $formatted[] = [
+                    'ma_ve' => htmlspecialchars($ma_ve_display),
+                    'phim' => '🍿 Nhận Combo F&B: ' . htmlspecialchars($item['combo']),
+                    'check_in_time' => date('H:i:s', strtotime($item['fb_check_in_luc'])),
+                    'staff' => htmlspecialchars($item['fb_staff_name'] ?? 'N/A')
+                ];
+            }
+            // Nếu có soát vé xem phim hôm nay
+            if ($item['trang_thai'] == 4 && !empty($item['check_in_luc']) && date('Y-m-d', strtotime($item['check_in_luc'])) === date('Y-m-d')) {
+                $formatted[] = [
+                    'ma_ve' => htmlspecialchars($ma_ve_display),
+                    'phim' => '🎟️ Soát Vé: ' . htmlspecialchars($item['phim']),
+                    'check_in_time' => date('H:i:s', strtotime($item['check_in_luc'])),
+                    'staff' => htmlspecialchars($item['staff_name'] ?? 'N/A')
+                ];
+            }
         }
 
         echo json_encode(['success' => true, 'history' => $formatted]);
@@ -1580,7 +1683,14 @@ if(isset($_SESSION['user1'])) {
                             foreach ($shifts as $s) {
                                 $bd = trim($s['bd'] ?? ''); $kt = trim($s['kt'] ?? ''); $ca = trim($s['ca'] ?? ''); $ghi = trim($s['ghi'] ?? '');
                                 if ($bd!=='' && $kt!==''){
-                                    if (!llv_exists($id_nv, $id_rap, $ngay, $bd, $kt)) { llv_insert($id_nv, $id_rap, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); $added++; } else { $skip++; }
+                                    if (!llv_exists($id_nv, $id_rap, $ngay, $bd, $kt)) { 
+                                            try {
+                                                llv_insert($id_nv, $id_rap, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); 
+                                                $added++; 
+                                            } catch (Exception $e) {
+                                                $skip++;
+                                            }
+                                        } else { $skip++; }
                                 }
                             }
                         }
@@ -1616,8 +1726,12 @@ if(isset($_SESSION['user1'])) {
                     if (!$id_rap || $tu==='' || $den==='' || $ly_do==='') {
                         $error = "Vui lòng điền đầy đủ và đảm bảo tài khoản thuộc một rạp";
                     } else {
-                        np_insert($id_nv, $id_rap, $tu, $den, $ly_do);
-                        $success = "Đã gửi yêu cầu nghỉ phép";
+                        try {
+                            np_insert($id_nv, $id_rap, $tu, $den, $ly_do);
+                            $success = "Đã gửi yêu cầu nghỉ phép thành công!";
+                        } catch (Exception $e) {
+                            $error = $e->getMessage();
+                        }
                     }
                 }
                 $dnp_cua_toi = np_list_by_user($_SESSION['user1']['id']);
@@ -1882,7 +1996,14 @@ if(isset($_SESSION['user1'])) {
                                     $ca = trim($s['ca'] ?? '');
                                     $ghi = trim($s['ghi'] ?? '');
                                     if ($bd !== '' && $kt !== '') {
-                                        if (!llv_exists($id_nv, $id_rap, $ngay, $bd, $kt)) { llv_insert($id_nv, $id_rap, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); $added++; } else { $skip++; }
+                                        if (!llv_exists($id_nv, $id_rap, $ngay, $bd, $kt)) { 
+                                            try {
+                                                llv_insert($id_nv, $id_rap, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); 
+                                                $added++; 
+                                            } catch (Exception $e) {
+                                                $skip++;
+                                            }
+                                        } else { $skip++; }
                                     }
                                 }
                             }
@@ -1909,7 +2030,14 @@ if(isset($_SESSION['user1'])) {
                                         if (!empty($map[$dow])) {
                                             $ngay = date('Y-m-d',$t);
                                             foreach ($map[$dow] as $p) {
-                                                if (!llv_exists($id_nv, $id_rap, $ngay, $p['bd'], $p['kt'])) { llv_insert($id_nv, $id_rap, $ngay, $p['bd'], $p['kt'], ($p['ca']!==''?$p['ca']:null), ($p['ghi']!==''?$p['ghi']:null)); $added++; } else { $skip++; }
+                                                if (!llv_exists($id_nv, $id_rap, $ngay, $p['bd'], $p['kt'])) { 
+                                                    try {
+                                                        llv_insert($id_nv, $id_rap, $ngay, $p['bd'], $p['kt'], ($p['ca']!==''?$p['ca']:null), ($p['ghi']!==''?$p['ghi']:null)); 
+                                                        $added++; 
+                                                    } catch (Exception $e) {
+                                                        $skip++;
+                                                    }
+                                                } else { $skip++; }
                                             }
                                         }
                                     }
@@ -1933,7 +2061,14 @@ if(isset($_SESSION['user1'])) {
                         $ktm = (int)substr($kt,0,2)*60 + (int)substr($kt,3,2);
                         if ($bdm >= $ktm) { $error = "Giờ bắt đầu phải nhỏ hơn giờ kết thúc"; }
                         else {
-                            if (!llv_exists($id_nv, $id_rap, $ngay, $bd, $kt)) { llv_insert($id_nv, $id_rap, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); $success = "Đã tạo lịch"; }
+                            if (!llv_exists($id_nv, $id_rap, $ngay, $bd, $kt)) { 
+                                try {
+                                    llv_insert($id_nv, $id_rap, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); 
+                                    $success = "Đã tạo lịch"; 
+                                } catch (Exception $e) {
+                                    $error = $e->getMessage();
+                                }
+                            }
                             else { $error = "Lịch trùng với ca đã có"; }
                         }
                     } else { $error = "Thiếu thông tin hoặc sai định dạng"; }
@@ -1964,7 +2099,14 @@ if(isset($_SESSION['user1'])) {
                                 $dstr = date('Y-m-d',$t);
                                 foreach ($templates as $tp){
                                     if (in_array($dow, $tp['days'], true)){
-                                        if (!llv_exists($id_nv, $id_rap, $dstr, $tp['bd'], $tp['kt'])) { llv_insert($id_nv, $id_rap, $dstr, $tp['bd'], $tp['kt'], ($tp['name']!==''?$tp['name']:null), null); $added++; } else { $skip++; }
+                                        if (!llv_exists($id_nv, $id_rap, $dstr, $tp['bd'], $tp['kt'])) { 
+                                            try {
+                                                llv_insert($id_nv, $id_rap, $dstr, $tp['bd'], $tp['kt'], ($tp['name']!==''?$tp['name']:null), null); 
+                                                $added++; 
+                                            } catch (Exception $e) {
+                                                $skip++;
+                                            }
+                                        } else { $skip++; }
                                     }
                                 }
                             }
@@ -1983,7 +2125,14 @@ if(isset($_SESSION['user1'])) {
                     if ($id>0 && preg_match('/^\d{4}-\d{2}-\d{2}$/',$ngay) && preg_match('/^\d{2}:\d{2}$/',$bd) && preg_match('/^\d{2}:\d{2}$/',$kt)){
                         $bdm = (int)substr($bd,0,2)*60 + (int)substr($bd,3,2);
                         $ktm = (int)substr($kt,0,2)*60 + (int)substr($kt,3,2);
-                        if ($bdm < $ktm){ llv_update($id, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); $success = "Đã cập nhật"; }
+                        if ($bdm < $ktm){ 
+                            try {
+                                llv_update($id, $ngay, $bd, $kt, ($ca!==''?$ca:null), ($ghi!==''?$ghi:null)); 
+                                $success = "Đã cập nhật"; 
+                            } catch (Exception $e) {
+                                $error = $e->getMessage();
+                            }
+                        }
                         else { $error = "Giờ bắt đầu phải nhỏ hơn giờ kết thúc"; }
                     } else { $error = "Thiếu thông tin chỉnh sửa"; }
                 }
@@ -2245,6 +2394,8 @@ if(isset($_SESSION['user1'])) {
                     $email = trim($_POST['email'] ?? '');
                     $mo_ta = trim($_POST['mo_ta'] ?? '');
                     $trang_thai = isset($_POST['trang_thai']) ? (int)$_POST['trang_thai'] : 1;
+                    $latitude = isset($_POST['latitude']) && $_POST['latitude'] !== '' ? (float)$_POST['latitude'] : null;
+                    $longitude = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
                     $logo = null;
                     if (!empty($_FILES['logo']['name'])) {
                         $logo = $_FILES['logo']['name'];
@@ -2255,7 +2406,7 @@ if(isset($_SESSION['user1'])) {
                     if ($ten_rap === '' || $dia_chi === '' || $so_dien_thoai === '' || $email === '') {
                         $error = "Vui lòng điền đầy đủ thông tin";
                     } else {
-                        rap_insert($ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta, $logo, $trang_thai);
+                        rap_insert($ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta, $logo, $trang_thai, $latitude, $longitude);
                         $success = "Thêm rạp thành công";
                     }
                 }
@@ -2271,6 +2422,8 @@ if(isset($_SESSION['user1'])) {
                     $email = trim($_POST['email'] ?? '');
                     $mo_ta = trim($_POST['mo_ta'] ?? '');
                     $trang_thai = isset($_POST['trang_thai']) ? (int)$_POST['trang_thai'] : 1;
+                    $latitude = isset($_POST['latitude']) && $_POST['latitude'] !== '' ? (float)$_POST['latitude'] : null;
+                    $longitude = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
                     $logo = $rp['logo'] ?? null;
                     if (!empty($_FILES['logo']['name'])) {
                         $logo = $_FILES['logo']['name'];
@@ -2281,7 +2434,7 @@ if(isset($_SESSION['user1'])) {
                     if ($ten_rap === '' || $dia_chi === '' || $so_dien_thoai === '' || $email === '') {
                         $error = "Vui lòng điền đầy đủ thông tin";
                     } else {
-                        rap_update($id, $ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta, $logo, $trang_thai);
+                        rap_update($id, $ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta, $logo, $trang_thai, $latitude, $longitude);
                         $success = "Cập nhật thành công";
                         $rp = rap_one($id);
                     }
@@ -2594,13 +2747,14 @@ if(isset($_SESSION['user1'])) {
                     $ngay_chieu = $_POST['nc'];
                     if($id_phim ==''||$ngay_chieu ==''|| !$id_rap) {
                         $error = "vui lòng không để trống";
-                        $loadone_lc = loadone_lichchieu($id);
-                        include "./view/suatchieu/them.php";
-                        break;
                     }else{
-                    them_lichchieu($id_phim,$ngay_chieu,$id_rap);
-                        $suatc = "Thêm thành công";
-                }
+                        try {
+                            them_lichchieu($id_phim,$ngay_chieu,$id_rap);
+                            $suatc = "Thêm thành công";
+                        } catch (Exception $e) {
+                            $error = $e->getMessage();
+                        }
+                    }
                         }
                 $loadlich = $id_rap ? loadall_lichchieu_by_rap($id_rap) : loadall_lichchieu();
                 include "./view/suatchieu/them.php";
@@ -2622,10 +2776,16 @@ if(isset($_SESSION['user1'])) {
                           include "./view/suatchieu/sua.php";
                           break;
                          }else{
-                        sua_lichchieu($id, $id_phim,  $ngay_chieu, $id_rap);
-                        $suatc = "SỬA THÀNH CÔNG";
-
-                    }
+                            try {
+                                sua_lichchieu($id, $id_phim,  $ngay_chieu, $id_rap);
+                                $suatc = "SỬA THÀNH CÔNG";
+                            } catch (Exception $e) {
+                                $error = $e->getMessage();
+                                $loadone_lc = loadone_lichchieu($id);
+                                include "./view/suatchieu/sua.php";
+                                break;
+                            }
+                        }
                   
                   }
                   $loadlich = $id_rap ? loadall_lichchieu_by_rap($id_rap) : loadall_lichchieu();
@@ -2956,8 +3116,12 @@ if(isset($_SESSION['user1'])) {
                     } elseif ($ma_code==='') { 
                         $error = 'Mã khuyến mãi không được trống'; 
                     } else { 
-                        km_insert($ten, $ma_code, $loai_giam, $phan_tram_giam, $gia_tri_giam, $bat_dau ?: null, $ket_thuc ?: null, $trang_thai, $dieu_kien, $mo_ta, $id_rap_km); 
-                        $success='Đã thêm'; 
+                        try {
+                            km_insert($ten, $ma_code, $loai_giam, $phan_tram_giam, $gia_tri_giam, $bat_dau ?: null, $ket_thuc ?: null, $trang_thai, $dieu_kien, $mo_ta, $id_rap_km); 
+                            $success='Đã thêm khuyến mãi thành công!'; 
+                        } catch (Exception $e) {
+                            $error = $e->getMessage();
+                        }
                     }
                 }
                 include "./view/khuyenmai/them.php";
@@ -2984,8 +3148,13 @@ if(isset($_SESSION['user1'])) {
                         $id_rap_km = (int)($_SESSION['user1']['id_rap'] ?? 0);
                     }
                     
-                    km_update($id, $ten, $ma_code, $loai_giam, $phan_tram_giam, $gia_tri_giam, $bat_dau ?: null, $ket_thuc ?: null, $trang_thai, $dieu_kien, $mo_ta, $id_rap_km);
-                    $success = 'Đã cập nhật'; $row = km_one($id);
+                    try {
+                        km_update($id, $ten, $ma_code, $loai_giam, $phan_tram_giam, $gia_tri_giam, $bat_dau ?: null, $ket_thuc ?: null, $trang_thai, $dieu_kien, $mo_ta, $id_rap_km);
+                        $success = 'Đã cập nhật khuyến mãi thành công!'; 
+                        $row = km_one($id);
+                    } catch (Exception $e) {
+                        $error = $e->getMessage();
+                    }
                 }
                 include "./view/khuyenmai/sua.php";
                 break;
@@ -3007,6 +3176,36 @@ if(isset($_SESSION['user1'])) {
                          $listbl =  loadall_bl();
                          include "./view/feedblack/QLfeed.php";
                           break;
+            case "QLlienhe":
+                $trang_thai_filter = isset($_GET['status']) && $_GET['status'] !== '' ? (int)$_GET['status'] : null;
+                $list_lh = loadall_lienhe($trang_thai_filter);
+                include "./view/lienhe/QLlienhe.php";
+                break;
+            case "xoalienhe":
+                if (isset($_GET['id'])) {
+                    $id = (int)$_GET['id'];
+                    delete_lienhe($id);
+                }
+                echo "<script>window.location.href='index.php?act=QLlienhe';</script>";
+                exit;
+                break;
+            case "traloi_lienhe":
+                if (isset($_POST['id'])) {
+                    $id = (int)$_POST['id'];
+                    $tra_loi = trim($_POST['tra_loi'] ?? '');
+                    $trang_thai = (int)($_POST['trang_thai'] ?? 1);
+                    
+                    $lh = loadone_lienhe($id);
+                    if ($lh) {
+                        update_lienhe($id, $tra_loi, $trang_thai);
+                        if ($trang_thai == 1 && !empty($tra_loi)) {
+                            sendMailLienHeResponse($lh['email'], $lh['ten_khach'], $lh['tin_nhan'], $tra_loi);
+                        }
+                    }
+                }
+                echo "<script>window.location.href='index.php?act=QLlienhe';</script>";
+                exit;
+                break;
             case "thoigian":
                 $id_rap = (int)($_SESSION['user1']['id_rap'] ?? 0);
                 $loadkgc = loadall_khunggiochieu($id_rap);
@@ -3745,6 +3944,153 @@ if(isset($_SESSION['user1'])) {
                 $ds_admin = loadall_taikhoan_by_role(2);
                 include "./view/user/cum_admin.php";
                 break;
+
+            // 6. Quản lý sự cố (Incident Management)
+            case "QLsuco":
+                $user_id_rap = (int)($_SESSION['user1']['id_rap'] ?? 0);
+                $id_rap = $user_id_rap;
+                
+                if (isset($_POST['bao_su_co'])) {
+                    $id_phong = (int)($_POST['id_phong'] ?? 0);
+                    if ($id_phong > 0) {
+                        $room_row = pdo_query_one("SELECT id_rap FROM phongchieu WHERE id = ?", $id_phong);
+                        if ($room_row) {
+                            $id_rap = (int)$room_row['id_rap'];
+                        }
+                    } else {
+                        // general incident, get from POST if admin/cluster manager
+                        if ($id_rap <= 0) {
+                            $id_rap = (int)($_POST['id_rap'] ?? 0);
+                        }
+                    }
+                    
+                    $loai_su_co = $_POST['loai_su_co'] ?? 'khac';
+                    $vi_tri = trim($_POST['vi_tri'] ?? '');
+                    $mo_ta = trim($_POST['mo_ta'] ?? '');
+                    $muc_do = $_POST['muc_do'] ?? 'trung_binh';
+                    $nguoi_bao = (int)($_SESSION['user1']['id'] ?? 0);
+                    
+                    if ($loai_su_co === 'ghe_hong' && $id_phong <= 0) {
+                        $error_suco = "Ghế hỏng bắt buộc phải chọn phòng chiếu!";
+                    } elseif ($id_rap <= 0) {
+                        $error_suco = "Vui lòng chọn rạp chiếu xảy ra sự cố!";
+                    } elseif (empty($mo_ta)) {
+                        $error_suco = "Vui lòng nhập mô tả sự cố!";
+                    } else {
+                        pdo_execute(
+                            "INSERT INTO su_co (id_rap, id_phong, loai_su_co, vi_tri, mo_ta, muc_do, trang_thai, nguoi_bao) VALUES (?, ?, ?, ?, ?, ?, 'chua_xu_ly', ?)",
+                            $id_rap, $id_phong ? $id_phong : null, $loai_su_co, $vi_tri ? $vi_tri : null, $mo_ta, $muc_do, $nguoi_bao
+                        );
+                        $success_suco = "Báo cáo sự cố thành công!";
+                    }
+                }
+                
+                if (isset($_POST['cap_nhat_su_co'])) {
+                    $id_sc = (int)($_POST['id_sc'] ?? 0);
+                    $trang_thai = $_POST['trang_thai'] ?? 'chua_xu_ly';
+                    $ghi_chu_xu_ly = trim($_POST['ghi_chu_xu_ly'] ?? '');
+                    $nguoi_xu_ly = (int)($_SESSION['user1']['id'] ?? 0);
+                    $ngay_xu_ly = ($trang_thai === 'da_khac_phuc') ? date('Y-m-d H:i:s') : null;
+                    
+                    if ($id_sc > 0) {
+                        pdo_execute(
+                            "UPDATE su_co SET trang_thai = ?, ghi_chu_xu_ly = ?, nguoi_xu_ly = ?, ngay_xu_ly = ? WHERE id = ?",
+                            $trang_thai, $ghi_chu_xu_ly ? $ghi_chu_xu_ly : null, $nguoi_xu_ly, $ngay_xu_ly, $id_sc
+                        );
+                        $success_suco = "Cập nhật sự cố thành công!";
+                    }
+                }
+                
+                // Load incidents list
+                if ($user_id_rap > 0) {
+                    $ds_su_co = pdo_query("SELECT sc.*, pc.name as ten_phong, r.ten_rap, tk1.name as nguoi_bao_ten, tk2.name as nguoi_xu_ly_ten FROM su_co sc LEFT JOIN phongchieu pc ON pc.id = sc.id_phong LEFT JOIN rap_chieu r ON r.id = sc.id_rap LEFT JOIN taikhoan tk1 ON tk1.id = sc.nguoi_bao LEFT JOIN taikhoan tk2 ON tk2.id = sc.nguoi_xu_ly WHERE sc.id_rap = ? ORDER BY sc.id DESC", $user_id_rap);
+                    $ds_phong = pdo_query("SELECT pc.id, pc.name, pc.id_rap, r.ten_rap FROM phongchieu pc JOIN rap_chieu r ON pc.id_rap = r.id WHERE pc.id_rap = ?", $user_id_rap);
+                } else {
+                    $ds_su_co = pdo_query("SELECT sc.*, pc.name as ten_phong, r.ten_rap, tk1.name as nguoi_bao_ten, tk2.name as nguoi_xu_ly_ten FROM su_co sc LEFT JOIN phongchieu pc ON pc.id = sc.id_phong LEFT JOIN rap_chieu r ON r.id = sc.id_rap LEFT JOIN taikhoan tk1 ON tk1.id = sc.nguoi_bao LEFT JOIN taikhoan tk2 ON tk2.id = sc.nguoi_xu_ly ORDER BY sc.id DESC");
+                    $ds_phong = pdo_query("SELECT pc.id, pc.name, pc.id_rap, r.ten_rap FROM phongchieu pc JOIN rap_chieu r ON pc.id_rap = r.id");
+                }
+                include "./view/quanly/QLsuco.php";
+                break;
+                
+            // 7. Dashboard phân tích (Advanced Analytics)
+            case "baocao_analytics":
+                $id_rap = (int)($_SESSION['user1']['id_rap'] ?? 0);
+                include "./view/quanly/dashboard_analytics.php";
+                break;
+                
+            // 8. Autopilot Showtimes
+            case "autopilot_showtimes":
+                $id_rap = (int)($_SESSION['user1']['id_rap'] ?? 0);
+                include "./view/quanly/autopilot_showtimes.php";
+                break;
+                
+            // API: check F&B scan
+            case "scanve_fb_check":
+                while (ob_get_level()) {
+                    ob_end_clean();
+                }
+                header('Content-Type: application/json; charset=utf-8');
+                if (!isset($_SESSION['user1'])) {
+                    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+                    exit;
+                }
+                
+                $input = json_decode(file_get_contents('php://input'), true);
+                $ma_ve = trim($input['ma_ve'] ?? '');
+                
+                if (empty($ma_ve)) {
+                    echo json_encode(['success' => false, 'message' => 'Thiếu mã vé']);
+                    exit;
+                }
+                
+                $ticket = pdo_query_one(
+                    "SELECT v.*, phim.tieu_de, pc.name as ten_phong, rc.ten_rap, tk.name as user_name 
+                     FROM ve v
+                     LEFT JOIN phim ON phim.id = v.id_phim
+                     LEFT JOIN khung_gio_chieu kgc ON kgc.id = v.id_thoi_gian_chieu
+                     LEFT JOIN phongchieu pc ON pc.id = kgc.id_phong
+                     LEFT JOIN rap_chieu rc ON rc.id = v.id_rap
+                     LEFT JOIN taikhoan tk ON tk.id = v.id_tk
+                     WHERE v.id = ? OR v.ma_ve = ?",
+                    $ma_ve, $ma_ve
+                );
+                
+                if (!$ticket) {
+                    echo json_encode(['success' => false, 'message' => 'Vé không tồn tại']);
+                    exit;
+                }
+                
+                if (empty($ticket['combo'])) {
+                    echo json_encode(['success' => false, 'message' => 'Vé này không mua kèm Combo F&B!']);
+                    exit;
+                }
+                
+                if (!empty($ticket['fb_check_in_luc'])) {
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => 'Combo này đã được nhận trước đó!', 
+                        'details' => 'Đã nhận vào lúc: ' . $ticket['fb_check_in_luc']
+                    ]);
+                    exit;
+                }
+                
+                $id_nhanvien = (int)$_SESSION['user1']['id'];
+                pdo_execute(
+                    "UPDATE ve SET fb_check_in_luc = NOW(), fb_check_in_boi = ? WHERE id = ?",
+                    $id_nhanvien, $ticket['id']
+                );
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Nhận Combo F&B thành công!',
+                    'ticket' => [
+                        'id' => $ticket['id'],
+                        'user_name' => htmlspecialchars($ticket['user_name']),
+                        'combo' => htmlspecialchars($ticket['combo']),
+                        'movie_title' => htmlspecialchars($ticket['tieu_de'])
+                    ]
+                ]);
+                exit;
         }
         }
     } else {

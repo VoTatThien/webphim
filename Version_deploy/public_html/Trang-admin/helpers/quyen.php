@@ -98,6 +98,7 @@ if (!function_exists('permission_map')) {
         'scanve_new'     => [ROLE_NHAN_VIEN, ROLE_QUAN_LY_RAP], // Modern QR scanner
         'scanve_simple'  => [ROLE_NHAN_VIEN, ROLE_QUAN_LY_RAP], // Simple native camera QR scanner
         'scanve_history' => [ROLE_NHAN_VIEN, ROLE_QUAN_LY_RAP], // Check-in history API
+        'scanve_fb_check'=> [ROLE_NHAN_VIEN, ROLE_QUAN_LY_RAP],
         'nv_datve'       => [ROLE_NHAN_VIEN],
         'nv_baocao'      => [ROLE_NHAN_VIEN, ROLE_QUAN_LY_RAP],
         'nv_xeplich'     => [ROLE_NHAN_VIEN],
@@ -136,6 +137,11 @@ if (!function_exists('permission_map')) {
 
         // Cấu hình website
         'cauhinh'    => [ROLE_ADMIN_HE_THONG],
+
+        // Quản lý liên hệ / Contact feedback
+        'QLlienhe'      => [ROLE_ADMIN_HE_THONG, ROLE_QUAN_LY_CUM, ROLE_QUAN_LY_RAP],
+        'xoalienhe'     => [ROLE_ADMIN_HE_THONG, ROLE_QUAN_LY_CUM],
+        'traloi_lienhe' => [ROLE_ADMIN_HE_THONG, ROLE_QUAN_LY_CUM, ROLE_QUAN_LY_RAP],
 
         // Doanh thu: Admin hệ thống và Quản lí cụm rạp
         'DTdh'    => [ROLE_ADMIN_HE_THONG, ROLE_QUAN_LY_CUM],

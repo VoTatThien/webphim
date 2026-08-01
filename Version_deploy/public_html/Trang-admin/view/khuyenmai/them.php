@@ -68,31 +68,84 @@
     </form>
     
     <script>
-    // Toggle hiển thị field theo loại giảm giá
-    document.getElementById('loai_giam').addEventListener('change', function() {
-        const loai = this.value;
+    document.addEventListener('DOMContentLoaded', function() {
+        const loaiGiam = document.getElementById('loai_giam');
         const fieldPhanTram = document.getElementById('field_phan_tram');
         const fieldTienMat = document.getElementById('field_tien_mat');
-        
-        if (loai === 'phan_tram') {
-            fieldPhanTram.style.display = 'block';
-            fieldTienMat.style.display = 'none';
-            fieldPhanTram.querySelector('input').required = true;
-            fieldTienMat.querySelector('input').required = false;
-        } else {
-            fieldPhanTram.style.display = 'none';
-            fieldTienMat.style.display = 'block';
-            fieldPhanTram.querySelector('input').required = false;
-            fieldTienMat.querySelector('input').required = true;
-        }
-    });
-    
-    // Auto uppercase mã khuyến mãi
-    const maKMInput = document.querySelector('input[name="ma_khuyen_mai"]');
-    if (maKMInput) {
-        maKMInput.addEventListener('input', function() {
-            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const batDauInput = document.querySelector('input[name="ngay_bat_dau"]');
+        const ketThucInput = document.querySelector('input[name="ngay_ket_thuc"]');
+        const form = document.querySelector('form');
+        const phanTramInput = fieldPhanTram.querySelector('input');
+        const tienMatInput = fieldTienMat.querySelector('input');
+
+        // Set min dates to today
+        const todayStr = new Date().toISOString().split('T')[0];
+        batDauInput.min = todayStr;
+        ketThucInput.min = todayStr;
+
+        // Toggle hiển thị field theo loại giảm giá
+        loaiGiam.addEventListener('change', function() {
+            const loai = this.value;
+            if (loai === 'phan_tram') {
+                fieldPhanTram.style.display = 'block';
+                fieldTienMat.style.display = 'none';
+                phanTramInput.required = true;
+                tienMatInput.required = false;
+            } else {
+                fieldPhanTram.style.display = 'none';
+                fieldTienMat.style.display = 'block';
+                phanTramInput.required = false;
+                tienMatInput.required = true;
+            }
         });
-    }
+        // Run initial configuration
+        loaiGiam.dispatchEvent(new Event('change'));
+        
+        // Auto uppercase mã khuyến mãi và lọc ký tự hợp lệ (A-Z, 0-9, -, _)
+        const maKMInput = document.querySelector('input[name="ma_khuyen_mai"]');
+        if (maKMInput) {
+            maKMInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+            });
+        }
+
+        // Sync min date of ketThucInput with batDauInput
+        batDauInput.addEventListener('change', function() {
+            if (batDauInput.value) {
+                ketThucInput.min = batDauInput.value;
+                if (ketThucInput.value && ketThucInput.value < batDauInput.value) {
+                    ketThucInput.value = batDauInput.value;
+                }
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            const tuVal = batDauInput.value;
+            const denVal = ketThucInput.value;
+            const loai = loaiGiam.value;
+
+            if (tuVal && denVal && denVal < tuVal) {
+                e.preventDefault();
+                alert("Ngày kết thúc khuyến mãi phải sau hoặc bằng ngày bắt đầu.");
+                return;
+            }
+
+            if (loai === 'phan_tram') {
+                const pct = parseFloat(phanTramInput.value);
+                if (isNaN(pct) || pct < 1 || pct > 100) {
+                    e.preventDefault();
+                    alert("Phần trăm giảm giá phải nằm trong khoảng từ 1 đến 100.");
+                    return;
+                }
+            } else {
+                const val = parseFloat(tienMatInput.value);
+                if (isNaN(val) || val <= 0) {
+                    e.preventDefault();
+                    alert("Số tiền giảm giá bằng tiền mặt phải lớn hơn 0.");
+                    return;
+                }
+            }
+        });
+    });
     </script>
 </div>

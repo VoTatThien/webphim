@@ -61,36 +61,19 @@ include "view/search.php";
     }
     
     .points-card {
-        background: linear-gradient(135deg, #abafc3ff 0%, #ae9bc1ff 100%);
+        background: #1c181c;
+        border: 1px solid #363033;
+        border-left: 4px solid #ffd564;
         padding: 25px;
         border-radius: 15px;
         color: white;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .points-card::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(207, 192, 192, 0.1) 0%, transparent 70%);
-        animation: pulse 3s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 0.8; }
     }
     
     .points-card h3 {
         font-size: 13px;
         font-weight: 500;
         margin-bottom: 10px;
-        opacity: 0.9;
+        color: #a59b9f;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
@@ -99,19 +82,21 @@ include "view/search.php";
         font-size: 2.5rem;
         font-weight: bold;
         margin-bottom: 5px;
+        color: #ffd564;
     }
     
     .points-card .subtitle {
         font-size: 11px;
-        opacity: 0.8;
+        color: #a59b9f;
     }
     
     .tier-card {
-        background: white;
+        background: #1c181c;
+        border: 1px solid #363033;
         padding: 30px;
         border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         margin-bottom: 30px;
+        color: white;
     }
     
     .tier-badge {
@@ -134,12 +119,13 @@ include "view/search.php";
         justify-content: space-between;
         margin-bottom: 10px;
         font-size: 13px;
-        color: #666;
+        color: #a59b9f;
     }
     
     .progress-bar-container {
         height: 30px;
-        background: #f0f0f0;
+        background: #151215;
+        border: 1px solid #363033;
         border-radius: 15px;
         overflow: hidden;
         position: relative;
@@ -147,12 +133,12 @@ include "view/search.php";
     
     .progress-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, #b1b3bfff 0%, #a08eb1ff 100%);
+        background: #ffd564;
+        color: #4c4145;
         border-radius: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
         font-weight: bold;
         font-size: 0.85rem;
         transition: width 1s ease-in-out;
@@ -170,7 +156,8 @@ include "view/search.php";
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #f8f9fa;
+        background: #232023;
+        border: 1px solid #363033;
         border-radius: 10px;
         font-size: 13px;
     }
@@ -180,10 +167,11 @@ include "view/search.php";
     }
     
     .history-container {
-        background: white;
+        background: #1c181c;
+        border: 1px solid #363033;
         padding: 30px;
         border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        color: white;
     }
     
     .history-header {
@@ -192,18 +180,20 @@ include "view/search.php";
         align-items: center;
         margin-bottom: 20px;
         padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
+        border-bottom: 2px solid #363033;
     }
     
     .history-header h2 {
-        font-size: 15px;
+        font-size: 16px;
         margin: 0;
-        color: #333;
+        color: #ffd564;
     }
     
     .filter-dropdown {
         padding: 8px 15px;
-        border: 1px solid #ddd;
+        background: #1c181c;
+        border: 1px solid #363033;
+        color: white;
         border-radius: 8px;
         font-size: 13px;
         cursor: pointer;
@@ -220,25 +210,26 @@ include "view/search.php";
         text-align: left;
         font-size: 12px;
         font-weight: 600;
-        color: #666;
+        color: #a59b9f;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
     .history-table tbody tr {
-        background: #f8f9fa;
+        background: #232023;
         transition: all 0.3s ease;
     }
     
     .history-table tbody tr:hover {
-        background: #e9ecef;
+        background: #2e292e;
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     
     .history-table tbody td {
         padding: 15px 12px;
         font-size: 12px;
+        color: #e5e0e3;
     }
     
     .history-table tbody tr td:first-child {
@@ -258,13 +249,15 @@ include "view/search.php";
     }
     
     .type-cong {
-        background: #d4edda;
-        color: #155724;
+        background: #1c2e24;
+        color: #28a745;
+        border: 1px solid #28a74530;
     }
     
     .type-tru {
-        background: #f8d7da;
-        color: #721c24;
+        background: #2d1818;
+        color: #dc3545;
+        border: 1px solid #dc354530;
     }
     
     .points-change {
@@ -283,7 +276,7 @@ include "view/search.php";
     .empty-state {
         text-align: center;
         padding: 60px 20px;
-        color: #999;
+        color: #a59b9f;
     }
     
     .empty-state i {
@@ -321,7 +314,7 @@ include "view/search.php";
         .history-table tbody td::before {
             content: attr(data-label);
             font-weight: bold;
-            color: #666;
+            color: #a59b9f;
         }
     }
 </style>
@@ -330,44 +323,44 @@ include "view/search.php";
     <!-- Tổng quan điểm -->
     <div class="points-summary">
         <div class="points-card">
-            <h3>💎 Điểm hiện có</h3>
+            <h3>💎 <?= __('Điểm hiện có') ?></h3>
             <div class="value"><?= number_format($user_info['diem_tich_luy']) ?></div>
-            <div class="subtitle">Có thể sử dụng</div>
+            <div class="subtitle"><?= __('Có thể sử dụng') ?></div>
         </div>
         
-        <div class="points-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <h3>🏆 Tổng điểm tích luỹ</h3>
-            <div class="value"><?= number_format($user_info['tong_diem_tich_luy']) ?></div>
-            <div class="subtitle">Từ trước đến nay</div>
+        <div class="points-card" style="border-left-color: #fe505a;">
+            <h3>🏆 <?= __('Tổng điểm tích luỹ') ?></h3>
+            <div class="value" style="color: #fe505a;"><?= number_format($user_info['tong_diem_tich_luy']) ?></div>
+            <div class="subtitle"><?= __('Từ trước đến nay') ?></div>
         </div>
         
-        <div class="points-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <h3>⭐ Hệ số nhân điểm</h3>
-            <div class="value"><?= $hang_hien_tai['ti_le_tich_diem'] ?>x</div>
-            <div class="subtitle">Hạng <?= $hang_hien_tai['ten_hang'] ?></div>
+        <div class="points-card" style="border-left-color: #10b981;">
+            <h3>⭐ <?= __('Hệ số nhân điểm') ?></h3>
+            <div class="value" style="color: #10b981;"><?= $hang_hien_tai['ti_le_tich_diem'] ?>x</div>
+            <div class="subtitle"><?= __('Hạng') ?> <?= __($hang_hien_tai['ten_hang']) ?></div>
         </div>
     </div>
     
     <!-- Thông tin hạng thành viên -->
     <div class="tier-card">
         <div class="tier-badge" style="background-color: <?= $hang_hien_tai['mau_sac'] ?>; color: #fff;">
-            <span style="font-size: 1.5rem;">👑</span>
-            <span>Hạng <?= $hang_hien_tai['ten_hang'] ?></span>
+            <i class="fa fa-trophy" style="color: #ffd564; font-size: 1.5rem;"></i>
+            <span><?= __('Hạng') ?> <?= __($hang_hien_tai['ten_hang']) ?></span>
         </div>
         
         <div class="tier-benefits">
             <div class="benefit-item">
-                <span class="benefit-icon">✨</span>
-                <span>Tích điểm x<?= $hang_hien_tai['ti_le_tich_diem'] ?></span>
+                <span class="benefit-icon" style="color: #ffd564;"><i class="fa fa-star"></i></span>
+                <span><?= __('Tích điểm') ?> x<?= $hang_hien_tai['ti_le_tich_diem'] ?></span>
             </div>
             <div class="benefit-item">
-                <span class="benefit-icon">🎁</span>
-                <span>Giảm giá <?= $hang_hien_tai['ti_le_giam_gia'] ?>%</span>
+                <span class="benefit-icon" style="color: #ffd564;"><i class="fa fa-gift"></i></span>
+                <span><?= __('Giảm giá') ?> <?= $hang_hien_tai['ti_le_giam_gia'] ?>%</span>
             </div>
             <?php if ($hang_hien_tai['uu_dai_khac']): ?>
             <div class="benefit-item">
-                <span class="benefit-icon">🌟</span>
-                <span><?= $hang_hien_tai['uu_dai_khac'] ?></span>
+                <span class="benefit-icon" style="color: #ffd564;"><i class="fa fa-star"></i></span>
+                <span><?= __($hang_hien_tai['uu_dai_khac']) ?></span>
             </div>
             <?php endif; ?>
         </div>
@@ -375,8 +368,8 @@ include "view/search.php";
         <?php if ($hang_tiep_theo): ?>
         <div class="tier-progress">
             <div class="tier-progress-label">
-                <span><strong>Tiến độ lên hạng <?= $hang_tiep_theo['ten_hang'] ?></strong></span>
-                <span>Còn <strong><?= number_format($diem_can_them) ?></strong> điểm</span>
+                <span><strong><?= __('Tiến độ lên hạng') ?> <?= __($hang_tiep_theo['ten_hang']) ?></strong></span>
+                <span><?= __('Còn') ?> <strong><?= number_format($diem_can_them) ?></strong> <?= __('điểm') ?></span>
             </div>
             <div class="progress-bar-container">
                 <div class="progress-bar-fill" style="width: <?= min($phan_tram_tien_do, 100) ?>%">
@@ -386,8 +379,8 @@ include "view/search.php";
         </div>
         <?php else: ?>
         <div class="tier-progress">
-            <div style="text-align: center; padding: 20px; color: #FFD700; font-weight: bold; font-size: 1.1rem;">
-                🎉 Chúc mừng! Bạn đã đạt hạng cao nhất!
+            <div style="text-align: center; padding: 20px; color: #ffd564; font-weight: bold; font-size: 1.1rem;">
+                <i class="fa fa-check-circle"></i> <?= __('Chúc mừng! Bạn đã đạt hạng cao nhất!') ?>
             </div>
         </div>
         <?php endif; ?>
@@ -396,61 +389,61 @@ include "view/search.php";
     <!-- Lịch sử giao dịch -->
     <div class="history-container">
         <div class="history-header">
-            <h2>📜 Lịch sử giao dịch</h2>
+            <h2><i class="fa fa-history" style="color:#ffd564; margin-right:8px;"></i> <?= __('Lịch sử giao dịch') ?></h2>
             <select class="filter-dropdown" onchange="window.location.href='index.php?act=lich_su_diem&limit=' + this.value">
-                <option value="50" <?= $limit == 50 ? 'selected' : '' ?>>50 giao dịch gần nhất</option>
-                <option value="100" <?= $limit == 100 ? 'selected' : '' ?>>100 giao dịch gần nhất</option>
-                <option value="200" <?= $limit == 200 ? 'selected' : '' ?>>200 giao dịch gần nhất</option>
-                <option value="999999" <?= $limit == 999999 ? 'selected' : '' ?>>Tất cả</option>
+                <option value="50" <?= $limit == 50 ? 'selected' : '' ?>><?= __('50 giao dịch gần nhất') ?></option>
+                <option value="100" <?= $limit == 100 ? 'selected' : '' ?>><?= __('100 giao dịch gần nhất') ?></option>
+                <option value="200" <?= $limit == 200 ? 'selected' : '' ?>><?= __('200 giao dịch gần nhất') ?></option>
+                <option value="999999" <?= $limit == 999999 ? 'selected' : '' ?>><?= __('Tất cả') ?></option>
             </select>
         </div>
         
         <?php if (empty($lich_su)): ?>
         <div class="empty-state">
-            <i class="fa fa-history"></i>
-            <h3>Chưa có lịch sử giao dịch</h3>
-            <p>Hãy đặt vé xem phim để bắt đầu tích điểm nhé!</p>
+            <i class="fa fa-history" style="font-size:50px; color:#4a3e43; display:block;"></i>
+            <h3><?= __('Chưa có lịch sử giao dịch') ?></h3>
+            <p><?= __('Hãy đặt vé xem phim để bắt đầu tích điểm nhé!') ?></p>
         </div>
         <?php else: ?>
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>Ngày giờ</th>
-                    <th>Loại giao dịch</th>
-                    <th>Nội dung</th>
-                    <th>Điểm thay đổi</th>
-                    <th>Mã vé</th>
+                    <th><?= __('Ngày giờ') ?></th>
+                    <th><?= __('Loại giao dịch') ?></th>
+                    <th><?= __('Nội dung') ?></th>
+                    <th><?= __('Điểm thay đổi') ?></th>
+                    <th><?= __('Mã vé') ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($lich_su as $gd): ?>
                 <tr>
-                    <td data-label="Ngày giờ">
+                    <td data-label="<?= __('Ngày giờ') ?>">
                         <div style="line-height: 1.4;">
                             <div><?= date('d/m/Y', strtotime($gd['ngay_tao'])) ?></div>
                             <div style="font-size: 0.8rem; color: #999;"><?= date('H:i:s', strtotime($gd['ngay_tao'])) ?></div>
                         </div>
                     </td>
-                    <td data-label="Loại">
+                    <td data-label="<?= __('Loại') ?>">
                         <?php if ($gd['loai_giao_dich'] == 'cong'): ?>
-                            <span class="transaction-type type-cong">➕ Cộng điểm</span>
+                            <span class="transaction-type type-cong"><i class="fa fa-plus-circle"></i> <?= __('Cộng điểm') ?></span>
                         <?php else: ?>
-                            <span class="transaction-type type-tru">➖ Trừ điểm</span>
+                            <span class="transaction-type type-tru"><i class="fa fa-minus-circle"></i> <?= __('Trừ điểm') ?></span>
                         <?php endif; ?>
                     </td>
-                    <td data-label="Nội dung">
-                        <?= htmlspecialchars($gd['ly_do']) ?>
+                    <td data-label="<?= __('Nội dung') ?>">
+                        <?= htmlspecialchars(__($gd['ly_do'])) ?>
                     </td>
-                    <td data-label="Điểm">
+                    <td data-label="<?= __('Điểm') ?>">
                         <?php if ($gd['loai_giao_dich'] == 'cong'): ?>
                             <span class="points-change points-add">+<?= number_format($gd['so_diem']) ?></span>
                         <?php else: ?>
                             <span class="points-change points-subtract">-<?= number_format($gd['so_diem']) ?></span>
                         <?php endif; ?>
                     </td>
-                    <td data-label="Mã vé">
+                    <td data-label="<?= __('Mã vé') ?>">
                         <?php if ($gd['id_ve']): ?>
-                            <a href="index.php?act=chi_tiet_ve&id=<?= $gd['id_ve'] ?>" style="color: #667eea; text-decoration: none;">
+                            <a href="index.php?act=ctve&id=<?= $gd['id_ve'] ?>" style="color: #ffd564; text-decoration: none;">
                                 #<?= $gd['id_ve'] ?>
                             </a>
                         <?php else: ?>

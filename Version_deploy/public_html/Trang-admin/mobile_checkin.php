@@ -5,7 +5,7 @@
  * Trang check-in vé bằng camera điện thoại
  * Sử dụng QR code hoặc barcode scanner
  * 
- * Truy cập: http://localhost/webphim/Trang-admin/mobile_checkin.php
+ * Truy cập: http://localhost/webphim_hung/Trang-admin/mobile_checkin.php
  * 
  * Features:
  * - Quét QR code từ vé
@@ -611,34 +611,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if (video.videoWidth === 0 || video.videoHeight === 0) return;
 
                 try {
+                    let qrData = null;
+
+                    // 1. Thử dùng BarcodeDetector API nếu được hỗ trợ
                     if (barcodeDetector) {
-                        // Dùng BarcodeDetector API
-                        const barcodes = await barcodeDetector.detect(video);
-                        if (barcodes && barcodes.length > 0) {
-                            const qrData = barcodes[0].rawValue;
-                            stopCamera();
-                            checkTicket(qrData);
-                            return;
+                        try {
+                            const barcodes = await barcodeDetector.detect(video);
+                            if (barcodes && barcodes.length > 0) {
+                                qrData = barcodes[0].rawValue;
+                                console.log('✅ QR detected (BarcodeDetector):', qrData);
+                            }
+                        } catch (e) {
+                            console.warn('BarcodeDetector.detect error, falling back to jsQR:', e);
                         }
-                    } else {
-                        // Fallback: Canvas + jsQR
+                    }
+
+                    // 2. Nếu BarcodeDetector không phát hiện được hoặc bị lỗi, dùng fallback jsQR
+                    if (!qrData) {
                         const canvas = document.createElement('canvas');
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
 
-                        if (canvas.width === 0) return;
+                        if (canvas.width > 0 && canvas.height > 0) {
+                            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                            if (ctx) {
+                                ctx.drawImage(video, 0, 0);
+                                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                        if (!ctx) return;
+                                let code = null;
+                                if (typeof jsQR !== 'undefined') {
+                                    code = jsQR(imageData.data, imageData.width, imageData.height, {
+                                        inversionAttempts: 'attemptBoth'
+                                    });
+                                }
 
-                        ctx.drawImage(video, 0, 0);
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                                if (!code && typeof jsQR !== 'undefined') {
+                                    const cropSize = Math.min(canvas.width, canvas.height) * 0.7;
+                                    const startX = (canvas.width - cropSize) / 2;
+                                    const startY = (canvas.height - cropSize) / 2;
 
-                        const code = jsQR(imageData.data, canvas.width, canvas.height);
-                        if (code) {
-                            stopCamera();
-                            checkTicket(code.data);
+                                    const croppedData = ctx.getImageData(startX, startY, cropSize, cropSize);
+                                    code = jsQR(croppedData.data, cropSize, cropSize, {
+                                        inversionAttempts: 'attemptBoth'
+                                    });
+                                }
+
+                                if (code && code.data) {
+                                    qrData = code.data;
+                                    console.log('✅ QR detected (Canvas/jsQR):', qrData);
+                                }
+                            }
                         }
+                    }
+
+                    // 3. Nếu tìm thấy dữ liệu QR
+                    if (qrData) {
+                        stopCamera();
+                        checkTicket(qrData);
+                        return;
                     }
                 } catch (err) {
                     console.error('Scan error:', err);

@@ -73,32 +73,32 @@ if (!isset($step)) $step = 1;
 }
 </style>
 <div class="forgot-container">
-    <h2>Quên mật khẩu</h2>
+    <h2><?= __('Quên mật khẩu') ?></h2>
     <?php if (isset($error) && $error) { ?>
-        <div class="msg error"> <?= $error ?> </div>
+        <div class="msg error"> <?= __($error) ?> </div>
     <?php } ?>
     <?php if (isset($success) && $success) { ?>
-        <div class="msg success"> <?= $success ?> </div>
+        <div class="msg success"> <?= __($success) ?> </div>
     <?php } ?>
     <?php if ($step == 1) { ?>
         <form method="post">
-            <label for="email">Nhập email đã đăng ký:</label>
+            <label for="email"><?= __('Nhập email đã đăng ký:') ?></label>
             <input type="email" name="email" required autocomplete="email">
-            <button type="submit" name="send_otp">Gửi mã OTP</button>
+            <button type="submit" name="send_otp"><?= __('Gửi mã OTP') ?></button>
         </form>
     <?php } elseif ($step == 2) { ?>
         <form method="post">
-            <label for="otp">Nhập mã OTP đã gửi về email:</label>
+            <label for="otp"><?= __('Nhập mã OTP đã gửi về email:') ?></label>
             <input type="text" name="otp" maxlength="6" required autocomplete="one-time-code">
-            <button type="submit" name="verify_otp">Xác nhận OTP</button>
+            <button type="submit" name="verify_otp"><?= __('Xác nhận OTP') ?></button>
         </form>
     <?php } elseif ($step == 3) { ?>
         <form method="post">
-            <label for="pass1">Nhập mật khẩu mới:</label>
+            <label for="pass1"><?= __('Nhập mật khẩu mới:') ?></label>
             <input type="password" name="pass1" required autocomplete="new-password">
-            <label for="pass2">Nhập lại mật khẩu mới:</label>
+            <label for="pass2"><?= __('Nhập lại mật khẩu mới:') ?></label>
             <input type="password" name="pass2" required autocomplete="new-password">
-            <button type="submit" name="reset_pass">Đổi mật khẩu</button>
+            <button type="submit" name="reset_pass"><?= __('Đổi mật khẩu') ?></button>
         </form>
     <?php } ?>
 </div>

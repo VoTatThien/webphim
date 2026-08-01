@@ -48,7 +48,8 @@ include "./view/home/sideheader.php";
                    
                     <div class="col-lg-6 col-12 mb-30">
                         <span class="title">Ngày chiếu</span><br>
-                        <input class="form-control" type="date"  name="nc"></div><br>
+                        <input class="form-control" type="date" name="nc" min="<?= date('Y-m-d') ?>" required />
+                    </div>
                     <!-- <div class="col-lg-6 col-12 mb-10">
                         <span class="title">Thời gian chiếu</span><br>
                         <input class="form-control" type="time"  name="tgc" >

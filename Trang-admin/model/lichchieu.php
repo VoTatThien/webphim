@@ -22,12 +22,34 @@ function loadall_lichchieu_by_rap($id_rap){
 }
 
 function them_lichchieu($id_phim, $ngay_chieu, $id_rap){
+    $today = date('Y-m-d');
+    if ($ngay_chieu < $today) {
+        throw new Exception("Ngày chiếu không được là ngày đã qua (phải từ hôm nay trở đi).");
+    }
+
+    // Kiểm tra trùng lịch chiếu
+    $exists = pdo_query_one("SELECT id FROM lichchieu WHERE id_phim = ? AND ngay_chieu = ? AND id_rap = ?", $id_phim, $ngay_chieu, $id_rap);
+    if ($exists) {
+        throw new Exception("Lịch chiếu cho phim này vào ngày {$ngay_chieu} đã tồn tại tại rạp này.");
+    }
+
     // Đặt trạng thái mặc định rõ ràng để tránh phụ thuộc DEFAULT của DB
     $sql = "INSERT INTO lichchieu(id_phim,ngay_chieu,id_rap,trang_thai_duyet) VALUES (?,?,?,?)";
     pdo_execute($sql, $id_phim, $ngay_chieu, $id_rap, 'Chờ duyệt');
 }
 
 function them_lichchieu_return_id($id_phim, $ngay_chieu, $id_rap){
+    $today = date('Y-m-d');
+    if ($ngay_chieu < $today) {
+        throw new Exception("Ngày chiếu không được là ngày đã qua (phải từ hôm nay trở đi).");
+    }
+
+    // Kiểm tra trùng lịch chiếu
+    $exists = pdo_query_one("SELECT id FROM lichchieu WHERE id_phim = ? AND ngay_chieu = ? AND id_rap = ?", $id_phim, $ngay_chieu, $id_rap);
+    if ($exists) {
+        throw new Exception("Lịch chiếu cho phim này vào ngày {$ngay_chieu} đã tồn tại tại rạp này.");
+    }
+
     // Đặt trạng thái mặc định rõ ràng để tránh phụ thuộc DEFAULT của DB
     $sql = "INSERT INTO lichchieu(id_phim,ngay_chieu,id_rap,trang_thai_duyet) VALUES (?,?,?,?)";
     try {
@@ -44,6 +66,17 @@ function them_lichchieu_return_id($id_phim, $ngay_chieu, $id_rap){
 
 function sua_lichchieu($id,$id_phim,$ngay_chieu,$id_rap)
 {
+    $today = date('Y-m-d');
+    if ($ngay_chieu < $today) {
+        throw new Exception("Ngày chiếu mới không được là ngày đã qua.");
+    }
+
+    // Kiểm tra trùng lịch chiếu với dòng khác
+    $exists = pdo_query_one("SELECT id FROM lichchieu WHERE id_phim = ? AND ngay_chieu = ? AND id_rap = ? AND id != ?", $id_phim, $ngay_chieu, $id_rap, $id);
+    if ($exists) {
+        throw new Exception("Lịch chiếu cho phim này vào ngày {$ngay_chieu} đã tồn tại tại rạp này ở một bản ghi khác.");
+    }
+
     $sql = "update lichchieu set `id_phim`=?,`ngay_chieu`=?,`id_rap`=? where `lichchieu`.`id`=?";
     pdo_execute($sql, $id_phim, $ngay_chieu, $id_rap, $id);
 }

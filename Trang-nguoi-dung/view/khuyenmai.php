@@ -2,20 +2,20 @@
 
 <style>
 .promo-card {
-    background: white;
+    background: #1c181c;
+    border: 1px solid #363033;
     border-radius: 15px;
     padding: 25px;
     margin-bottom: 25px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     position: relative;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-left: 5px solid #667eea;
+    border-left: 5px solid #ffd564;
 }
 
 .promo-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
 }
 
 .promo-card:nth-child(even) {
@@ -23,11 +23,11 @@
 }
 
 .promo-card:nth-child(3n) {
-    border-left-color: #dc3545;
+    border-left-color: #fe505a;
 }
 
 .promo-card:nth-child(4n) {
-    border-left-color: #ffc107;
+    border-left-color: #ffd564;
 }
 
 .promo-header {
@@ -41,30 +41,30 @@
 }
 
 .promo-title {
-    color: #333;
+    color: #fff;
     font-size: 22px;
     font-weight: 700;
     margin: 0 0 10px 0;
 }
 
 .promo-code {
-    background: linear-gradient(135deg, #b4b7c5ff 0%, #764ba2 100%);
-    color: white;
+    background: #ffd564;
+    color: #4c4145;
     padding: 8px 20px;
     border-radius: 20px;
     font-weight: 700;
     font-size: 16px;
     letter-spacing: 1px;
-    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(255, 213, 100, 0.2);
 }
 
 .promo-code:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+    background: #ffe08d;
 }
 
 .promo-body {
@@ -73,7 +73,7 @@
 }
 
 .promo-description {
-    color: #666;
+    color: #b4b1b2;
     font-size: 15px;
     line-height: 1.6;
     margin-bottom: 20px;
@@ -87,14 +87,14 @@
 }
 
 .promo-detail-item {
-    background: #f8f9fa;
+    background: #232023;
     padding: 12px 15px;
     border-radius: 10px;
-    border: 1px solid #e9ecef;
+    border: 1px solid #363033;
 }
 
 .promo-detail-label {
-    color: #6c757d;
+    color: #a59b9f;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -102,7 +102,7 @@
 }
 
 .promo-detail-value {
-    color: #333;
+    color: #ffd564;
     font-size: 15px;
     font-weight: 600;
 }
@@ -111,20 +111,20 @@
     position: absolute;
     top: 47px;
     right: 0px;
-    background: linear-gradient(135deg, #d7ca80ff 0%, #ffa914ff 100%);
-    color: #333;
+    background: #fe505a;
+    color: #fff;
     padding: 8px 15px;
     border-radius: 25px;
     font-size: 18px;
     font-weight: 800;
-    box-shadow: 0 3px 10px rgba(255, 165, 0, 0.4);
+    box-shadow: 0 3px 10px rgba(254, 80, 90, 0.3);
     z-index: 2;
 }
 
 .empty-state {
     text-align: center;
     padding: 80px 20px;
-    color: #999;
+    color: #a59b9f;
 }
 
 .empty-state i {
@@ -135,13 +135,13 @@
 
 .cinema-tag {
     display: inline-block;
-    background: #e9ecef;
-    color: #495057;
+    background: #232023;
+    color: #e5e0e3;
     padding: 5px 12px;
     border-radius: 15px;
     font-size: 13px;
     margin-right: 10px;
-    border: 1px solid #dee2e6;
+    border: 1px solid #363033;
 }
 
 .cinema-tag i {
@@ -189,26 +189,25 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, #afb4cdff 0%, #764ba2 100%);
-    color: white;
+    background: #ffd564;
+    color: #4c4145;
     padding: 12px 30px;
     border-radius: 25px;
     font-weight: 600;
     font-size: 16px;
     text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 213, 100, 0.2);
     transition: all 0.3s ease;
     margin-top: 20px;
     border: none;
     cursor: pointer;
-    margin-left: 739px;
     float: right;
 }
 
 .btn-book-now:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-    color: white;
+    background: #ffe08d;
+    color: #4c4145;
     text-decoration: none;
 }
 
@@ -219,8 +218,8 @@
 .promo-footer {
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 2px dashed #e9ecef;
-    text-align: center;
+    border-top: 2px dashed #363033;
+    overflow: hidden;
 }
 </style>
 
@@ -229,8 +228,8 @@
     <div class="overflow-wrapper">
         <div class="col-sm-12">
 
-            <h2 class="page-heading">🎁 Khuyến Mãi Đặc Biệt</h2>
-            <p style="color: #999; margin-bottom: 40px; font-size: 16px;">
+            <h2 class="page-heading"><i class="fa fa-gift" style="color:#ffd564; margin-right:8px;"></i> Khuyến Mãi Đặc Biệt</h2>
+            <p style="color: #a59b9f; margin-bottom: 40px; font-size: 16px;">
                 Khám phá các ưu đãi hấp dẫn từ Galaxy Studio - Rạp chiếu phim số 1 Việt Nam
             </p>
 
@@ -259,11 +258,11 @@
                         <div class="promo-left">
                             <h3 class="promo-title"><?= htmlspecialchars($km['ten_khuyen_mai']) ?></h3>
                             <?php if (!empty($km['ten_rap'])): ?>
-                                <span class="cinema-tag" style="background: #e3f2fd; color: #1976d2; border-color: #90caf9;">
+                                <span class="cinema-tag" style="background: #152535; color: #64b5f6; border-color: #1e88e5;">
                                     <i class="fa fa-map-marker"></i> <?= htmlspecialchars($km['ten_rap']) ?>
                                 </span>
                             <?php else: ?>
-                                <span class="cinema-tag" style="background: #fff3e0; color: #f57c00; border-color: #ffb74d;">
+                                <span class="cinema-tag" style="background: #2d1f0f; color: #ffb74d; border-color: #fb8c00;">
                                     <i class="fa fa-globe"></i> Áp dụng toàn hệ thống
                                 </span>
                             <?php endif; ?>
@@ -354,7 +353,7 @@
                 
             <?php else: ?>
                 <div class="empty-state">
-                    <i class="fa fa-gift"></i>
+                    <i class="fa fa-gift" style="font-size:50px; color:#4a3e43; display:block;"></i>
                     <h3>Hiện chưa có khuyến mãi nào</h3>
                     <p>Vui lòng quay lại sau để không bỏ lỡ các ưu đãi hấp dẫn!</p>
                 </div>

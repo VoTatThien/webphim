@@ -22,6 +22,7 @@
                             <th>SĐT</th>
                             <th>Email</th>
                             <th>Trạng thái</th>
+                            <th>Tọa độ GPS</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -34,6 +35,13 @@
                             <td><?= htmlspecialchars($r['so_dien_thoai']) ?></td>
                             <td><?= htmlspecialchars($r['email']) ?></td>
                             <td><?= (int)$r['trang_thai'] === 1 ? 'Hoạt động' : 'Khóa' ?></td>
+                            <td>
+                                <?php if (!empty($r['latitude']) && !empty($r['longitude'])): ?>
+                                    📍 <?= htmlspecialchars($r['latitude']) ?>, <?= htmlspecialchars($r['longitude']) ?>
+                                <?php else: ?>
+                                    <span style="color: #999; font-style: italic;">Chưa cấu hình</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <a class="button button-sm button-primary" href="index.php?act=suarp&id=<?= (int)$r['id'] ?>">Sửa</a>
                                 <a class="button button-sm button-danger" onclick="return confirm('Xóa rạp này?');" href="index.php?act=xoarp&id=<?= (int)$r['id'] ?>">Xóa</a>

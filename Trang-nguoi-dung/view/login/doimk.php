@@ -6,24 +6,24 @@
         <div class="auth-action-left">
             <div class="auth-form-outer">
                 <h2 class="auth-form-title">
-                    Đổi mật khẩu
+                    <?= __('Đổi mật khẩu') ?>
                 </h2>
                 <div class="auth-external-container">
 
                 </div>
                 <form class="login-form" method="post" action="index.php?act=doimk">
-                    <input type="text" class="auth-form-input" placeholder="Nhập mật khẩu cũ" name="pass" >
-                    <input type="text" class="auth-form-input" placeholder="Nhập mật khẩu mới" name="passmoi" >
+                    <input type="text" class="auth-form-input" placeholder="<?= __('Nhập mật khẩu cũ') ?>" name="pass" >
+                    <input type="text" class="auth-form-input" placeholder="<?= __('Nhập mật khẩu mới') ?>" name="passmoi" >
                     <div class="input-icon">
-                        <input type="password" class="auth-form-input" placeholder="Nhập lại mật khẩu" name="passmoi1" >
+                        <input type="password" class="auth-form-input" placeholder="<?= __('Nhập lại mật khẩu') ?>" name="passmoi1" >
                         <i class="fa fa-eye show-password"></i>
                     </div>
                     <div class="footer-action">
                     <input type="hidden" class="auth-form-input" placeholder="Name" name="id" value="<?=$id?>">
 
-                    <input type="submit" value="Gửi" class="auth-submit" name="capnhat">
+                    <input type="submit" value="<?= __('Gửi') ?>" class="auth-submit" name="capnhat">
 
-                        <a href="index.php?act=dangnhap" class="auth-btn-direct">dangnhap</a>
+                        <a href="index.php?act=dangnhap" class="auth-btn-direct"><?= __('Đăng nhập') ?></a>
                     </div>
                     <?php if(isset($error)&&$error !=""){
                 echo '<p  style="color: red; "

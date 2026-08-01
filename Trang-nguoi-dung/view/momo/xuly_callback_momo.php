@@ -39,8 +39,9 @@ if ($resultCode == "0" && $signature == $expectedSignature) {
         // Ghi log thành công
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Payment SUCCESSFUL for Order: $orderId_int\n", FILE_APPEND);
         
+        $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
         // Redirect về trang vé
-        header('Location: http://' . $_SERVER['HTTP_HOST'] . '/webphim/Trang-nguoi-dung/index.php?act=ve');
+        header('Location: http://' . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/index.php?act=ve');
         exit();
     } catch (Exception $e) {
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Database Error: " . $e->getMessage() . "\n", FILE_APPEND);
@@ -49,8 +50,9 @@ if ($resultCode == "0" && $signature == $expectedSignature) {
     // Thanh toán thất bại
     file_put_contents($logFile, date('Y-m-d H:i:s') . " - Payment FAILED or Invalid Signature\n", FILE_APPEND);
     
+    $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
     // Redirect về trang vé
-    header('Location: http://' . $_SERVER['HTTP_HOST'] . '/webphim/Trang-nguoi-dung/index.php?act=ve&error=payment_failed');
+    header('Location: http://' . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/index.php?act=ve&error=payment_failed');
     exit();
 }
 ?>

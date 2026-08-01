@@ -40,8 +40,9 @@
     
     .combo-badge {
         display: inline-block;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #4a3e43;
+        border: 1px solid #ffd564;
+        color: #ffd564;
         padding: 3px 10px;
         border-radius: 15px;
         font-size: 11px;
@@ -87,8 +88,8 @@
     }
     
     .quantity-btn {
-        background: #667eea;
-        color: white;
+        background: #ffd564;
+        color: #4c4145;
         border: none;
         width: 35px;
         height: 35px;
@@ -103,7 +104,7 @@
     }
     
     .quantity-btn:hover {
-        background: #764ba2;
+        background: #ffe08d;
         transform: scale(1.1);
     }
     
@@ -114,7 +115,7 @@
     .quantity-display {
         font-size: 20px;
         font-weight: bold;
-        color: #333;
+        color: #fff;
         min-width: 30px;
         text-align: center;
     }
@@ -131,34 +132,34 @@
 </style>
 
 <!-- Info Bar hiển thị thông tin đặt vé -->
-<div class="booking-info-bar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 20px auto; max-width: 1200px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+<div class="booking-info-bar" style="background: #232023; border: 1px solid #4a3e43; padding: 20px; margin: 20px auto; max-width: 1200px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
     <div style="display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center; color: white;">
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-film" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Phim:</strong><br>
-                <?= isset($_SESSION['tong']['tieu_de']) ? $_SESSION['tong']['tieu_de'] : 'N/A' ?>
+                <strong><?= __("Phim:") ?></strong><br>
+                <?= isset($_SESSION['tong']['tieu_de']) ? htmlspecialchars(__($_SESSION['tong']['tieu_de'])) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-building" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Rạp:</strong><br>
-                <?= isset($_SESSION['tong']['ten_rap']) ? $_SESSION['tong']['ten_rap'] : 'N/A' ?>
+                <strong><?= __("Rạp:") ?></strong><br>
+                <?= isset($_SESSION['tong']['ten_rap']) ? htmlspecialchars(__($_SESSION['tong']['ten_rap'])) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-calendar" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Ngày chiếu:</strong><br>
-                <?= isset($_SESSION['tong']['ngay_chieu']) ? $_SESSION['tong']['ngay_chieu'] : 'N/A' ?>
+                <strong><?= __("Ngày chiếu:") ?></strong><br>
+                <?= isset($_SESSION['tong']['ngay_chieu']) ? htmlspecialchars($_SESSION['tong']['ngay_chieu']) : 'N/A' ?>
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
             <i class="fa fa-clock" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
-                <strong>Giờ chiếu:</strong><br>
-                <?= isset($_SESSION['tong']['thoi_gian_chieu']) ? $_SESSION['tong']['thoi_gian_chieu'] : 'N/A' ?>
+                <strong><?= __("Giờ chiếu:") ?></strong><br>
+                <?= isset($_SESSION['tong']['thoi_gian_chieu']) ? htmlspecialchars($_SESSION['tong']['thoi_gian_chieu']) : 'N/A' ?>
             </div>
         </div>
     </div>
@@ -167,7 +168,7 @@
 <!-- Main content -->
 <div class="place-form-area">
     <section class="container">
-        <h1>Combo Đồ ăn</h1>
+        <h1><?= __("Combo Đồ ăn") ?></h1>
         
         <?php if (isset($combos) && count($combos) > 0): ?>
         <div class="prodoan">
@@ -178,13 +179,13 @@
                 <p><?= htmlspecialchars($combo['mo_ta']) ?></p>
                 
                 <?php if ($combo['id_rap'] !== null): ?>
-                    <span class="combo-badge">🏢 Combo riêng của rạp</span>
+                    <span class="combo-badge"><i class="fa fa-building-o"></i> <?= __("Combo riêng của rạp") ?></span>
                 <?php else: ?>
-                    <span class="combo-badge" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🌟 Combo toàn hệ thống</span>
+                    <span class="combo-badge"><i class="fa fa-star-o"></i> <?= __("Combo toàn hệ thống") ?></span>
                 <?php endif; ?>
                 
                 <p style="font-size: 20px; color: #dc3545; font-weight: bold; margin-top: 10px;">
-                    Giá: <?= number_format($combo['gia'] ?? 0, 0, ',', '.') ?>đ
+                    <?= __("Giá") ?>: <?= number_format($combo['gia'] ?? 0, 0, ',', '.') ?>đ
                 </p>
                 
                 <!-- Quantity control -->
@@ -197,7 +198,7 @@
                 </div>
                 
                 <div class="combo-selected-indicator" style="display: none;">
-                    Đã chọn: <span class="selected-count">0</span>
+                    <?= __("Đã chọn:") ?> <span class="selected-count">0</span>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -205,7 +206,7 @@
         <?php else: ?>
             <div class="no-combo-message">
                 <i class="fa fa-info-circle" style="font-size: 50px; color: #ddd;"></i>
-                <p>Hiện tại không có combo đồ ăn nào khả dụng cho rạp này.</p>
+                <p><?= __("Hiện tại không có combo đồ ăn nào khả dụng cho rạp này.") ?></p>
             </div>
         <?php endif; ?>
 
@@ -215,15 +216,15 @@
 <form action="index.php?act=dv4" method="post">
     <div class="col-lg-offset-1">
         <div class="tong">
-            <h2 class="phim" style="color: #667eea;">Thông tin đặt vé</h2>
+            <h2 class="phim" style="color: #ffd564;"><?= __("Thông tin đặt vé") ?></h2>
             
-            <div style="display: flex; margin-bottom: 10px;">
-                <span>🪑 Ghế đã chọn:</span>
-                <div class="checked-place">
+            <div style="display: flex; margin-bottom: 10px; align-items: center;">
+                <span style="color: #fff;"><i class="fa fa-circle-o" style="color: #ffd564; margin-right: 5px;"></i> <?= __("Ghế đã chọn:") ?></span>
+                <div class="checked-place" style="margin-left: 10px;">
                     <?php
                     if (isset($ten_ghe['ghe'])) {
                         $ghes = $ten_ghe['ghe'];
-                        echo '<span class="choosen-place">' . implode(', ', $ghes) . '</span>';
+                        echo '<span class="choosen-place" style="background:#ffd564; color:#4c4145; font-weight:bold;">' . implode(', ', $ghes) . '</span>';
 
                         // Tạo các hidden input cho mỗi ghế
                         foreach ($ghes as $ghe) {
@@ -234,22 +235,22 @@
                 </div>
             </div>
             
-            <div style="display: flex; margin-bottom: 10px;">
-                <span>🍿 Combo đã chọn:</span>
-                <div class="check-doan" id="selected-combos-display">
+            <div style="display: flex; margin-bottom: 10px; align-items: center;">
+                <span style="color: #fff;"><i class="fa fa-coffee" style="color: #ffd564; margin-right: 5px;"></i> <?= __("Combo đã chọn:") ?></span>
+                <div class="check-doan" id="selected-combos-display" style="margin-left: 10px;">
                     <!-- Combos will be dynamically added here -->
                 </div>
             </div>
 
             <div class="tongtien">
                 <div class="checked-result">
-                    <span>Tổng cộng:</span>
-                    <input name="giaghe" style="width: 80px; font-size: 20px; border: none;" type="text" id="gia_ghe"
+                    <span style="color: #fff;"><?= __("Tổng cộng:") ?></span>
+                    <input name="giaghe" style="width: 120px; font-size: 20px; border: none; background: transparent; color: #fe505a; font-weight: bold;" type="text" id="gia_ghe"
                            value="<?php 
                            // Get seat price from session
                            $seat_price = $_SESSION['tong']['gia_ghe'] ?? 0;
                            echo $seat_price; 
-                           ?>"> VND
+                           ?>" readonly> VND
                 </div>
             </div>
         </div>
@@ -257,10 +258,10 @@
 
     <div class="booking-pagination">
         <a href="index.php?act=datve2&id=<?php echo $_SESSION['tong']['id_phim'] ?>">
-            <span class="quaylai">QUAY LẠI</span>
+            <span class="quaylai"><?= __("QUAY LẠI") ?></span>
         </a>
         <a href="#">
-            <input type="submit" name="tiep_tuc" class="booking-pagination__button" value="TIẾP TỤC">
+            <input type="submit" name="tiep_tuc" class="booking-pagination__button" value="<?= __("TIẾP TỤC") ?>" style="background:#ffd564; color:#4c4145;">
         </a>
     </div>
 </form>
@@ -297,7 +298,7 @@
             $.each(comboQuantities, function(comboName, data) {
                 if (data.quantity > 0) {
                     hasCombo = true;
-                    displayHtml += '<span class="choosen-place" style="margin: 5px; padding: 5px 10px; background: #667eea; color: white; border-radius: 15px; display: inline-block;">' + 
+                    displayHtml += '<span class="choosen-place" style="margin: 5px; padding: 5px 10px; background: #ffd564; color: #4c4145; font-weight: bold; border-radius: 15px; display: inline-block;">' + 
                                   comboName + ' x' + data.quantity + 
                                   '</span>';
                     
@@ -311,7 +312,7 @@
             });
             
             if (!hasCombo) {
-                displayHtml = '<span style="color: #999; font-style: italic;">Chưa chọn combo nào</span>';
+                displayHtml = '<span style="color: #999; font-style: italic;">' + '<?= __("Chưa chọn combo nào") ?>' + '</span>';
             }
             
             $('#selected-combos-display').html($('#selected-combos-display').html() + displayHtml);
@@ -407,7 +408,7 @@
             var seatInputs = $('input[name="ten_ghe[]"]');
             if (seatInputs.length === 0) {
                 e.preventDefault();
-                alert('Vui lòng chọn ghế trước khi tiếp tục!');
+                alert('<?= __("Vui lòng chọn ghế trước khi tiếp tục!") ?>');
                 return false;
             }
         });

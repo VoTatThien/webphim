@@ -13,7 +13,7 @@ define('PRODUCTION_DOMAIN', 'https://webphim.online');
 
 // Webphim base path
 define('WEBPHIM_PATH', '/');  // Nếu folder webphim ở root, dùng '/'
-                              // Nếu folder webphim ở /webphim/, dùng '/webphim/'
+                              // Nếu folder webphim ở /webphim_hung/, dùng '/webphim_hung/'
 
 // Full base URL
 define('BASE_URL', PRODUCTION_DOMAIN . WEBPHIM_PATH . 'Trang-nguoi-dung');

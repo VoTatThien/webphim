@@ -8,19 +8,19 @@
         <div class="auth-action-left">
             <div class="auth-form-outer">
                 <h2 class="auth-form-title">
-                    Sửa tài khoản
+                    <?= __('Cập nhật tài khoản') ?>
                 </h2>
                 <div class="auth-external-container">
 
                 </div>
                 <form class="login-form" method="post" action="index.php?act=updatetk">
-                    <input type="text" class="auth-form-input" placeholder="User" name="user" value="<?=$user?>">
-                    <input type="text" class="auth-form-input" placeholder="Phone" name="phone" value="<?=$phone?>">
-                    <input type="email" class="auth-form-input" placeholder="Email" name="email" value="<?=$email?>">
-                    <input type="text" class="auth-form-input" placeholder="Địa chỉ" name="dia_chi" value="<?=$dia_chi?>">
+                    <input type="text" class="auth-form-input" placeholder="<?= __('Tên đăng nhập') ?>" name="user" value="<?=$user?>">
+                    <input type="text" class="auth-form-input" placeholder="<?= __('Số điện thoại') ?>" name="phone" value="<?=$phone?>">
+                    <input type="email" class="auth-form-input" placeholder="<?= __('Email') ?>" name="email" value="<?=$email?>">
+                    <input type="text" class="auth-form-input" placeholder="<?= __('Địa chỉ') ?>" name="dia_chi" value="<?=$dia_chi?>">
                     <div class="footer-action">
                         <input type="hidden" class="auth-form-input" placeholder="Name" name="id" value="<?=$id?>">
-                        <input type="submit" value="Cập Nhật" class="auth-submit" name="capnhat">
+                        <input type="submit" value="<?= __('Cập nhật') ?>" class="auth-submit" name="capnhat">
                     </div>
                 </form>
                 <?php if(isset($thongbao)&&$thongbao !=""){

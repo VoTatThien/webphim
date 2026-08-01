@@ -15,8 +15,16 @@
                     // Format ngày tháng
                     $ngay_format = date('d/m/Y H:i', strtotime($ngay_dang));
                     
-                    // Đường dẫn hình ảnh
-                    $image_path = !empty($hinh_anh) ? $hinh_anh : 'imgavt/no-image.jpg';
+                    // Đường dẫn hình ảnh động
+                    $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+                    $image_path = $base_dir . 'Trang-nguoi-dung/imgavt/no-image.jpg';
+                    if (!empty($hinh_anh)) {
+                        if (strpos($hinh_anh, 'assets/news/') !== false) {
+                            $image_path = $base_dir . 'Trang-admin/' . $hinh_anh;
+                        } else {
+                            $image_path = $base_dir . 'Trang-admin/assets/news/' . $hinh_anh;
+                        }
+                    }
                     
                     // Tóm tắt nếu không có thì lấy 100 ký tự từ nội dung
                     $summary = !empty($tom_tat) ? $tom_tat : (strlen($noi_dung) > 100 ? substr($noi_dung, 0, 100) . '...' : $noi_dung);
@@ -28,7 +36,7 @@
                     <div class="col-sm-4 similar-wrap col--remove">
                         <div class="post post--preview post--preview--wide">
                             <div class="post__image">
-                                <img alt="' . htmlspecialchars($tieu_de) . '" src="' . htmlspecialchars($image_path) . '">
+                                <img alt="' . htmlspecialchars($tieu_de) . '" src="' . htmlspecialchars($image_path) . '" loading="lazy">
                                 <div class="social social--position social--hide">
                                     <span class="social__name">Share:</span>
                                     <a href="#" class="social__variant social--first fa fa-facebook"></a>

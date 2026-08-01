@@ -1,148 +1,94 @@
 <?php
 /**
- * Check Payment Status (Sepay)
+ * Check Payment Status + Create Ticket (Sepay)
  * POST /sepay/check_payment_status.php
  * 
- * ⚠️ IMPORTANT - Updated Flow:
- * 1. User books tickets → confirm_payment.php creates UNPAID tickets
- * 2. QR code generated with first ticket ID (VE[ticket_id])
- * 3. User transfers money
- * 4. Webhook receives transfer → Updates tickets to PAID
- * 5. User clicks "Kiểm tra" → This endpoint checks status
- * 
- * This endpoint CHECKS status, doesn't CREATE tickets
+ * Input JSON: {"ticket_id": 123}
+ * Output: {"success": true, "status": "paid|unpaid", "redirect_url": "..."}
  */
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 // ===== TEST MODE =====
-define('TEST_MODE', false); // PRODUCTION MODE
+define('TEST_MODE', true); // true = test, false = prod
 // ====================
 
 try {
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
     
-    if (!$data) {
+    if (!$data || !isset($data['ticket_id'])) {
         http_response_code(400);
-        echo json_encode(['paid' => false, 'status' => 'error', 'message' => 'Invalid JSON']);
+        echo json_encode(['success' => false, 'message' => 'Missing ticket_id']);
         exit;
     }
     
-    // Can receive either:
-    // 1. ticket_id directly (from old flow)
-    // 2. trans_id (from sepay_payment_ui via trans_id_TIMESTAMP format)
-    // 3. booking data with amount/user_id (from sepay_payment_ui)
+    $ticket_id = (int)$data['ticket_id'];
     
-    $ticket_id = isset($data['ticket_id']) ? (int)$data['ticket_id'] : 0;
-    $trans_id = isset($data['trans_id']) ? $data['trans_id'] : '';
-    $amount = isset($data['amount']) ? (int)$data['amount'] : 0;
-    
-    error_log("CHECK_PAYMENT_STATUS: ticket_id=$ticket_id, trans_id=$trans_id, amount=$amount");
-    
-    // ===== TEST MODE =====
+    // ===== TEST MODE: Tạo vé ngay (giống Momo) =====
     if (TEST_MODE === true) {
+        // KHÔNG tạo vé ở đây, chỉ đánh dấu thanh toán thành công
+        // Controller (index.php?act=xacnhan) sẽ tạo vé dựa vào session['tong']
+        // Chúng ta chỉ cần xác nhận thanh toán
+        
+        // Clear session vé cũ để tạo vé mới (fix lỗi lần 2 không tạo vé được)
+        unset($_SESSION['id_hd']);
+        unset($_SESSION['id_ve']);
+        unset($_SESSION['tong_tien']); // Clear giá vé cũ
+        unset($_SESSION['da_tao_ve_' . session_id()]);
+        unset($_SESSION['da_cong_diem_' . ($_SESSION['id_hd'] ?? '')]);
+        
         echo json_encode([
-            'paid' => true,
+            'success' => true,
             'status' => 'paid',
             'message' => '✅ [TEST MODE] Thanh toán thành công!',
             'test_mode' => true,
-            'ticket_id' => $ticket_id
+            'ticket_created' => false,
+            'note' => 'Controller sẽ tạo vé từ session[tong]'
         ]);
         exit;
     }
-    // ====================
+    // ================================================
     
-    // PRODUCTION MODE: Check payment status from database
+    // PRODUCTION MODE: Kiểm tra DB
     require('config.php');
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
     
-    try {
-        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
-        echo json_encode(['paid' => false, 'status' => 'error', 'message' => 'DB connection error: ' . $e->getMessage()]);
-        exit;
-    }
-    
-    // If no ticket_id, try to find by trans_id (ma_ve format) or recent booking
-    if ($ticket_id <= 0 && !empty($trans_id)) {
-        // Try to find ticket by SEPAY ma_ve pattern matching trans_id
-        $check_sql = "SELECT id, trang_thai, price, ma_ve, id_tk, id_phim, id_rap, ghe, combo
-                      FROM ve WHERE ma_ve LIKE 'SEPAY_%' AND price = :amount 
-                      ORDER BY id DESC LIMIT 1";
-        
-        $stmt = $pdo->prepare($check_sql);
-        $stmt->execute([':amount' => $amount]);
-        $ticket = $stmt->fetch();
-        
-        if ($ticket) {
-            $ticket_id = $ticket['id'];
-            error_log("CHECK_PAYMENT_STATUS: Found ticket by amount - ID=$ticket_id");
-        }
-    }
-    
-    // If still no ticket_id, fail
-    if ($ticket_id <= 0) {
-        echo json_encode([
-            'paid' => false,
-            'status' => 'not_found',
-            'message' => 'No ticket found'
-        ]);
-        exit;
-    }
-    
-    // Check ticket status in database
-    $check_sql = "SELECT id, trang_thai, price, ma_ve, id_tk, id_phim, id_rap, ghe, combo
-                  FROM ve WHERE id = :ticket_id";
-    
-    $stmt = $pdo->prepare($check_sql);
+    $sql = "SELECT trang_thai FROM ve WHERE id = :ticket_id";
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':ticket_id' => $ticket_id]);
     $ticket = $stmt->fetch();
     
     if (!$ticket) {
-        echo json_encode([
-            'paid' => false, 
-            'status' => 'not_found',
-            'message' => 'Ticket not found'
-        ]);
+        echo json_encode(['success' => false, 'message' => 'Ticket not found']);
         exit;
     }
     
-    error_log("CHECK_PAYMENT_STATUS: Ticket found - Status=" . $ticket['trang_thai'] . ", Price=" . $ticket['price']);
+    // Status: 0 = Unpaid, 1 = Paid
+    $status = $ticket['trang_thai'] == 1 ? 'paid' : 'unpaid';
     
-    // Check payment status
-    $is_paid = in_array($ticket['trang_thai'], ['da_thanh_toan', 'paid', 1]);
-    
-    if ($is_paid) {
-        // Ticket already paid - success
-        echo json_encode([
-            'paid' => true,
-            'status' => 'paid',
-            'message' => '✅ Thanh toán thành công! Vé của bạn đã sẵn sàng.',
-            'ticket_id' => $ticket_id,
-            'ticket_code' => $ticket['ma_ve'],
-            'amount' => (int)$ticket['price'],
-            'redirect_url' => '/Trang-nguoi-dung/index.php?act=xacnhan'
-        ]);
-        error_log("CHECK_PAYMENT_STATUS: Ticket $ticket_id is PAID");
-    } else {
-        // Ticket still unpaid - waiting for transfer
-        echo json_encode([
-            'paid' => false,
-            'status' => 'unpaid',
-            'message' => '⏳ Chúng tôi chưa nhận được chuyển khoản. Vui lòng kiểm tra lại hoặc thử lại sau...',
-            'ticket_id' => $ticket_id,
-            'amount' => (int)$ticket['price'],
-            'wait_time' => 'Vui lòng chờ 1-2 phút sau khi chuyển khoản'
-        ]);
-        error_log("CHECK_PAYMENT_STATUS: Ticket $ticket_id is UNPAID");
+    $base_path = '';
+    if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $base_path = '/' . $matches[1];
     }
+    $redirect_url = $status === 'paid' ? $base_path . '/Trang-nguoi-dung/index.php?act=ve&id=' . $ticket_id : null;
+    
+    echo json_encode([
+        'success' => true,
+        'status' => $status,
+        'message' => $status == 'paid' ? 'Thanh toán thành công' : 'Chưa thanh toán',
+        'test_mode' => false,
+        'redirect_url' => $redirect_url
+    ]);
     
 } catch (Exception $e) {
     http_response_code(500);
-    error_log("CHECK_PAYMENT_STATUS ERROR: " . $e->getMessage());
-    echo json_encode(['paid' => false, 'status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
 
+ }
+ 
+
+?>

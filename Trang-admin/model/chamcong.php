@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 // Include Haar Cascade Face Detector
 require_once dirname(__FILE__) . '/../PHP-FaceDetector-master/FaceDetector.php';
@@ -18,8 +19,54 @@ function cc_ensure_schema(){
         auth_method_in VARCHAR(50) DEFAULT 'manual',
         auth_method_out VARCHAR(50) DEFAULT 'manual',
         break_duration INT DEFAULT 60,
+        latitude DECIMAL(10,7) DEFAULT NULL,
+        longitude DECIMAL(10,7) DEFAULT NULL,
+        location_accuracy FLOAT DEFAULT NULL,
+        fingerprint_vao LONGTEXT DEFAULT NULL,
+        fingerprint_ra LONGTEXT DEFAULT NULL,
+        anh_vao TEXT DEFAULT NULL,
+        anh_ra TEXT DEFAULT NULL,
         ngay_tao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    
+    // Add missing columns for existing tables (compatible with all MySQL versions)
+    // Uses INFORMATION_SCHEMA to check before adding - avoids duplicate column errors
+    $cols_to_add = [
+        'ghi_chu_ra'        => "VARCHAR(255) DEFAULT NULL",
+        'latitude'          => 'DECIMAL(10,7) DEFAULT NULL',
+        'longitude'         => 'DECIMAL(10,7) DEFAULT NULL',
+        'location_accuracy' => 'FLOAT DEFAULT NULL',
+        'fingerprint_vao'   => 'LONGTEXT DEFAULT NULL',
+        'fingerprint_ra'    => 'LONGTEXT DEFAULT NULL',
+        'anh_vao'           => 'TEXT DEFAULT NULL',
+        'anh_ra'            => 'TEXT DEFAULT NULL',
+        'auth_method_in'    => "VARCHAR(50) DEFAULT 'manual'",
+        'auth_method_out'   => "VARCHAR(50) DEFAULT 'manual'",
+    ];
+    
+    // Get database name to check INFORMATION_SCHEMA
+    try {
+        $db_name_row = pdo_query_one("SELECT DATABASE() AS dbname");
+        $db_name = $db_name_row ? $db_name_row['dbname'] : null;
+        
+        if ($db_name) {
+            foreach ($cols_to_add as $col => $def) {
+                $exists = pdo_query_one(
+                    "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'cham_cong' AND COLUMN_NAME = ?",
+                    $db_name, $col
+                );
+                if (!$exists) {
+                    try {
+                        pdo_execute("ALTER TABLE cham_cong ADD COLUMN `{$col}` {$def}");
+                    } catch (Exception $e) {
+                        // Ignore any errors (column may already exist in a non-standard way)
+                    }
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // Silent fail - schema migration is non-critical
+    }
 }
 
 function cc_validate_time($gio_vao, $gio_ra){
@@ -87,7 +134,7 @@ function cc_list_by_rap_month($id_rap, $ym, $id_nv = null){
 function cc_sum_hours($id_nv, $id_rap, $ym){
     cc_ensure_schema();
     $rows = pdo_query("SELECT TIMESTAMPDIFF(MINUTE, cc.ngay + INTERVAL TIME_TO_SEC(cc.gio_vao) SECOND, cc.ngay + INTERVAL TIME_TO_SEC(cc.gio_ra) SECOND) AS minutes
-                       FROM cham_cong cc WHERE cc.id_nv=? AND cc.id_rap=? AND DATE_FORMAT(cc.ngay,'%Y-%m')=?",
+                       FROM cham_cong cc WHERE cc.id_nv=? AND cc.id_rap=? AND DATE_FORMAT(cc.ngay,'%Y-%m')=? AND cc.gio_ra IS NOT NULL",
                        $id_nv, $id_rap, $ym);
     $min = 0; foreach ($rows as $r) { $min += max(0, (int)($r['minutes'] ?? 0)); }
     return $min/60.0;
@@ -101,7 +148,7 @@ function luong_tinh_thang($id_rap, $ym, $rate_per_hour = 30000){
     foreach ($ds_nv as $nv){
         $id_nv = (int)$nv['id'];
         
-        // Lấy chi tiết từng ngày làm việc
+        // Lấy chi tiết từng ngày làm việc (chỉ lấy record đã checkout)
         $chi_tiet_ngay = pdo_query(
             "SELECT ngay, gio_vao, gio_ra,
                     TIMESTAMPDIFF(MINUTE, 
@@ -109,7 +156,7 @@ function luong_tinh_thang($id_rap, $ym, $rate_per_hour = 30000){
                         ngay + INTERVAL TIME_TO_SEC(gio_ra) SECOND
                     ) / 60.0 AS so_gio
              FROM cham_cong 
-             WHERE id_nv = ? AND id_rap = ? AND DATE_FORMAT(ngay,'%Y-%m') = ?
+             WHERE id_nv = ? AND id_rap = ? AND DATE_FORMAT(ngay,'%Y-%m') = ? AND gio_ra IS NOT NULL
              ORDER BY ngay ASC",
             $id_nv, $id_rap, $ym
         );
@@ -515,50 +562,55 @@ function cc_verify_face_strict($id_nv, $current_fingerprint_json, $photoBase64 =
 function cc_check_today_status($id_nv, $id_rap){
     cc_ensure_schema();
     $today = date('Y-m-d');
-    $record = pdo_query_one("SELECT * FROM cham_cong WHERE id_nv = ? AND id_rap = ? AND ngay = ? ORDER BY gio_vao DESC LIMIT 1", 
-                            $id_nv, $id_rap, $today);
+    $record = pdo_query_one("SELECT * FROM cham_cong WHERE id_nv = ? AND ngay = ? ORDER BY id DESC LIMIT 1", 
+                            $id_nv, $today);
     
     if (!$record) {
         return ['status' => 'not_checked_in', 'record' => null];
     }
     
     // Kiểm tra xem đã checkout thực sự chưa
-    // Logic: Nếu gio_ra > thời điểm hiện tại => chưa checkout (vẫn là giờ mặc định)
-    //        Nếu gio_ra <= thời điểm hiện tại => đã checkout thực sự
-    $now = time();
-    $gio_ra_timestamp = strtotime($today . ' ' . $record['gio_ra']);
-    
-    if ($gio_ra_timestamp > $now) {
-        // Giờ ra vẫn ở tương lai => chưa checkout thực sự
+    // Logic đúng: gio_ra IS NULL => chưa checkout
+    //             gio_ra IS NOT NULL => đã checkout
+    if (empty($record['gio_ra'])) {
+        // Chưa có giờ ra => đang checked_in
         return ['status' => 'checked_in', 'record' => $record, 'checkin_time' => $record['gio_vao']];
     } else {
-        // Giờ ra đã qua => đã checkout rồi
+        // Có giờ ra => đã checked_out
         return ['status' => 'checked_out', 'record' => $record, 'checkin_time' => $record['gio_vao'], 'checkout_time' => $record['gio_ra']];
     }
 }
 
-// Quick check-in (tự động tạo record với giờ ra = giờ vào + 8h)
+// Tính khoảng cách giữa 2 điểm GPS (mét) theo công thức Haversine
+function cc_calculate_distance($lat1, $lng1, $lat2, $lng2) {
+    if ($lat1 === null || $lng1 === null || $lat2 === null || $lng2 === null) {
+        return null;
+    }
+    $earth_radius = 6371000; // mét
+    
+    $dLat = deg2rad((float)$lat2 - (float)$lat1);
+    $dLng = deg2rad((float)$lng2 - (float)$lng1);
+    
+    $a = sin($dLat / 2) * sin($dLat / 2) +
+         cos(deg2rad((float)$lat1)) * cos(deg2rad((float)$lat2)) *
+         sin($dLng / 2) * sin($dLng / 2);
+         
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    
+    return $earth_radius * $c;
+}
+
+// Quick check-in - chỉ lưu giờ vào, giờ ra để NULL
 function cc_quick_checkin($id_nv, $id_rap){
     cc_ensure_schema();
     $today = date('Y-m-d');
     $now_time = date('H:i:s');
-    $checkout_time = date('H:i:s', strtotime('+8 hours')); // Mặc định 8h
     
     // Get GPS data from POST
-    $latitude = $_POST['latitude'] ?? null;
-    $longitude = $_POST['longitude'] ?? null;
-    $location_accuracy = $_POST['location_accuracy'] ?? null;
-    
-    // Get face fingerprint from POST (as JSON array)
-    $fingerprint_vao = $_POST['fingerprint_vao'] ?? null;
-    
-    // VERIFY FACE: So sánh với face template đã đăng ký
-    if ($fingerprint_vao) {
-        $verification = cc_verify_face_strict($id_nv, $fingerprint_vao);
-        if (!$verification['success']) {
-            throw new Exception($verification['message']);
-        }
-    }
+    $latitude = isset($_POST['latitude']) && $_POST['latitude'] !== '' ? (float)$_POST['latitude'] : null;
+    $longitude = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
+    $location_accuracy = isset($_POST['location_accuracy']) && $_POST['location_accuracy'] !== '' ? (float)$_POST['location_accuracy'] : null;
+    $ghi_chu = $_POST['ghi_chu'] ?? 'Self check-in';
     
     // Kiểm tra đã check-in chưa
     $status = cc_check_today_status($id_nv, $id_rap);
@@ -566,9 +618,29 @@ function cc_quick_checkin($id_nv, $id_rap){
         throw new Exception('Bạn đã check-in hôm nay rồi');
     }
     
-    // Insert record with GPS data and fingerprint
-    pdo_execute("INSERT INTO cham_cong(id_nv, id_rap, ngay, gio_vao, gio_ra, ghi_chu, latitude, longitude, location_accuracy, fingerprint_vao) VALUES(?,?,?,?,?,?,?,?,?,?)",
-                $id_nv, $id_rap, $today, $now_time, $checkout_time, 'Self check-in', $latitude, $longitude, $location_accuracy, $fingerprint_vao);
+    // XÁC THỰC GPS GEOFENCING
+    $rap_data = pdo_query_one("SELECT ten_rap, latitude, longitude FROM rap_chieu WHERE id = ?", $id_rap);
+    if ($rap_data && $rap_data['latitude'] !== null && $rap_data['longitude'] !== null) {
+        $rap_lat = (float)$rap_data['latitude'];
+        $rap_lng = (float)$rap_data['longitude'];
+        $rap_name = $rap_data['ten_rap'];
+        
+        if ($latitude === null || $longitude === null) {
+            throw new Exception("❌ Không thể xác định vị trí. Vui lòng bật định vị GPS trên trình duyệt.");
+        }
+        
+        $distance = cc_calculate_distance($latitude, $longitude, $rap_lat, $rap_lng);
+        $allowed_radius = 50.0; // 50 mét
+        
+        if ($distance > $allowed_radius) {
+            $distance_round = round($distance, 1);
+            throw new Exception("❌ Bạn đang ở ngoài phạm vi rạp $rap_name (khoảng cách: {$distance_round}m). Vui lòng di chuyển đến gần rạp hơn (phạm vi cho phép: {$allowed_radius}m).");
+        }
+    }
+    
+    // Insert record - gio_ra để NULL, sẽ update khi checkout
+    pdo_execute("INSERT INTO cham_cong(id_nv, id_rap, ngay, gio_vao, gio_ra, ghi_chu, latitude, longitude, location_accuracy) VALUES(?,?,?,?,NULL,?,?,?,?)",
+                $id_nv, $id_rap, $today, $now_time, $ghi_chu, $latitude, $longitude, $location_accuracy);
     
     return ['success' => true, 'time' => $now_time, 'message' => 'Check-in thành công lúc ' . date('H:i')];
 }
@@ -580,20 +652,11 @@ function cc_quick_checkout($id_nv, $id_rap){
     $now_time = date('H:i:s');
     
     // Get GPS data from POST
-    $latitude = $_POST['latitude'] ?? null;
-    $longitude = $_POST['longitude'] ?? null;
-    $location_accuracy = $_POST['location_accuracy'] ?? null;
-    
-    // Get face fingerprint from POST (as JSON array)
-    $fingerprint_ra = $_POST['fingerprint_ra'] ?? null;
-    
-    // VERIFY FACE: So sánh với face template đã đăng ký
-    if ($fingerprint_ra) {
-        $verification = cc_verify_face_strict($id_nv, $fingerprint_ra);
-        if (!$verification['success']) {
-            throw new Exception($verification['message']);
-        }
-    }
+    $latitude = isset($_POST['latitude']) && $_POST['latitude'] !== '' ? (float)$_POST['latitude'] : null;
+    $longitude = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
+    $location_accuracy = isset($_POST['location_accuracy']) && $_POST['location_accuracy'] !== '' ? (float)$_POST['location_accuracy'] : null;
+    $ghi_chu_ra = $_POST['ghi_chu_ra'] ?? 'Self check-out';
+    $break_duration = isset($_POST['break_duration']) ? (int)$_POST['break_duration'] : 60;
     
     // Kiểm tra trạng thái
     $status = cc_check_today_status($id_nv, $id_rap);
@@ -606,17 +669,37 @@ function cc_quick_checkout($id_nv, $id_rap){
         throw new Exception('Bạn đã check-out rồi');
     }
     
-    // Validate: giờ ra phải sau giờ vào ít nhất 1h
+    // XÁC THỰC GPS GEOFENCING
+    $rap_data = pdo_query_one("SELECT ten_rap, latitude, longitude FROM rap_chieu WHERE id = ?", $id_rap);
+    if ($rap_data && $rap_data['latitude'] !== null && $rap_data['longitude'] !== null) {
+        $rap_lat = (float)$rap_data['latitude'];
+        $rap_lng = (float)$rap_data['longitude'];
+        $rap_name = $rap_data['ten_rap'];
+        
+        if ($latitude === null || $longitude === null) {
+            throw new Exception("❌ Không thể xác định vị trí. Vui lòng bật định vị GPS trên trình duyệt.");
+        }
+        
+        $distance = cc_calculate_distance($latitude, $longitude, $rap_lat, $rap_lng);
+        $allowed_radius = 50.0; // 50 mét
+        
+        if ($distance > $allowed_radius) {
+            $distance_round = round($distance, 1);
+            throw new Exception("❌ Bạn đang ở ngoài phạm vi rạp $rap_name (khoảng cách: {$distance_round}m). Vui lòng di chuyển đến gần rạp hơn (phạm vi cho phép: {$allowed_radius}m).");
+        }
+    }
+    
+    // Validate: giờ ra phải sau giờ vào ít nhất 30 phút
     $gio_vao = $status['checkin_time'];
     $diff_hours = (strtotime($now_time) - strtotime($gio_vao)) / 3600;
     
-    if ($diff_hours < 1) {
-        throw new Exception('Giờ check-out phải sau giờ check-in ít nhất 1 tiếng');
+    if ($diff_hours < 0.5) {
+        throw new Exception('Giờ check-out phải sau giờ check-in ít nhất 30 phút');
     }
     
-    // Update giờ ra with GPS data and fingerprint
-    pdo_execute("UPDATE cham_cong SET gio_ra = ?, ghi_chu = 'Self check-out', latitude = ?, longitude = ?, location_accuracy = ?, fingerprint_ra = ? WHERE id = ?",
-                $now_time, $latitude, $longitude, $location_accuracy, $fingerprint_ra, $status['record']['id']);
+    // Update giờ ra with GPS data
+    pdo_execute("UPDATE cham_cong SET gio_ra = ?, ghi_chu_ra = ?, break_duration = ?, latitude = COALESCE(?, latitude), longitude = COALESCE(?, longitude), location_accuracy = COALESCE(?, location_accuracy) WHERE id = ?",
+                $now_time, $ghi_chu_ra, $break_duration, $latitude, $longitude, $location_accuracy, $status['record']['id']);
     
     $total_hours = round($diff_hours, 1);
     return ['success' => true, 'time' => $now_time, 'total_hours' => $total_hours, 'message' => 'Check-out thành công. Tổng: ' . $total_hours . ' giờ'];

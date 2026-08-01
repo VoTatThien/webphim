@@ -12,7 +12,7 @@ function pg_ensure_schema(){
                 active TINYINT(1) NOT NULL DEFAULT 1,
                 UNIQUE KEY uniq_room_code (id_phong, code),
                 KEY idx_room (id_phong)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
     pdo_execute($sql);
 }
 

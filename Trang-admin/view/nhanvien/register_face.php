@@ -1,7 +1,7 @@
 <?php 
 // Trang đăng ký khuôn mặt cho nhân viên
 if (!isset($_SESSION['user1'])) {
-    header('Location: /webphim/Trang-admin/login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -587,7 +587,7 @@ function calculateFaceFingerprint(canvas) {
         
         try {
             // Send to register_face_handler.php
-            const response = await fetch('/webphim/Trang-admin/model/register_face_handler.php', {
+            const response = await fetch('model/register_face_handler.php', {
                 method: 'POST',
                 body: formData
             });

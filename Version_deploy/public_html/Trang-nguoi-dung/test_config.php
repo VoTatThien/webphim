@@ -1,13 +1,13 @@
 <?php
 /**
  * Test page: Kiểm tra cấu hình website
- * Truy cập: http://localhost/webphim/Trang-nguoi-dung/test_config.php
+ * Truy cập: http://localhost/webphim_hung/Trang-nguoi-dung/test_config.php
  */
 
 // Fetch dữ liệu cấu hình từ API
 $curl = curl_init();
 curl_setopt_array($curl, [
-    CURLOPT_URL => 'http://localhost/webphim/Trang-nguoi-dung/api_config.php',
+    CURLOPT_URL => 'http://localhost/webphim_hung/Trang-nguoi-dung/api_config.php',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => 5,
     CURLOPT_HTTPHEADER => ['Accept: application/json']
@@ -125,7 +125,7 @@ $data = json_decode($response, true);
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
         <p style="text-align: center; color: #6b7280;">
             Để thay đổi thông tin, vui lòng truy cập: 
-            <strong><a href="http://localhost/webphim/Trang-admin/index.php?act=cauhinh">Admin Panel - Cấu Hình Website</a></strong>
+            <strong><a href="http://localhost/webphim_hung/Trang-admin/index.php?act=cauhinh">Admin Panel - Cấu Hình Website</a></strong>
         </p>
 
         <?php else: ?>

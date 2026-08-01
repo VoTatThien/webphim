@@ -310,7 +310,7 @@
     <div style="margin-top: 30px; padding: 20px; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px;">
         <strong style="color: #1e40af;">Xem trước:</strong>
         <div style="margin-top: 10px;">
-            <a href="/webphim/Trang-nguoi-dung/test_config.php" target="_blank" style="color: #3b82f6; text-decoration: none; font-weight: 600;">
+            <a href="/webphim_hung/Trang-nguoi-dung/test_config.php" target="_blank" style="color: #3b82f6; text-decoration: none; font-weight: 600;">
                 Test page - Xem tất cả dữ liệu cấu hình
             </a>
         </div>

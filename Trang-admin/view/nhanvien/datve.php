@@ -799,6 +799,19 @@
 
 <script>
 (function(){
+    // Helper function to get dynamic base path
+    function getBasePath() {
+        const pathParts = window.location.pathname.split('/');
+        let basePath = '/';
+        for (let i = 0; i < pathParts.length; i++) {
+            if (pathParts[i] === 'Trang-admin') {
+                basePath = '/' + pathParts.slice(1, i + 1).join('/');
+                break;
+            }
+        }
+        return basePath;
+    }
+
     // State management
     const state = {
         step: 1,
@@ -1650,7 +1663,10 @@
     // Generate Sepay QR Code
     async function generateSepayQR(veId) {
         try {
-            const response = await fetch('/webphim/Trang-nguoi-dung/sepay/generate_qr_admin.php', {
+            const basePath = getBasePath();
+            // Go up from Trang-admin to root, then access Trang-nguoi-dung
+            const rootPath = basePath.replace('/Trang-admin', '');
+            const response = await fetch(rootPath + '/Trang-nguoi-dung/sepay/generate_qr_admin.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ve_id: veId })

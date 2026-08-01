@@ -47,6 +47,14 @@
                     <option value="0" <?= $tt===0 ? 'selected' : '' ?>>Khóa</option>
                 </select>
             </div>
+            <div class="col-12 col-md-6 mb-15">
+                <label>Vĩ độ GPS (Latitude) - Để trống nếu không định vị</label>
+                <input class="form-control" type="number" step="any" name="latitude" placeholder="Ví dụ: 10.7769" value="<?= htmlspecialchars($rp['latitude'] ?? '') ?>" />
+            </div>
+            <div class="col-12 col-md-6 mb-15">
+                <label>Kinh độ GPS (Longitude) - Để trống nếu không định vị</label>
+                <input class="form-control" type="number" step="any" name="longitude" placeholder="Ví dụ: 106.7009" value="<?= htmlspecialchars($rp['longitude'] ?? '') ?>" />
+            </div>
             <div class="col-12">
                 <button class="button button-primary" type="submit" name="capnhat" value="1">Cập nhật</button>
                 <a class="button" href="index.php?act=QLrap">Hủy</a>

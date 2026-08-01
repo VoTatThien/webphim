@@ -49,12 +49,14 @@
                                     extract($gio);
                                     $linksua = "index.php?act=suathoigian&ids=".$id;
                                     $linkxoa = "index.php?act=xoathoigian&idxoa=".$id;
+                                    $forecast = get_showtime_traffic_forecast($id);
+                                    $forecast_badge = $forecast['badge'];
                                     echo '<tr>
                                     <td>#'.$id.'</td>
                                     <td>'.$gio['tieu_de'].'</td>
                                     <td>'.$gio['name'].'</td>
                                     <td>'.$gio['ngay_chieu'].'</td>
-                                    <td>'.$thoi_gian_chieu.'</td>
+                                    <td>'.$thoi_gian_chieu.' '.$forecast_badge.'</td>
                                     <td class="action h4">
                                         <div class="table-action-buttons">
                                             <a class="edit button button-box button-xs button-info" href="'.$linksua.'"><i class="zmdi zmdi-edit"></i></a>

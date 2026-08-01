@@ -64,3 +64,66 @@ function xoa_kgc($id)
     $sql = "DELETE FROM khung_gio_chieu WHERE id=" . $id;
     pdo_execute($sql);
 }
+
+// 🍿 Hàm dự báo lượng khách của suất chiếu dựa trên lượng ghế đã đặt
+function get_showtime_traffic_forecast($id_tg) {
+    $kgc = pdo_query_one("SELECT id_lich_chieu, id_phong FROM khung_gio_chieu WHERE id = ?", $id_tg);
+    if (!$kgc) {
+        return [
+            'status' => 'Vắng vẻ',
+            'badge' => '<span class="badge badge-info" style="background-color: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Vắng vẻ ⏳ (0%)</span>',
+            'ratio' => 0
+        ];
+    }
+    $room_id = $kgc['id_phong'];
+    $room = pdo_query_one("SELECT so_ghe FROM phongchieu WHERE id = ?", $room_id);
+    $total_seats = (int)($room['so_ghe'] ?? 0);
+    if ($total_seats <= 0) {
+        try {
+            $cnt = pdo_query_one("SELECT COUNT(*) as cnt FROM phong_ghe WHERE id_phong = ? AND active = 1", $room_id);
+            $total_seats = (int)($cnt['cnt'] ?? 0);
+        } catch (Exception $e) {
+            $total_seats = 0;
+        }
+        if ($total_seats <= 0) {
+            $total_seats = 100;
+        }
+    }
+    
+    // Đếm số ghế đã đặt
+    $rows = pdo_query("SELECT ghe FROM ve WHERE id_thoi_gian_chieu = ? AND trang_thai IN (1, 2, 4)", $id_tg);
+    $seats = [];
+    foreach ($rows as $r) {
+        $g = trim($r['ghe'] ?? '');
+        if ($g !== '') {
+            foreach (explode(',', $g) as $s) {
+                if (trim($s) !== '') {
+                    $seats[] = trim($s);
+                }
+            }
+        }
+    }
+    $booked_count = count(array_unique($seats));
+    $ratio = $booked_count / $total_seats;
+    
+    if ($ratio >= 0.7) {
+        return [
+            'status' => 'Đông đúc',
+            'badge' => '<span class="badge badge-danger" style="background-color: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Đông đúc 🔥 (' . round($ratio * 100) . '%)</span>',
+            'ratio' => $ratio
+        ];
+    } elseif ($ratio >= 0.3) {
+        return [
+            'status' => 'Bình thường',
+            'badge' => '<span class="badge badge-success" style="background-color: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Bình thường 🟢 (' . round($ratio * 100) . '%)</span>',
+            'ratio' => $ratio
+        ];
+    } else {
+        return [
+            'status' => 'Vắng vẻ',
+            'badge' => '<span class="badge badge-info" style="background-color: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Vắng vẻ ⏳ (' . round($ratio * 100) . '%)</span>',
+            'ratio' => $ratio
+        ];
+    }
+}
+

@@ -55,11 +55,11 @@ if (isset($_POST['ap_dung_diem']) && !empty($_POST['so_diem_doi'])) {
         
         // Validate
         if ($diem_muon_doi <= 0) {
-            $error_diem = 'Số điểm phải lớn hơn 0!';
+            $error_diem = __('Số điểm phải lớn hơn 0!');
         } elseif ($diem_muon_doi > $diem_hien_tai) {
-            $error_diem = 'Bạn không đủ điểm! Điểm hiện tại: ' . number_format($diem_hien_tai);
+            $error_diem = __('Bạn không đủ điểm! Điểm hiện tại:') . ' ' . number_format($diem_hien_tai);
         } elseif ($diem_muon_doi < 1000) {
-            $error_diem = 'Tối thiểu phải đổi 1,000 điểm (= 10,000 VND)';
+            $error_diem = __('Tối thiểu phải đổi 1,000 điểm (= 10,000 VND)');
         } else {
             // Tính số tiền giảm
             $giam_gia_diem = (int)($diem_muon_doi * TI_LE_DOI_DIEM);
@@ -79,7 +79,7 @@ if (isset($_POST['ap_dung_diem']) && !empty($_POST['so_diem_doi'])) {
             // ⚠️ Chưa trừ điểm ngay - sẽ trừ sau khi thanh toán thành công
         }
     } else {
-        $error_diem = 'Chỉ thành viên mới được đổi điểm!';
+        $error_diem = __('Chỉ thành viên mới được đổi điểm!');
     }
 } elseif (isset($_SESSION['tong']['diem_doi'])) {
     // Lấy thông tin đổi điểm từ session
@@ -114,10 +114,10 @@ if (isset($_POST['ap_dung_ma']) && !empty($_POST['ma_khuyen_mai'])) {
             $_SESSION['tong']['giam_gia'] = $giam_gia;
             $_SESSION['tong']['gia_sau_giam'] = $gia_total;
         } else {
-            $error_km = 'Mã khuyến mãi không áp dụng cho rạp này!';
+            $error_km = __('Mã khuyến mãi không áp dụng cho rạp này!');
         }
     } else {
-        $error_km = 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn!';
+        $error_km = __('Mã khuyến mãi không hợp lệ hoặc đã hết hạn!');
     }
 } elseif (isset($_SESSION['tong']['giam_gia'])) {
     // Lấy thông tin giảm giá từ session nếu đã áp dụng trước đó
@@ -138,19 +138,19 @@ $gia = number_format($gia_total, 0, ',', '.');
     /* Cải thiện font và giao diện */
     .checkout-wrapper {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #fff;
+        background: #1c181c;
+        border: 1px solid #363033;
         padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
     }
     
     .page-heading {
         font-size: 24px;
         font-weight: 600;
-        color: #2c3e50;
+        color: #ffd564;
         margin-bottom: 20px;
         padding-bottom: 10px;
-        border-bottom: 3px solid #667eea;
+        border-bottom: 3px solid #ffd564;
     }
     
     .book-result {
@@ -161,27 +161,28 @@ $gia = number_format($gia_total, 0, ',', '.');
     .book-result__item {
         padding: 12px 0;
         font-size: 16px;
-        color: #34495e;
-        border-bottom: 1px solid #ecf0f1;
+        color: #e5e0e3;
+        border-bottom: 1px solid #363033;
     }
     
     .book-result__count {
         float: right;
         font-weight: 600;
-        color: #667eea;
+        color: #ffd564;
     }
     
     /* Style cho ô nhập mã khuyến mãi */
     .promo-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #232023;
+        border: 1px solid #4a3e43;
+        border-left: 4px solid #ffd564;
         padding: 25px;
         border-radius: 12px;
         margin: 20px 0;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
     
     .promo-title {
-        color: white;
+        color: #ffd564;
         font-size: 18px;
         font-weight: 600;
         margin-bottom: 15px;
@@ -198,7 +199,9 @@ $gia = number_format($gia_total, 0, ',', '.');
     .promo-input {
         flex: 1;
         padding: 12px 15px;
-        border: 2px solid white;
+        background: #1c181c;
+        border: 1px solid #4a3e43;
+        color: white;
         border-radius: 8px;
         font-size: 16px;
         text-transform: uppercase;
@@ -207,15 +210,19 @@ $gia = number_format($gia_total, 0, ',', '.');
         transition: all 0.3s;
     }
     
+    .promo-input::placeholder {
+        color: #7a7075;
+    }
+    
     .promo-input:focus {
         border-color: #ffd564;
-        box-shadow: 0 0 0 3px rgba(255, 213, 100, 0.3);
+        box-shadow: 0 0 0 3px rgba(255, 213, 100, 0.2);
     }
     
     .promo-btn {
         padding: 12px 30px;
-        background: white;
-        color: #667eea;
+        background: #ffd564;
+        color: #4c4145;
         border: none;
         border-radius: 8px;
         font-weight: 600;
@@ -225,14 +232,14 @@ $gia = number_format($gia_total, 0, ',', '.');
     }
     
     .promo-btn:hover {
-        background: #ffd564;
+        background: #ffe08d;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
     .promo-error {
         color: #ff6b6b;
-        background: white;
+        background: #2d1818;
+        border: 1px solid #f56565;
         padding: 10px 15px;
         border-radius: 6px;
         margin-top: 10px;
@@ -241,7 +248,8 @@ $gia = number_format($gia_total, 0, ',', '.');
     
     .promo-success {
         color: #51cf66;
-        background: white;
+        background: #1c2e24;
+        border: 1px solid #2f855a;
         padding: 10px 15px;
         border-radius: 6px;
         margin-top: 10px;
@@ -250,7 +258,8 @@ $gia = number_format($gia_total, 0, ',', '.');
     }
     
     .price-breakdown {
-        background: #f8f9fa;
+        background: #232023;
+        border: 1px solid #363033;
         padding: 20px;
         border-radius: 8px;
         margin: 20px 0;
@@ -261,15 +270,16 @@ $gia = number_format($gia_total, 0, ',', '.');
         justify-content: space-between;
         padding: 10px 0;
         font-size: 16px;
+        color: #e5e0e3;
     }
     
     .price-row.total {
-        border-top: 2px solid #dee2e6;
+        border-top: 1px solid #363033;
         margin-top: 10px;
         padding-top: 15px;
         font-size: 20px;
         font-weight: bold;
-        color: #dc3545;
+        color: #fe505a;
     }
     
     .discount-row {
@@ -283,33 +293,33 @@ $gia = number_format($gia_total, 0, ',', '.');
     <div class="order-container">
         <div class="order">
             <img class="order__images" alt='' src="images/tickets.png">
-            <p class="order__title">Book a ticket <br><span class="order__descript">Tận Hưởng Thời Gian Xem Phim Vui Vẻ</span></p>
+            <p class="order__title"><?= __("Đặt vé xem phim") ?> <br><span class="order__descript"><?= __("Tận Hưởng Thời Gian Xem Phim Vui Vẻ") ?></span></p>
         </div>
     </div>
     <div class="order-step-area">
-        <div class="order-step first--step order-step--disable ">1. Lịch Chiếu &amp; Thời gian</div>
-        <div class="order-step second--step order-step--disable">2. Chọn ghế</div>
-        <div class="order-step third--step">3. Thanh Toán </div>
+        <div class="order-step first--step order-step--disable "><?= __("1. Lịch Chiếu &amp; Thời gian") ?></div>
+        <div class="order-step second--step order-step--disable"><?= __("2. Chọn ghế") ?></div>
+        <div class="order-step third--step"><?= __("3. Thanh Toán") ?> </div>
     </div>
     <form action="" method="post">
     <div class="col-sm-12">
         <div class="checkout-wrapper">
-            <h2 class="page-heading">Thông tin đặt vé</h2>
+            <h2 class="page-heading"><?= __("Thông tin đặt vé") ?></h2>
             <ul class="book-result">
-                <li class="book-result__item">Phim: <span class="book-result__count booking-cost"><?php echo $_SESSION['tong']['tieu_de'] ?></span></li>
+                <li class="book-result__item"><i class="fa fa-video-camera" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Phim:") ?> <span class="book-result__count booking-cost"><?php echo htmlspecialchars(__($_SESSION['tong']['tieu_de'])) ?></span></li>
                 
-                <li class="book-result__item">🏢 Rạp chiếu: <span class="book-result__count booking-cost"><?php echo isset($_SESSION['tong']['ten_rap']) ? $_SESSION['tong']['ten_rap'] : 'N/A' ?></span></li>
+                <li class="book-result__item"><i class="fa fa-film" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Rạp chiếu:") ?> <span class="book-result__count booking-cost"><?php echo isset($_SESSION['tong']['ten_rap']) ? htmlspecialchars(__($_SESSION['tong']['ten_rap'])) : 'N/A' ?></span></li>
                 
-                <li class="book-result__item">📍 Địa chỉ rạp: <span class="book-result__count booking-cost"><?php echo isset($_SESSION['tong']['dia_chi_rap']) ? $_SESSION['tong']['dia_chi_rap'] : 'N/A' ?></span></li>
+                <li class="book-result__item"><i class="fa fa-map-marker" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Địa chỉ rạp:") ?> <span class="book-result__count booking-cost"><?php echo isset($_SESSION['tong']['dia_chi_rap']) ? htmlspecialchars($_SESSION['tong']['dia_chi_rap']) : 'N/A' ?></span></li>
                 
-                <li class="book-result__item">🚪 Phòng chiếu: <span class="book-result__count booking-cost"><?php echo isset($_SESSION['tong']['ten_phong']) ? $_SESSION['tong']['ten_phong'] : 'N/A' ?></span></li>
+                <li class="book-result__item"><i class="fa fa-desktop" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Phòng chiếu:") ?> <span class="book-result__count booking-cost"><?php echo isset($_SESSION['tong']['ten_phong']) ? htmlspecialchars($_SESSION['tong']['ten_phong']) : 'N/A' ?></span></li>
 
-                <li class="book-result__item">📅 Ngày chiếu: <span class="book-result__count booking-cost"><?php echo $_SESSION['tong']['ngay_chieu'] ?></span></li>
+                <li class="book-result__item"><i class="fa fa-calendar" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Ngày chiếu:") ?> <span class="book-result__count booking-cost"><?php echo $_SESSION['tong']['ngay_chieu'] ?></span></li>
                 
-                <li class="book-result__item">⏰ Khung giờ chiếu: <span class="book-result__count booking-cost"><?php echo $_SESSION['tong']['thoi_gian_chieu'] ?></span></li>
+                <li class="book-result__item"><i class="fa fa-clock-o" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Khung giờ chiếu:") ?> <span class="book-result__count booking-cost"><?php echo $_SESSION['tong']['thoi_gian_chieu'] ?></span></li>
                 <br>
-                <hr>
-                <li class="book-result__item">🪑 Số ghế: <span class="book-result__count booking-cost"><?php
+                <hr style="border-color: #363033;">
+                <li class="book-result__item"><i class="fa fa-circle-o" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Số ghế:") ?> <span class="book-result__count booking-cost"><?php
                         if (isset($ten_ghe['ghe'])) {
                             $ghes = $ten_ghe['ghe'];
                             echo '<span class="choosen-plac">' . implode(', ', $ghes) . '</span>';
@@ -320,7 +330,7 @@ $gia = number_format($gia_total, 0, ',', '.');
                         }
                         ?>
 </span></li>
-                <li class="book-result__item">🍿 Combo: <span class="book-result__count booking-cost"><span class="check-doan"> <?php
+                <li class="book-result__item"><i class="fa fa-coffee" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Combo:") ?> <span class="book-result__count booking-cost"><span class="check-doan"> <?php
                             if (isset($ten_doan['doan'])) {
                                 foreach ($ten_doan['doan'] as $doan) {
                                     echo  '<span class="check-doan">' . $doan . '</span>';
@@ -335,29 +345,29 @@ $gia = number_format($gia_total, 0, ',', '.');
             <form method="post" style="margin: 0;">
                 <div class="promo-section">
                     <div class="promo-title">
-                        🎁 Bạn có mã khuyến mãi?
+                        <i class="fa fa-gift" style="color: #ffd564;"></i> <?= __("Bạn có mã khuyến mãi?") ?>
                     </div>
                     <div class="promo-input-group">
                         <input type="text" 
                                name="ma_khuyen_mai" 
                                class="promo-input" 
-                               placeholder="Nhập mã khuyến mãi" 
+                               placeholder="<?= __("Nhập mã khuyến mãi") ?>" 
                                value="<?php echo htmlspecialchars($ma_giam_gia); ?>"
                                <?php echo $ma_giam_gia ? 'readonly' : ''; ?>>
                         <?php if (!$ma_giam_gia): ?>
-                            <button type="submit" name="ap_dung_ma" class="promo-btn">Áp dụng</button>
+                            <button type="submit" name="ap_dung_ma" class="promo-btn"><?= __("Áp dụng") ?></button>
                         <?php else: ?>
-                            <button type="submit" name="huy_ma" class="promo-btn" style="background: #ff6b6b;">Hủy mã</button>
+                            <button type="submit" name="huy_ma" class="promo-btn" style="background: #ff6b6b; color: white;"><?= __("Hủy mã") ?></button>
                         <?php endif; ?>
                     </div>
                     
                     <?php if ($error_km): ?>
-                        <div class="promo-error">❌ <?php echo $error_km; ?></div>
+                        <div class="promo-error"><i class="fa fa-exclamation-circle"></i> <?php echo $error_km; ?></div>
                     <?php endif; ?>
                     
                     <?php if ($ma_giam_gia && $giam_gia > 0): ?>
                         <div class="promo-success">
-                            ✅ Đã áp dụng mã: <?php echo strtoupper($ma_giam_gia); ?>
+                            <i class="fa fa-check-circle"></i> <?= __("Đã áp dụng mã:") ?> <?php echo strtoupper($ma_giam_gia); ?>
                             <?php if ($ten_km): ?>
                                 (<?php echo $ten_km; ?>)
                             <?php endif; ?>
@@ -369,40 +379,40 @@ $gia = number_format($gia_total, 0, ',', '.');
             <!-- Đổi điểm tích lũy -->
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] == 0): ?>
             <form method="post" style="margin: 0;">
-                <div class="promo-section" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="promo-section">
                     <div class="promo-title">
-                        ⭐ Đổi điểm tích lũy
-                        <span style="font-size: 14px; font-weight: normal; margin-left: auto;">
-                            Điểm hiện tại: <strong><?php echo number_format($_SESSION['user']['diem_tich_luy'] ?? 0); ?></strong> điểm
+                        <i class="fa fa-star" style="color: #ffd564;"></i> <?= __("Đổi điểm tích lũy") ?>
+                        <span style="font-size: 14px; font-weight: normal; margin-left: auto; color: #a59b9f;">
+                            <?= __("Điểm hiện tại:") ?> <strong style="color: #ffd564;"><?php echo number_format($_SESSION['user']['diem_tich_luy'] ?? 0); ?></strong> <?= __("điểm") ?>
                         </span>
                     </div>
-                    <div style="color: white; font-size: 13px; margin-bottom: 10px;">
-                        💡 Tỷ lệ đổi: <strong>100,000 điểm = 10,000,000 VND</strong> (100 VND = 1 điểm) | Tối thiểu: 1,000 điểm
+                    <div style="color: #a59b9f; font-size: 13px; margin-bottom: 10px;">
+                        <i class="fa fa-info-circle" style="color: #ffd564;"></i> <?= __("Tỷ lệ đổi: 100,000 điểm = 10,000,000 VND (100 VND = 1 điểm) | Tối thiểu: 1,000 điểm") ?>
                     </div>
                     <div class="promo-input-group">
                         <input type="number" 
                                name="so_diem_doi" 
                                class="promo-input" 
-                               placeholder="Nhập số điểm muốn đổi" 
+                               placeholder="<?= __("Nhập số điểm muốn đổi") ?>" 
                                min="1000"
                                step="100"
                                value="<?php echo $diem_doi; ?>"
                                <?php echo $diem_doi ? 'readonly' : ''; ?>>
                         <?php if (!$diem_doi): ?>
-                            <button type="submit" name="ap_dung_diem" class="promo-btn">Đổi điểm</button>
+                            <button type="submit" name="ap_dung_diem" class="promo-btn"><?= __("Đổi điểm") ?></button>
                         <?php else: ?>
-                            <button type="submit" name="huy_diem" class="promo-btn" style="background: #ff6b6b;">Hủy đổi</button>
+                            <button type="submit" name="huy_diem" class="promo-btn" style="background: #ff6b6b; color: white;"><?= __("Hủy đổi") ?></button>
                         <?php endif; ?>
                     </div>
                     
                     <?php if ($error_diem): ?>
-                        <div class="promo-error">❌ <?php echo $error_diem; ?></div>
+                        <div class="promo-error"><i class="fa fa-exclamation-circle"></i> <?php echo $error_diem; ?></div>
                     <?php endif; ?>
                     
                     <?php if ($diem_doi > 0 && $giam_gia_diem > 0): ?>
                         <div class="promo-success">
-                            ✅ Đã đổi <?php echo number_format($diem_doi); ?> điểm 
-                            → Giảm <?php echo number_format($giam_gia_diem); ?> VND
+                            <i class="fa fa-check-circle"></i> <?= __("Đã đổi") ?> <?php echo number_format($diem_doi); ?> <?= __("điểm") ?> 
+                            → <?= __("Giảm") ?> <?php echo number_format($giam_gia_diem); ?> VND
                         </div>
                     <?php endif; ?>
                 </div>
@@ -412,39 +422,39 @@ $gia = number_format($gia_total, 0, ',', '.');
             <!-- Chi tiết giá -->
             <div class="price-breakdown">
                 <div class="price-row">
-                    <span>Tổng tiền vé:</span>
+                    <span><?= __("Tổng tiền vé:") ?></span>
                     <span><?php echo number_format($gia_goc, 0, ',', '.'); ?> VND</span>
                 </div>
                 
                 <?php if ($giam_gia > 0): ?>
                 <div class="price-row discount-row">
-                    <span>�️ Mã khuyến mãi:</span>
+                    <span><i class="fa fa-tag" style="color: #51cf66; margin-right: 5px;"></i> <?= __("Mã khuyến mãi:") ?></span>
                     <span>- <?php echo number_format($giam_gia, 0, ',', '.'); ?> VND</span>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($giam_gia_diem > 0): ?>
-                <div class="price-row discount-row" style="color: #f5576c;">
-                    <span>⭐ Đổi <?php echo number_format($diem_doi); ?> điểm:</span>
+                <div class="price-row discount-row" style="color: #fe505a;">
+                    <span><i class="fa fa-star" style="color: #fe505a; margin-right: 5px;"></i> <?= __("Đã đổi") ?> <?php echo number_format($diem_doi); ?> <?= __("điểm") ?>:</span>
                     <span>- <?php echo number_format($giam_gia_diem, 0, ',', '.'); ?> VND</span>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($tong_giam_gia > 0): ?>
                 <div class="price-row" style="color: #51cf66; font-weight: 600;">
-                    <span>💰 Tổng tiết kiệm:</span>
+                    <span><i class="fa fa-money" style="color: #51cf66; margin-right: 5px;"></i> <?= __("Tổng tiết kiệm:") ?></span>
                     <span>- <?php echo number_format($tong_giam_gia, 0, ',', '.'); ?> VND</span>
                 </div>
                 <?php endif; ?>
                 
                 <div class="price-row total">
-                    <span>💳 Số tiền thanh toán:</span>
+                    <span><i class="fa fa-credit-card" style="color: #fe505a; margin-right: 5px;"></i> <?= __("Số tiền thanh toán:") ?></span>
                     <span><?php echo $gia; ?> VND</span>
                 </div>
             </div>
     </form>
 
-            <h2 class="page-heading">Chọn hình thức thanh toán</h2>
+            <h2 class="page-heading"><?= __("Chọn hình thức thanh toán") ?></h2>
             <form action="" method="post">
                 <!-- Hidden fields to pass data -->
                 <input type="hidden" name="gia_thanh_toan" value="<?php echo $gia_total; ?>">
@@ -455,7 +465,8 @@ $gia = number_format($gia_total, 0, ',', '.');
                 
                 <style>
                     .payment-methods-container {
-                        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+                        background: #1c181c;
+                        border: 1px solid #363033;
                         padding: 30px;
                         border-radius: 12px;
                         margin: 20px 0;
@@ -469,15 +480,15 @@ $gia = number_format($gia_total, 0, ',', '.');
                     }
 
                     .payment-method-card {
-                        background: white;
-                        border: 2px solid #e5e7eb;
+                        background: #232023;
+                        border: 2px solid #363033;
                         border-radius: 12px;
                         padding: 20px;
                         text-align: center;
                         cursor: pointer;
                         transition: all 0.3s ease;
                         text-decoration: none;
-                        color: inherit;
+                        color: white;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
@@ -485,9 +496,9 @@ $gia = number_format($gia_total, 0, ',', '.');
                     }
 
                     .payment-method-card:hover {
-                        border-color: #667eea;
+                        border-color: #ffd564;
                         transform: translateY(-8px);
-                        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.25);
+                        box-shadow: 0 12px 30px rgba(255, 213, 100, 0.15);
                     }
 
                     .payment-method-icon {
@@ -608,30 +619,46 @@ $gia = number_format($gia_total, 0, ',', '.');
                 </style>
 
                 <div class="payment-info">
-                    ℹ️ <strong>Lưu ý:</strong> Chọn phương thức thanh toán bên dưới để tiếp tục
+                    ℹ️ <strong><?= __("Lưu ý:") ?></strong> <?= __("Chọn phương thức thanh toán bên dưới để tiếp tục") ?>
                 </div>
 
                 <div class="payment-methods-container">
+                    <?php
+                    $user = $_SESSION['user'] ?? null;
+                    $has_sub = ($user && isset($user['cinepass_sub_status']) && $user['cinepass_sub_status'] == 1);
+                    $tickets_left = $has_sub ? (int)$user['cinepass_tickets_left'] : 0;
+                    $seats_count = isset($ten_ghe) ? count($ten_ghe) : 0;
+                    $can_pay_with_cinepass = ($has_sub && $tickets_left >= $seats_count && $seats_count > 0);
+                    ?>
                     <div class="payment-methods-grid">
+                        <?php if ($can_pay_with_cinepass): ?>
+                        <!-- Thẻ hội viên CinePass -->
+                        <button type="button" onclick="initiateCinePassPayment()" class="payment-method-card payment-cinepass" style="cursor: pointer; border: 2px solid #ffd564; background: linear-gradient(135deg, #2a2213 0%, #151216 100%); padding: 20px; text-align: center; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                            <div class="payment-method-icon" style="background: linear-gradient(135deg, #ffd564 0%, #ff9f43 100%); color: #151216; width: 80px; height: 80px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 12px;">💳</div>
+                            <div class="payment-method-name" style="color: #ffd564; font-weight: 700; font-size: 16px; margin-bottom: 6px;">CinePass Card</div>
+                            <div class="payment-method-desc" style="font-size: 12px; color: #fff;"><?= __("Còn") ?> <?= $tickets_left ?> <?= __("vé free") ?></div>
+                        </button>
+                        <?php endif; ?>
+
                         <!-- Sepay (Chuyển khoản ngân hàng) -->
                         <button type="button" onclick="initiateSepayPayment()" class="payment-method-card payment-sepay" style="cursor: pointer; border: none; background: none; padding: 0; text-align: center;">
                             <div class="payment-method-icon">🏦</div>
                             <div class="payment-method-name">Sepay</div>
-                            <div class="payment-method-desc">QR Chuyển khoản</div>
+                            <div class="payment-method-desc"><?= __("QR Chuyển khoản") ?></div>
                         </button>
 
                         <!-- MoMo QR -->
                         <button type="button" onclick="initiateMoMoPayment()" class="payment-method-card payment-momo" style="cursor: pointer; border: none; background: none; padding: 0; text-align: center;">
                             <div class="payment-method-icon">📱</div>
                             <div class="payment-method-name">MoMo QR</div>
-                            <div class="payment-method-desc">Quét mã QR</div>
+                            <div class="payment-method-desc"><?= __("Quét mã QR") ?></div>
                         </button>
 
                         <!-- VietQR -->
                         <button type="button" onclick="initiateVietQRPayment()" class="payment-method-card payment-vietqr" style="cursor: pointer; border: none; background: none; padding: 0; text-align: center;">
                             <div class="payment-method-icon">🏦</div>
                             <div class="payment-method-name">VietQR</div>
-                            <div class="payment-method-desc">Chuyển tiền</div>
+                            <div class="payment-method-desc"><?= __("Chuyển tiền") ?></div>
                         </button>
                     </div>
                 </div>
@@ -650,64 +677,40 @@ $gia = number_format($gia_total, 0, ',', '.');
 <div class="clearfix"></div>
 
 <script>
+// Determine base path dynamically
+const matches = window.location.pathname.match(/^(.+)\/(Trang-nguoi-dung|Trang-admin)/);
+const basePath = matches ? matches[1] : '';
+
+/**
+ * Xử lý thanh toán qua Thẻ hội viên CinePass
+ */
+function initiateCinePassPayment() {
+    if (confirm('<?= __("Bạn có chắc chắn muốn sử dụng vé hội viên CinePass để đặt các ghế này (0 VND)?") ?>')) {
+        window.location.href = basePath + '/Trang-nguoi-dung/index.php?act=xacnhan&pay_method=cinepass';
+    }
+}
+
 /**
  * Xử lý thanh toán Sepay (Chuyển khoản)
  */
 function initiateSepayPayment() {
     const amount = <?php echo (int)$gia_total; ?>;
     
-    console.log('🔍 Sepay Payment initiated...');
-    console.log('Amount:', amount);
+    console.log('🔍 Sepay Amount:', amount);
     
     if (amount <= 0) {
-        alert('❌ Số tiền không hợp lệ! Vui lòng kiểm tra đơn đặt hàng của bạn.');
+        alert('<?= __("Số tiền không hợp lệ! Vui lòng kiểm tra đơn đặt hàng của bạn.") ?>');
+        console.error('❌ Invalid amount:', amount);
         return;
     }
     
-    // SIMPLE: Just use direct path from domain root
-    const endpoint = '/Trang-nguoi-dung/sepay/do_payment.php';
-    console.log('POST endpoint:', endpoint);
-    console.log('Full URL:', window.location.origin + endpoint);
+    // Lấy ticket_id từ session (giả sử đã được lưu)
+    // Nếu không có, sử dụng timestamp làm ID tạm thời
+    const ticket_id = <?php echo isset($_SESSION['ticket_id']) ? $_SESSION['ticket_id'] : 'Math.floor(Date.now() / 1000)'; ?>;
     
-    const payload = { amount: amount };
-    console.log('Sending payload:', JSON.stringify(payload));
-    
-    // Gọi do_payment.php
-    fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
-        if (!response.ok) {
-            return response.text().then(text => {
-                console.log('Error response text:', text);
-                throw new Error('HTTP ' + response.status + ': ' + text);
-            });
-        }
-        return response.json();
-    })
-    .then(result => {
-        console.log('✅ API Response:', result);
-        
-        if (result.success) {
-            console.log('✅ Ready for payment, redirecting...');
-            // Redirect tới payment UI
-            const redirectUrl = result.redirect_url;
-            console.log('Redirect URL:', redirectUrl);
-            window.location.href = redirectUrl;
-        } else {
-            alert('❌ Lỗi: ' + (result.message || JSON.stringify(result)));
-            console.error('API error:', result);
-        }
-    })
-    .catch(error => {
-        alert('❌ Lỗi: ' + error.message);
-        console.error('❌ Fetch error:', error);
-    });
+    console.log('✅ Redirecting to Sepay payment...');
+    // Redirect tới Sepay payment UI - Dùng absolute path từ root
+    window.location.href = `${basePath}/Trang-nguoi-dung/sepay/sepay_payment_ui.php?ticket_id=${ticket_id}&amount=${amount}`;
 }
 
 /**
@@ -719,14 +722,14 @@ function initiateMoMoPayment() {
     console.log('🔍 MoMo Amount:', amount);
     
     if (amount <= 0) {
-        alert('❌ Số tiền không hợp lệ! Vui lòng kiểm tra đơn đặt hàng của bạn.');
+        alert('<?= __("Số tiền không hợp lệ! Vui lòng kiểm tra đơn đặt hàng của bạn.") ?>');
         console.error('❌ Invalid amount:', amount);
         return;
     }
     
     console.log('✅ Redirecting to MoMo payment...');
     // Redirect trực tiếp tới xử lý MoMo ATM
-    window.location.href = '/Trang-nguoi-dung/view/momo/xuly_momo_atm.php';
+    window.location.href = basePath + '/Trang-nguoi-dung/view/momo/xuly_momo_atm.php';
 }
 
 /**
@@ -737,16 +740,16 @@ function initiateVietQRPayment() {
     const amount = <?php echo $gia_total; ?>;
     
     if (amount < 10000) {
-        alert('Số tiền thanh toán phải tối thiểu 10,000 VND');
+        alert('<?= __("Số tiền thanh toán phải tối thiểu 10,000 VND") ?>');
         return;
     }
     
     const btn = event.target.closest('button');
     const originalText = btn.innerText;
     btn.disabled = true;
-    btn.innerText = '⏳ Đang tạo QR...';
+    btn.innerText = '<?= __("Đang tạo QR...") ?>';
     
-    fetch('/Trang-nguoi-dung/api_create_vietqr_payment.php', {
+    fetch(basePath + '/Trang-nguoi-dung/api_create_vietqr_payment.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -777,7 +780,7 @@ function initiateVietQRPayment() {
             });
             
             // Redirect tới trang checkout
-            window.location.href = '/Trang-nguoi-dung/vietqr_checkout.php?' + params.toString();
+            window.location.href = basePath + '/Trang-nguoi-dung/vietqr_checkout.php?' + params.toString();
         } else {
             const errorMsg = data.message || 'Không thể tạo QR VietQR';
             console.error('❌ Error:', data);

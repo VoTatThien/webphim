@@ -21,12 +21,17 @@
                         
                         // Đường dẫn hình ảnh - absolute path từ webroot
                         // Database lưu: assets/news/file.jpg (tương đối từ Trang-admin)
-                        // Convert to: /webphim/Trang-admin/assets/news/file.jpg
-                        if (!empty($hinh_anh)) {
-                            $image_path = '/webphim/Trang-admin/' . $hinh_anh;
-                        } else {
-                            $image_path = 'images/no-image.jpg';
-                        }
+                        // Convert to: /webphim_hung/Trang-admin/assets/news/file.jpg
+                         $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+                         if (!empty($hinh_anh)) {
+                             if (strpos($hinh_anh, 'assets/news/') !== false) {
+                                 $image_path = $base_dir . 'Trang-admin/' . $hinh_anh;
+                             } else {
+                                 $image_path = $base_dir . 'Trang-admin/assets/news/' . $hinh_anh;
+                             }
+                         } else {
+                             $image_path = $base_dir . 'Trang-nguoi-dung/imgavt/no-image.jpg';
+                         }
                         
                         // Tóm tắt nếu không có thì lấy nội_dung
                         $summary = !empty($tom_tat) ? $tom_tat : $noi_dung;
@@ -38,7 +43,7 @@
                         <!-- News post article-->
                         <article class="post post--news">
                             <a href="' . $link . '" class="post__image-link">
-                                <img alt="' . htmlspecialchars($tieu_de) . '" src="' . htmlspecialchars($image_path) . '">
+                                <img alt="' . htmlspecialchars($tieu_de) . '" src="' . htmlspecialchars($image_path) . '" loading="lazy">
                             </a>
 
                             <h1><a href="' . $link . '" class="post__title-link">' . htmlspecialchars($tieu_de) . '</a></h1>

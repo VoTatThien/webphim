@@ -285,34 +285,34 @@
                 $working_hours = null;
                 $break_time = 60;
 
-                if (!empty($today_status)) {
-                    if ($today_status['status'] === 'checked_in') {
-                        $checkin_time = date('H:i', strtotime($today_status['checkin_time']));
-                        $status_text = "Đã check-in lúc $checkin_time";
-                        $status_class = 'checked-in';
-                        $show_checkout = true;
-                    } elseif ($today_status['status'] === 'checked_out') {
-                        $checkin_time = date('H:i', strtotime($today_status['checkin_time']));
-                        $checkout_time = date('H:i', strtotime($today_status['checkout_time']));
-                        
-                        $vao = strtotime($today_status['checkin_time']);
-                        $ra = strtotime($today_status['checkout_time']);
-                        $total_seconds = $ra - $vao;
-                        
-                        $break_duration = 0;
-                        if ($total_seconds >= 4 * 3600) {
-                            $break_duration = $today_status['break_duration'] ?? 60;
-                        }
-                        
-                        $working_seconds = $total_seconds - ($break_duration * 60);
-                        $working_seconds = max(0, $working_seconds);
-                        $working_hours = round($working_seconds / 3600, 2);
-                        
-                        $status_text = "Đã hoàn tất";
-                        $status_class = 'checked-out';
-                    }
-                } else {
+                $cc_status = $today_status['status'] ?? 'not_checked_in';
+                
+                if ($cc_status === 'not_checked_in') {
                     $show_checkin = true;
+                } elseif ($cc_status === 'checked_in') {
+                    $checkin_time = date('H:i', strtotime($today_status['checkin_time']));
+                    $status_text = "Đã check-in lúc $checkin_time";
+                    $status_class = 'checked-in';
+                    $show_checkout = true;
+                } elseif ($cc_status === 'checked_out') {
+                    $checkin_time = date('H:i', strtotime($today_status['checkin_time']));
+                    $checkout_time = date('H:i', strtotime($today_status['checkout_time']));
+                    
+                    $vao = strtotime($today_status['checkin_time']);
+                    $ra = strtotime($today_status['checkout_time']);
+                    $total_seconds = $ra - $vao;
+                    
+                    $break_duration = 0;
+                    if ($total_seconds >= 4 * 3600) {
+                        $break_duration = $today_status['record']['break_duration'] ?? 60;
+                    }
+                    
+                    $working_seconds = $total_seconds - ($break_duration * 60);
+                    $working_seconds = max(0, $working_seconds);
+                    $working_hours = round($working_seconds / 3600, 2);
+                    
+                    $status_text = "Đã hoàn tất ca làm";
+                    $status_class = 'checked-out';
                 }
                 ?>
 
@@ -510,19 +510,6 @@
     </div>
 
     <script>
-    // Helper function to get dynamic base path
-    function getBasePath() {
-        const pathParts = window.location.pathname.split('/');
-        let basePath = '/';
-        for (let i = 0; i < pathParts.length; i++) {
-            if (pathParts[i] === 'Trang-admin') {
-                basePath = '/' + pathParts.slice(1, i + 1).join('/');
-                break;
-            }
-        }
-        return basePath;
-    }
-
     function showImageModal(src, caption) {
         document.getElementById('modalImage').src = src;
         document.getElementById('modalCaption').textContent = caption;
@@ -587,7 +574,8 @@
                                 $checkout = $record['gio_ra'] ? strtotime($record['gio_ra']) : null;
                                 $checkin_time = date('H:i', $checkin);
                                 $checkout_time = $checkout ? date('H:i', $checkout) : '—';
-                                $date = date('d/m/Y', strtotime($record['ngay']));                                
+                                $date = date('d/m/Y', $checkin);
+                                
                                 // Calculate working hours
                                 if ($checkout) {
                                     $total_seconds = $checkout - $checkin;
@@ -1407,8 +1395,7 @@ async function takeFaceSnapshot(action) {
         formData.append('longitude', gpsData.longitude);
         formData.append('location_accuracy', gpsData.accuracy);
         
-        const basePath = getBasePath();
-        const response = await fetch(basePath + '/model/chamcong_detector.php', {
+        const response = await fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         });
@@ -1459,8 +1446,7 @@ async function quickFaceCheckin() {
         formData.append('longitude', gpsData.longitude);
         formData.append('location_accuracy', gpsData.accuracy);
         
-        const basePath = getBasePath();
-        const response = await fetch(basePath + '/model/chamcong_detector.php', {
+        const response = await fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         });
@@ -1504,8 +1490,7 @@ async function quickFaceCheckout() {
         formData.append('longitude', gpsData.longitude);
         formData.append('location_accuracy', gpsData.accuracy);
         
-        const basePath = getBasePath();
-        const response = await fetch(basePath + '/model/chamcong_detector.php', {
+        const response = await fetch('model/chamcong_detector.php', {
             method: 'POST',
             body: formData
         });

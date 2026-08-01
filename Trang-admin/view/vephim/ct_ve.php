@@ -48,7 +48,12 @@
             $status_class = ($trang_thai == 1) ? 'status-paid' : (($trang_thai == 2) ? 'status-used' : (($trang_thai == 3) ? 'status-cancelled' : 'status-expired'));
             $status_text = ($trang_thai == 1) ? 'Đã thanh toán' : (($trang_thai == 2) ? 'Đã dùng' : (($trang_thai == 3) ? 'Đã hủy' : 'Hết hạn'));
             $ten_rap_hienthi = !empty($tenrap) ? $tenrap : 'Galaxy Studio Gò Vấp';
-            $qr_data = "http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . "/webphim/Trang-nguoi-dung/index.php?act=quetve&id=" . $id;
+            
+            $base_path = '';
+            if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+                $base_path = '/' . $matches[1];
+            }
+            $qr_data = "http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $id;
         ?>
         
         <div class="ticket" id="ticket-print">
@@ -73,7 +78,7 @@
                             <span class="ticket__item ticket__item--primery">Combo: <span class="ticket__place"><?= htmlspecialchars($combo) ?></span></span>
                         </div>
                         <div style="justify-self: end; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; padding: 6px; display: flex; align-items: center; justify-content: center; width: 80px; height: 80px;">
-                            <img src="/webphim/Trang-nguoi-dung/view/qr.php?data=<?= urlencode($qr_data) ?>" alt="QR Code" style="width: 75px; height: 75px; object-fit: contain;" />
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<?= urlencode($qr_data) ?>" alt="QR Code" style="width: 75px; height: 75px; object-fit: contain;" />
                         </div>
                     </div>
                 </div>

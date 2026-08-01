@@ -314,21 +314,26 @@
         <div class="leave-form-card">
             <h5>Tạo Đơn Xin Nghỉ Phép</h5>
             
-            <form method="post" action="index.php?act=xinnghi">
+            <div id="js-error-alert" class="alert alert-danger" style="display: none;">
+                <span></span>
+                <div id="js-error-msg"></div>
+            </div>
+
+            <form id="leave-form" method="post" action="index.php?act=xinnghi">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Từ ngày</label>
-                        <input type="date" name="tu_ngay" required />
+                        <input type="date" name="tu_ngay" id="tu_ngay" min="<?= date('Y-m-d') ?>" required />
                     </div>
                     <div class="form-group">
                         <label>Đến ngày</label>
-                        <input type="date" name="den_ngay" required />
+                        <input type="date" name="den_ngay" id="den_ngay" required />
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Lý do nghỉ phép</label>
-                    <textarea name="ly_do" rows="3" placeholder="Ví dụ: Bệnh, Công việc riêng, Sự kiện gia đình..." required></textarea>
+                    <textarea name="ly_do" id="ly_do" rows="3" placeholder="Ví dụ: Bệnh, Công việc riêng, Sự kiện gia đình..." required></textarea>
                 </div>
 
                 <button class="btn-submit" type="submit" name="gui" value="1">
@@ -336,6 +341,81 @@
                 </button>
             </form>
         </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tuInput = document.getElementById('tu_ngay');
+            const denInput = document.getElementById('den_ngay');
+            const form = document.getElementById('leave-form');
+            const jsAlert = document.getElementById('js-error-alert');
+            const jsAlertMsg = document.getElementById('js-error-msg');
+
+            function showError(msg) {
+                jsAlertMsg.textContent = msg;
+                jsAlert.style.display = 'flex';
+                jsAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function hideError() {
+                jsAlert.style.display = 'none';
+            }
+
+            // Sync min date of den_ngay with tu_ngay
+            tuInput.addEventListener('change', function() {
+                if (tuInput.value) {
+                    denInput.min = tuInput.value;
+                    if (denInput.value && denInput.value < tuInput.value) {
+                        denInput.value = tuInput.value;
+                    }
+                }
+            });
+
+            form.addEventListener('submit', function(e) {
+                hideError();
+
+                const tuVal = tuInput.value;
+                const denVal = denInput.value;
+                const lyDoVal = document.getElementById('ly_do').value.trim();
+
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                if (!tuVal || !denVal) {
+                    e.preventDefault();
+                    showError("Vui lòng nhập đầy đủ ngày bắt đầu và ngày kết thúc.");
+                    return;
+                }
+
+                if (tuVal < todayStr) {
+                    e.preventDefault();
+                    showError("Ngày bắt đầu không được là ngày trong quá khứ.");
+                    return;
+                }
+
+                if (denVal < tuVal) {
+                    e.preventDefault();
+                    showError("Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
+                    return;
+                }
+
+                const tuDate = new Date(tuVal);
+                const denDate = new Date(denVal);
+                const diffTime = Math.abs(denDate - tuDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                if (diffDays > 30) {
+                    e.preventDefault();
+                    showError("Số ngày xin nghỉ không được vượt quá 30 ngày (hiện tại là " + diffDays + " ngày).");
+                    return;
+                }
+
+                if (lyDoVal.length < 10) {
+                    e.preventDefault();
+                    showError("Lý do nghỉ phép phải từ 10 ký tự trở lên (hiện tại có " + lyDoVal.length + " ký tự).");
+                    return;
+                }
+            });
+        });
+        </script>
 
         <!-- History Card -->
         <div class="history-card">

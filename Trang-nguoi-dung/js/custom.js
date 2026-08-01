@@ -788,12 +788,12 @@ function init_BookingTwo() {
                     
                     console.log('Selected seat:', place, 'Price:', actualPrice, 'Total:', sum);
                     
-                    // Count ticket types based on price ranges
-                    if (actualPrice <= 60000) {
+                    // Count ticket types based on seat tier classes
+                    if ($(this).hasClass("sits-price--cheap")) {
                         cheap += 1;
-                    } else if (actualPrice <= 80000) {
+                    } else if ($(this).hasClass("sits-price--middle")) {
                         middle += 1;
-                    } else {
+                    } else if ($(this).hasClass("sits-price--expensive")) {
                         expansive += 1;
                     }
 
@@ -847,12 +847,12 @@ function init_BookingTwo() {
             
             console.log('Deselected seat:', place, 'Price:', actualPrice, 'Total:', sum);
             
-            // Count ticket types based on price ranges
-            if (actualPrice <= 60000) {
+            // Count ticket types based on seat tier classes
+            if ($(this).hasClass("sits-price--cheap")) {
                 cheap -= 1;
-            } else if (actualPrice <= 80000) {
+            } else if ($(this).hasClass("sits-price--middle")) {
                 middle -= 1;
-            } else {
+            } else if ($(this).hasClass("sits-price--expensive")) {
                 expansive -= 1;
             }
 
@@ -2505,3 +2505,215 @@ function init_Trailer() {
             .slideDown(500);
     });
 }
+
+/* ========================================================================
+   CẢI TIẾN TRẢI NGHIỆM ĐẶT VÉ: 3D SEAT PREVIEW & GROUP BOOKING
+   ======================================================================== */
+
+// 1. CHỨC NĂNG ĐẶT VÉ NHÓM (GROUP BOOKING)
+$(document).ready(function() {
+    // Chỉ chạy ở trang chọn ghế
+    if ($("#group-booking-checkbox").length === 0) return;
+
+    const groupCheckbox = $("#group-booking-checkbox");
+    const groupLinkBtn = $("#create-group-link-btn");
+
+    // Lắng nghe thay đổi checkbox chế độ nhóm
+    groupCheckbox.change(function() {
+        if ($(this).is(":checked")) {
+            groupLinkBtn.fadeIn(300);
+        } else {
+            groupLinkBtn.fadeOut(300);
+        }
+    });
+
+    // Sự kiện Click tạo và sao chép liên kết đặt vé nhóm
+    groupLinkBtn.click(function(e) {
+        e.preventDefault();
+        
+        // Lấy danh sách các ghế đã chọn
+        let selectedSeats = [];
+        $(".checked-place .choosen-place").each(function() {
+            selectedSeats.push($(this).text().trim());
+        });
+
+        if (selectedSeats.length === 0) {
+            alert("Vui lòng chọn ít nhất một ghế trước khi tạo liên kết nhóm!");
+            return;
+        }
+
+        // Tạo URL chứa tham số seats
+        let currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set("seats", selectedSeats.join(","));
+
+        // Copy vào Clipboard
+        navigator.clipboard.writeText(currentUrl.toString()).then(function() {
+            alert("Đã sao chép liên kết đặt vé nhóm vào bộ nhớ tạm! Hãy gửi liên kết này cho bạn bè của bạn.\n\nLink: " + currentUrl.toString());
+        }).catch(function(err) {
+            console.error("Lỗi khi copy link: ", err);
+            alert("Không thể sao chép liên kết tự động. Hãy copy liên kết này:\n" + currentUrl.toString());
+        });
+    });
+
+    // Tự động click chọn ghế từ tham số URL 'seats' nếu có
+    let urlParams = new URLSearchParams(window.location.search);
+    let seatsParam = urlParams.get("seats");
+    if (seatsParam) {
+        let seatsToSelectParam = seatsParam.split(",");
+        console.log("🔍 Đang mở liên kết đặt vé nhóm cho các ghế:", seatsToSelectParam);
+        setTimeout(function() {
+            seatsToSelectParam.forEach(function(seatCode) {
+                let seatEl = $(`.sits__place[data-place='${seatCode.trim()}']`);
+                if (seatEl.length && !seatEl.hasClass("sits-state--not") && !seatEl.hasClass("sits-state--your")) {
+                    seatEl.trigger("click");
+                }
+            });
+            alert("Đã tự động chọn các ghế được chia sẻ từ nhóm: " + seatsParam);
+        }, 800);
+    }
+
+    // 2. GỢI Ý GHẾ THÔNG MINH
+    $(".btn-suggest-seat").click(function(e) {
+        e.preventDefault();
+        const type = $(this).attr("data-type");
+        console.log("Smart seat suggestion triggered:", type);
+
+        // Initialize lastSuggestions tracker globally if not exist
+        if (typeof window.lastSuggestions === 'undefined') {
+            window.lastSuggestions = { couple: 0, best: 0, saving: 0, exit: 0 };
+        }
+
+        // 1. Group all places by row
+        let allRows = [];
+        $(".sits__row").each(function() {
+            let rowSeats = [];
+            $(this).find(".sits__place").each(function() {
+                rowSeats.push($(this));
+            });
+            if (rowSeats.length > 0) {
+                allRows.push(rowSeats);
+            }
+        });
+
+        if (allRows.length === 0) return;
+
+        // 2. Find all possible candidate pairs
+        let allCandidates = [];
+
+        if (type === "couple") {
+            // Suggest couple: adjacent seats in the back rows (H, G, F...)
+            for (let i = allRows.length - 1; i >= 0; i--) {
+                let row = allRows[i];
+                let mid = Math.floor(row.length / 2);
+                for (let offset = 0; offset < mid; offset++) {
+                    let pairs = [
+                        [mid - 1 - offset, mid - offset],
+                        [mid + offset, mid + 1 + offset]
+                    ];
+                    for (let p of pairs) {
+                        let idx1 = p[0], idx2 = p[1];
+                        if (idx1 >= 0 && idx2 < row.length) {
+                            let s1 = row[idx1], s2 = row[idx2];
+                            if (!s1.hasClass("sits-state--not") && !s2.hasClass("sits-state--not")) {
+                                allCandidates.push([s1, s2]);
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+        else if (type === "best") {
+            // Suggest best view: center seats in middle rows
+            let midRow = Math.floor(allRows.length / 2);
+            let targetRows = [midRow, midRow + 1, midRow - 1];
+            for (let rIdx of targetRows) {
+                if (rIdx < 0 || rIdx >= allRows.length) continue;
+                let row = allRows[rIdx];
+                let mid = Math.floor(row.length / 2);
+                for (let offset = 0; offset <= 2; offset++) {
+                    let pairs = [];
+                    if (offset === 0) {
+                        pairs.push([mid - 1, mid]);
+                    } else {
+                        pairs.push([mid - 1 - offset, mid - offset]);
+                        pairs.push([mid + offset - 1, mid + offset]);
+                    }
+                    for (let p of pairs) {
+                        let idx1 = p[0], idx2 = p[1];
+                        if (idx1 >= 0 && idx2 < row.length) {
+                            let s1 = row[idx1], s2 = row[idx2];
+                            if (!s1.hasClass("sits-state--not") && !s2.hasClass("sits-state--not")) {
+                                allCandidates.push([s1, s2]);
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+        else if (type === "saving") {
+            // Suggest saving: cheapest rows (A, B, C...) - front rows
+            for (let i = 0; i < allRows.length; i++) {
+                let row = allRows[i];
+                let isCheapRow = row[0].hasClass("sits-price--cheap");
+                if (isCheapRow) {
+                    for (let j = 0; j < row.length - 1; j++) {
+                        let s1 = row[j], s2 = row[j+1];
+                        if (!s1.hasClass("sits-state--not") && !s2.hasClass("sits-state--not")) {
+                            allCandidates.push([s1, s2]);
+                        }
+                    }
+                }
+            }
+        } 
+        else if (type === "exit") {
+            // Suggest exit: edge columns
+            for (let i = allRows.length - 1; i >= 0; i--) {
+                let row = allRows[i];
+                if (row.length > 1) {
+                    let s1 = row[0], s2 = row[1];
+                    if (!s1.hasClass("sits-state--not") && !s2.hasClass("sits-state--not")) {
+                        allCandidates.push([s1, s2]);
+                    }
+                }
+                if (row.length > 1) {
+                    let s1 = row[row.length - 2], s2 = row[row.length - 1];
+                    if (!s1.hasClass("sits-state--not") && !s2.hasClass("sits-state--not")) {
+                        allCandidates.push([s1, s2]);
+                    }
+                }
+            }
+        }
+
+        // Deduplicate candidate pairs
+        let uniqueCandidates = [];
+        let seenKeys = new Set();
+        for (let pair of allCandidates) {
+            let key = pair.map(s => s.attr("data-place")).sort().join(",");
+            if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                uniqueCandidates.push(pair);
+            }
+        }
+        allCandidates = uniqueCandidates;
+
+        if (allCandidates.length === 0) {
+            alert("Không tìm thấy vị trí phù hợp trống!");
+            return;
+        }
+
+        // 3. Cycle logic: Get current index and select the pair
+        let idx = window.lastSuggestions[type] % allCandidates.length;
+        let seatsToSelect = allCandidates[idx];
+        window.lastSuggestions[type]++;
+
+        // 4. Clear currently selected seats first
+        $(".sits__place.sits-state--your").trigger("click");
+
+        // 5. Click the selected candidate seats
+        seatsToSelect.forEach(function(s) {
+            s.trigger("click");
+        });
+    });
+});
+
+// 2. GIẢ LẬP GÓC NHÌN 3D ĐÃ BỊ LOẠI BỎ THEO YÊU CẦU

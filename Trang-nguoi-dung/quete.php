@@ -56,8 +56,13 @@ switch ($ticket['trang_thai'] ?? 0) {
         break;
 }
 
+$base_path = '';
+if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+    $base_path = '/' . $matches[1];
+}
+
 // Generate QR code URL for printing on ticket
-$qr_data = urlencode("http://" . $_SERVER['HTTP_HOST'] . "/webphim/Trang-nguoi-dung/quete.php?id=" . $id);
+$qr_data = urlencode("http://" . $_SERVER['HTTP_HOST'] . $base_path . "/Trang-nguoi-dung/quete.php?id=" . $id);
 $qr_code_url = "view/qr.php?data=" . $qr_data . "&t=" . time();
 ?>
 <!DOCTYPE html>
@@ -376,7 +381,7 @@ $qr_code_url = "view/qr.php?data=" . $qr_data . "&t=" . time();
                         if (strpos($img_url, 'http') !== 0) {
                             // If path doesn't start with /, add it
                             if (strpos($img_url, '/') !== 0) {
-                                $img_url = '/webphim/Trang-nguoi-dung/imgavt/' . $img_url;
+                                $img_url = $base_path . '/Trang-nguoi-dung/imgavt/' . $img_url;
                             }
                         }
                     }

@@ -1,6 +1,20 @@
 <?php
 function them_ve($gia_ghe, $ngay_tt, $ghe, $id_user, $id_kgc, $id_hd, $id_lc, $id_phim, $combo, $id_rap = null) 
 {
+    // Kiểm tra xem ghế đã được đặt cho khung giờ chiếu này chưa (trạng thái 0 = chờ TT, 1 = đã TT, 2 = đã dùng)
+    $ghe_array = array_map('trim', explode(',', $ghe));
+    $dat_roi = pdo_query("SELECT ghe FROM ve WHERE id_thoi_gian_chieu = ? AND trang_thai IN (0, 1, 2)", $id_kgc);
+    
+    foreach ($ghe_array as $g) {
+        if ($g === '') continue;
+        foreach ($dat_roi as $row) {
+            $booked_seats = array_map('trim', explode(',', $row['ghe']));
+            if (in_array($g, $booked_seats, true)) {
+                throw new Exception("Ghế '{$g}' đã có người đặt hoặc đang được thanh toán bởi người khác. Vui lòng chọn ghế khác!");
+            }
+        }
+    }
+
     $sql = 'INSERT INTO `ve` (`price`, `ngay_dat`, `ghe`, `id_tk`, `id_thoi_gian_chieu`, `id_hd`, `id_ngay_chieu`, `id_phim`, `combo`, `id_rap`) VALUES (?,?,?,?,?,?,?,?,?,?)';
 
     // Kiểm tra xem combo có tồn tại không
@@ -51,8 +65,6 @@ function trangthai_hd($id)
 
 function load_ve_tt($id)
 {
-        error_log("=== load_ve_tt CALLED with id=$id ===");
-        
         $sql = "SELECT h.thanh_tien, ve.id, h.ngay_tt, taikhoan.name, khung_gio_chieu.thoi_gian_chieu, lichchieu.ngay_chieu, phim.tieu_de, ve.ghe, ve.combo, phongchieu.name as tenphong, rap_chieu.ten_rap, rap_chieu.dia_chi as dia_chi_rap
     FROM hoa_don h
     JOIN ve ON ve.id_hd = h.id 
@@ -62,13 +74,10 @@ function load_ve_tt($id)
     JOIN phongchieu ON phongchieu.id = khung_gio_chieu.id_phong
     JOIN phim ON phim.id = lichchieu.id_phim
     LEFT JOIN rap_chieu ON rap_chieu.id = ve.id_rap
-    WHERE h.id = ?";
+    WHERE h.id = ".$id;
 
-        error_log("Query: " . $sql);
-        $result = pdo_query_one($sql, $id);
-        error_log("Result: " . json_encode($result, JSON_UNESCAPED_UNICODE));
-        
-        return $result;
+
+    return pdo_query_one($sql);
 }
 
 function khoa_ghe($id_kgc, $id_lc, $id_phim)
@@ -143,71 +152,88 @@ function huy_vephim($id) {
 }
 
 
-function gui_mail_ve($load_ve_tt) {
-    require 'PHPMailer/src/Exception.php';
-    require 'PHPMailer/src/PHPMailer.php';
-    require 'PHPMailer/src/SMTP.php';
+function gui_mail_ve($load_ve_tt, $recipient_email = null, $recipient_name = null) {
+    require_once dirname(__DIR__) . '/PHPMailer/src/Exception.php';
+    require_once dirname(__DIR__) . '/PHPMailer/src/PHPMailer.php';
+    require_once dirname(__DIR__) . '/PHPMailer/src/SMTP.php';
 
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
-        // Kiểm tra email tồn tại
-        if (!isset($_SESSION['user']['email']) || empty($_SESSION['user']['email'])) {
-            error_log("❌ ERROR: Email khách hàng không tồn tại trong session");
+        // Determine recipient details
+        $email = $recipient_email;
+        if (empty($email)) {
+            $email = $_SESSION['user']['email'] ?? '';
+        }
+        
+        $name = $recipient_name;
+        if (empty($name)) {
+            $name = $_SESSION['user']['name'] ?? 'Khách hàng';
+        }
+
+        // Verify email exists
+        if (empty($email)) {
+            error_log("❌ ERROR: Email khách hàng không tồn tại");
             return false;
         }
+
+        require_once dirname(__DIR__) . '/config/mail_config.php';
 
         // Server settings
         $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = SMTP_HOST;
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'phanthienkhai2901@gmail.com';
-        $mail->Password   = 'nvyh agju zvnp nacz';
+        $mail->Username   = SMTP_USERNAME;
+        $mail->Password   = SMTP_PASSWORD;
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->Port       = SMTP_PORT;
 
         // Email người gửi
-        $mail->setFrom('phanthienkhai2901@gmail.com', 'Galaxy Studio');
-        $mail->addAddress($_SESSION['user']['email']);
+        $mail->setFrom(SMTP_USERNAME, SMTP_FROM_NAME);
+        $mail->addAddress($email);
 
-        // Generate QR code URL
-        $qr_data = urlencode("http://" . $_SERVER['HTTP_HOST'] . "/webphim/Trang-nguoi-dung/quete.php?id=" . $load_ve_tt['id']);
-        $qr_code_url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . "/webphim/Trang-nguoi-dung/view/qr.php?data=" . $qr_data . "&t=" . time();
+            // Generate QR code URL
+        $base_path = '';
+        if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+            $base_path = '/' . $matches[1];
+        }
+        $qr_data = urlencode("http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $load_ve_tt['id']);
+        $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . $qr_data;
 
         // Nội dung
         $mail->isHTML(true);
         $mail->Subject = 'Thank you for booking movie tickets';
+        
+        $price_val = isset($load_ve_tt['thanh_tien']) ? $load_ve_tt['thanh_tien'] : ($load_ve_tt['price'] ?? 0);
+        $ngay_tt_val = isset($load_ve_tt['ngay_tt']) ? $load_ve_tt['ngay_tt'] : ($load_ve_tt['ngay_dat'] ?? date('Y-m-d H:i:s'));
+        $ten_rap_val = !empty($load_ve_tt['ten_rap']) ? $load_ve_tt['ten_rap'] : (!empty($load_ve_tt['tenrap']) ? $load_ve_tt['tenrap'] : 'Galaxy Studio');
+
         $mail->Body    = 'Xác nhận Đặt Vé Xem Phim Thành Công <br><hr>
-
-                               Chào '.$_SESSION['user']['name'].',
-
-                            Chúng tôi xin chân thành cảm ơn bạn đã chọn Galaxy Studio để trải nghiệm bộ phim tuyệt vời. Chúc mừng! Đơn đặt vé của bạn đã được xác nhận thành công. 
+                             Chào '.$name.',<br><br>
+                             Chúng tôi xin chân thành cảm ơn bạn đã chọn Galaxy Studio để trải nghiệm bộ phim tuyệt vời. Chúc mừng! Đơn đặt vé của bạn đã được xác nhận thành công. 
                              Dưới đây là thông tin chi tiết về đơn đặt vé của bạn:<br>
                              - Mã đặt vé: ' . $load_ve_tt['id'] . ' <br>
                              - Tên phim: ' . $load_ve_tt['tieu_de'] . '<br>
-                             - Rạp : Galaxy Studio Gò Vấp <br>
+                             - Rạp : ' . $ten_rap_val . ' <br>
                              - Phòng: ' . $load_ve_tt['tenphong'] . '<br>
                              - Xuất chiếu: ' . $load_ve_tt['thoi_gian_chieu'] . ' --- ' . $load_ve_tt['ngay_chieu'] . '<br>
                              - Ghế ngồi: ' . $load_ve_tt['ghe'] . '<br>
                              - Combo: ' . $load_ve_tt['combo'] . '<br>
-                             - Ngày thanh toán: ' . $load_ve_tt['ngay_tt'] . '<br>
-                             - Thành tiền: ' . number_format($load_ve_tt['thanh_tien']) . ' VND<br>
+                             - Ngày thanh toán: ' . $ngay_tt_val . '<br>
+                             - Thành tiền: ' . number_format($price_val) . ' VND<br>
                              <hr>
                              <strong>Mã QR của vé:</strong><br>
                              <img src="' . $qr_code_url . '" alt="QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px;"><br>
                              <em>Vui lòng mang theo mã vé hoặc quét mã QR này tại quầy vé để checkin khi vào phòng chiếu!</em><br>
                              <hr>
-                              Lưu ý quan trọng:<br>
-
-                               Hãy đảm bảo bạn đến sớm trước thời gian chiếu để có đủ thời gian kiểm tra vé và chọn ghế.<br>
-                                 Mã đặt vé trên có thể được sử dụng để kiểm tra thông tin đặt vé tại quầy vé hoặc máy tự động tại rạp.<br>
-                                 Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ gì thêm, vui lòng liên hệ với chúng tôi qua số điện thoại 0384104942 hoặc email Phanthienkhai111@gmail.com.<br>
-                                  Chúng tôi rất mong đợi sự xuất hiện của bạn và hy vọng bạn sẽ có một trải nghiệm thú vị tại rạp phim của chúng tôi.<br>
-
-                                   Trân trọng,<br>
-                                    Galaxy Studio<br>
-        ';
+                             Lưu ý quan trọng:<br>
+                             Hãy đảm bảo bạn đến sớm trước thời gian chiếu để có đủ thời gian kiểm tra vé và chọn ghế.<br>
+                             Mã đặt vé trên có thể được sử dụng để kiểm tra thông tin đặt vé tại quầy vé hoặc máy tự động tại rạp.<br>
+                             Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ gì thêm, vui lòng liên hệ với chúng tôi qua số điện thoại 0384104942 hoặc email huyhung@gmail.com.<br>
+                             Chúng tôi rất mong đợi sự xuất hiện của bạn và hy vọng bạn sẽ có một trải nghiệm thú vị tại rạp phim của chúng tôi.<br><br>
+                             Trân trọng,<br>
+                             Galaxy Studio';
 
         $mail->send();
         

@@ -214,10 +214,10 @@
 <div class="content-body">
     <!-- Header with Greeting -->
     <div class="cum-dashboard-header">
-        <h2>🏢 Dashboard Quản Lý Cụm</h2>
-        <p>Chào mừng <?= htmlspecialchars($_SESSION['user1']['name'] ?? 'Quản lý cụm') ?></p>
+        <h2>🏢 <?php echo __('Dashboard Quản Lý Cụm'); ?></h2>
+        <p><?php echo __('Chào mừng'); ?> <?= htmlspecialchars($_SESSION['user1']['name'] ?? __('Quản lý cụm')) ?></p>
         <div class="clock">
-            <strong>⏰ Thời gian:</strong> <span id="real-time-clock">--:--:--</span>
+            <strong>⏰ <?php echo __('Thời gian:'); ?></strong> <span id="real-time-clock">--:--:--</span>
         </div>
     </div>
 
@@ -225,7 +225,7 @@
     <div class="cum-stats-grid">
         <div class="cum-stat-card">
             <div class="cum-stat-icon">💰</div>
-            <div class="cum-stat-label">Tổng Doanh Thu</div>
+            <div class="cum-stat-label"><?php echo __('Tổng Doanh Thu'); ?></div>
             <div class="cum-stat-value">
                 <?php 
                 if (!empty($tong)) {
@@ -238,12 +238,12 @@
                 }
                 ?>
             </div>
-            <div class="cum-stat-label">VNĐ</div>
+            <div class="cum-stat-label"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="cum-stat-card">
             <div class="cum-stat-icon">🎟️</div>
-            <div class="cum-stat-label">Tổng Vé Bán</div>
+            <div class="cum-stat-label"><?php echo __('Tổng Vé Bán'); ?></div>
             <div class="cum-stat-value">
                 <?php 
                 if (!empty($tong)) {
@@ -256,12 +256,12 @@
                 }
                 ?>
             </div>
-            <div class="cum-stat-label">Vé</div>
+            <div class="cum-stat-label"><?php echo __('Vé'); ?></div>
         </div>
 
         <div class="cum-stat-card">
             <div class="cum-stat-icon">🎬</div>
-            <div class="cum-stat-label">Phim Đang Chiếu</div>
+            <div class="cum-stat-label"><?php echo __('Phim Đang Chiếu'); ?></div>
             <div class="cum-stat-value">
                 <?php 
                 if (!empty($tpdc)) {
@@ -274,12 +274,12 @@
                 }
                 ?>
             </div>
-            <div class="cum-stat-label">Bộ</div>
+            <div class="cum-stat-label"><?php echo __('Bộ'); ?></div>
         </div>
 
         <div class="cum-stat-card">
             <div class="cum-stat-icon">📅</div>
-            <div class="cum-stat-label">Phim Sắp Chiếu</div>
+            <div class="cum-stat-label"><?php echo __('Phim Sắp Chiếu'); ?></div>
             <div class="cum-stat-value">
                 <?php 
                 if (!empty($tpsc)) {
@@ -292,14 +292,14 @@
                 }
                 ?>
             </div>
-            <div class="cum-stat-label">Bộ</div>
+            <div class="cum-stat-label"><?php echo __('Bộ'); ?></div>
         </div>
     </div>
 
     <!-- Revenue Report -->
     <div class="cum-report-row">
         <div class="cum-report-box">
-            <div class="cum-report-box-header">📊 Doanh Thu Hôm Nay</div>
+            <div class="cum-report-box-header">📊 <?php echo __('Doanh Thu Hôm Nay'); ?></div>
             <div class="cum-report-box-value">
                 <?php 
                 if (!empty($tong_day)) {
@@ -312,11 +312,11 @@
                 }
                 ?>
             </div>
-            <div class="cum-report-box-unit">VNĐ</div>
+            <div class="cum-report-box-unit"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="cum-report-box">
-            <div class="cum-report-box-header">📈 Doanh Thu Tuần Này</div>
+            <div class="cum-report-box-header">📈 <?php echo __('Doanh Thu Tuần Này'); ?></div>
             <div class="cum-report-box-value">
                 <?php 
                 if (!empty($tong_tuan)) {
@@ -329,11 +329,11 @@
                 }
                 ?>
             </div>
-            <div class="cum-report-box-unit">VNĐ</div>
+            <div class="cum-report-box-unit"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="cum-report-box">
-            <div class="cum-report-box-header">📅 Doanh Thu Tháng Này</div>
+            <div class="cum-report-box-header">📅 <?php echo __('Doanh Thu Tháng Này'); ?></div>
             <div class="cum-report-box-value">
                 <?php 
                 if (!empty($tong_thang)) {
@@ -346,11 +346,11 @@
                 }
                 ?>
             </div>
-            <div class="cum-report-box-unit">VNĐ</div>
+            <div class="cum-report-box-unit"><?php echo __('VNĐ'); ?></div>
         </div>
 
         <div class="cum-report-box">
-            <div class="cum-report-box-header">🍿 Combo Top</div>
+            <div class="cum-report-box-header">🍿 <?php echo __('Combo Top'); ?></div>
             <div class="cum-report-box-value">
                 <?php 
                 if (!empty($best_combo)) {
@@ -373,7 +373,7 @@
                 } else {
                     echo '0';
                 }
-                ?> đơn
+                ?> <?php echo __('đơn'); ?>
             </div>
         </div>
     </div>
@@ -383,7 +383,7 @@
         <div class="col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>📊 Biểu Đồ Doanh Thu 30 Ngày Qua</h4>
+                    <h4>📊 <?php echo __('Biểu Đồ Doanh Thu 30 Ngày Qua'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="revenueChart" height="80"></canvas>
@@ -396,7 +396,7 @@
         <div class="col-xlg-6 col-md-6 col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>🎬 Phân Bổ Phim Theo Trạng Thái</h4>
+                    <h4>🎬 <?php echo __('Phân Bổ Phim Theo Trạng Thái'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="movieStatusChart" height="100"></canvas>
@@ -407,7 +407,7 @@
         <div class="col-xlg-6 col-md-6 col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>💰 Doanh Thu Theo Loại Combo</h4>
+                    <h4>💰 <?php echo __('Doanh Thu Theo Loại Combo'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="comboChart" height="100"></canvas>
@@ -467,7 +467,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Doanh Thu (Triệu VNĐ)',
+                    label: '<?php echo __('Doanh Thu (Triệu VNĐ)'); ?>',
                     data: data,
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -505,6 +505,13 @@
     }
 
     // Movie Status Chart
+    // JavaScript status dictionary for chart labels
+    var movieStatesLangMap = {
+        'Đang Chiếu': '<?php echo __('Đang Chiếu'); ?>',
+        'Sắp Chiếu': '<?php echo __('Sắp Chiếu'); ?>',
+        'Kết Thúc': '<?php echo __('Kết Thúc'); ?>'
+    };
+
     function initMovieStatusChart() {
         var ctx = document.getElementById('movieStatusChart');
         if (!ctx) return;
@@ -512,7 +519,7 @@
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Đang Chiếu', 'Sắp Chiếu', 'Kết Thúc'],
+                labels: ['<?php echo __('Đang Chiếu'); ?>', '<?php echo __('Sắp Chiếu'); ?>', '<?php echo __('Kết Thúc'); ?>'],
                 datasets: [{
                     data: [12, 8, 5],
                     backgroundColor: [
@@ -546,7 +553,7 @@
             data: {
                 labels: ['Combo A', 'Combo B', 'Combo C', 'Combo D'],
                 datasets: [{
-                    label: 'Doanh Thu (Triệu VNĐ)',
+                    label: '<?php echo __('Doanh Thu (Triệu VNĐ)'); ?>',
                     data: [35, 28, 42, 31],
                     backgroundColor: [
                         '#667eea',

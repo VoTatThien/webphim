@@ -22,3 +22,11 @@
 2025-12-03 12:24:40 [FALLBACK] Generating local QR
 2025-12-03 12:29:01 Order: CINEMA_1764739740_3187 | Amount: 200000 | HTTP: 404 | URL: https://api.vietqr.io/v2/generate?accountNo=1234567890&accountName=CINEPASS+THEATER&acqId=970436&amount=200000&addInfo=Ve%2Bphim%2BCinePass%2B-%2BCINEMA_1764739740_3187&format=text
 2025-12-03 12:29:01 [FALLBACK] Generating local QR
+2026-07-11 14:19:02 Order: CINEMA_1783772342_7315 | Amount: 1734000 | HTTP: 404 | URL: https://api.vietqr.io/v2/generate?accountNo=1234567890&accountName=CINEPASS+THEATER&acqId=970436&amount=1734000&addInfo=Ve%2Bphim%2BCinePass%2B-%2BCINEMA_1783772342_7315&format=text
+2026-07-11 14:19:02 [FALLBACK] Generating local QR
+2026-07-18 14:54:17 Order: CINEMA_1784379257_2795 | Amount: 339000 | HTTP: 404 | URL: https://api.vietqr.io/v2/generate?accountNo=1234567890&accountName=CINEPASS+THEATER&acqId=970436&amount=339000&addInfo=Ve%2Bphim%2BCinePass%2B-%2BCINEMA_1784379257_2795&format=text
+2026-07-18 14:54:17 [FALLBACK] Generating local QR
+2026-07-18 14:56:07 Order: CINEMA_1784379367_1351 | Amount: 339000 | HTTP: 200 | Error: 
+2026-07-18 14:56:07 [FALLBACK] Generating direct image URL: https://img.vietqr.io/image/970436-1234567890-compact.png?amount=339000&addInfo=Test+CinePass+Booking+-+CINEMA_1784379367_1351&accountName=CINEPASS+THEATER
+2026-07-18 14:56:59 Order: CINEMA_1784379418_8947 | Amount: 339000 | HTTP: 200 | Error: 
+2026-07-18 14:56:59 [FALLBACK] Generating direct image URL: https://img.vietqr.io/image/970436-1234567890-compact.png?amount=339000&addInfo=Ve+phim+CinePass+-+CINEMA_1784379418_8947&accountName=CINEPASS+THEATER

@@ -124,9 +124,8 @@ try {
     // ====================================================
     // BƯỚC 4: Kiểm tra vé đã thanh toán chưa
     // ====================================================
-    // Check if trang_thai is already 'da_thanh_toan' or 'paid'
-    if (in_array($ticket['trang_thai'], ['da_thanh_toan', 'paid', 1])) {
-        file_put_contents($log_file, date('Y-m-d H:i:s') . " Ticket already paid: ID=$ticket_id, Status=" . $ticket['trang_thai'] . "\n", FILE_APPEND);
+    if ($ticket['trang_thai'] == 1) { // 1 = Paid
+        file_put_contents($log_file, date('Y-m-d H:i:s') . " Ticket already paid: ID=$ticket_id\n", FILE_APPEND);
         echo json_encode(['success' => false, 'message' => 'Ticket already paid']);
         exit;
     }
@@ -134,18 +133,11 @@ try {
     // ====================================================
     // BƯỚC 5: Cập nhật trạng thái vé thành "Đã thanh toán"
     // ====================================================
-    $update_ticket_sql = "UPDATE ve SET trang_thai = 'da_thanh_toan', ma_ve = :ma_ve WHERE id = :ticket_id";
+    $update_ticket_sql = "UPDATE ve SET trang_thai = 1 WHERE id = :ticket_id";
     $stmt = $pdo->prepare($update_ticket_sql);
-    
-    // Generate ticket code: GALAXY_[date]_[ticket_id]
-    $ma_ve = 'GALAXY_' . date('dmY') . '_' . $ticket_id;
-    
-    $stmt->execute([
-        ':ma_ve' => $ma_ve,
-        ':ticket_id' => $ticket_id
-    ]);
+    $stmt->execute([':ticket_id' => $ticket_id]);
 
-    file_put_contents($log_file, date('Y-m-d H:i:s') . " Ticket updated to paid: ID=$ticket_id, Code=$ma_ve\n", FILE_APPEND);
+    file_put_contents($log_file, date('Y-m-d H:i:s') . " Ticket updated to paid: ID=$ticket_id\n", FILE_APPEND);
 
     // ====================================================
     // BƯỚC 6: Tích điểm cho user
@@ -165,23 +157,22 @@ try {
     // ====================================================
     // BƯỚC 7: Lưu giao dịch vào bảng thanh_toan
     // ====================================================
-    // Note: Using id_ve instead of id_hoa_don since id_hd doesn't exist in ve table
-    $sql_transaction = "INSERT INTO thanh_toan (id_ve, phuong_thuc, ma_giao_dich, so_tien, trang_thai, thong_tin_thanh_toan, ngay_thanh_toan) 
-                        VALUES (:ticket_id, 'sepay_qr', :reference, :amount, 'success', :info, NOW())";
+    $sql_transaction = "INSERT INTO thanh_toan (id_hoa_don, phuong_thuc, ma_giao_dich, so_tien, trang_thai, thong_tin_thanh_toan, ngay_thanh_toan) 
+                        VALUES (:invoice_id, 'qr_code', :reference, :amount, 'success', :info, NOW())";
     $stmt = $pdo->prepare($sql_transaction);
     $stmt->execute([
-        ':ticket_id' => $ticket_id,
+        ':invoice_id' => $ticket['id_hd'],
         ':reference' => $reference_number,
         ':amount' => $transfer_amount,
         ':info' => json_encode([
             'id_ve' => $ticket_id,
             'noi_dung' => $transaction_content,
             'sepay_reference' => $reference_number,
-            'gateway' => $gateway
+            'gateway' => 'Sepay'
         ])
     ]);
 
-    file_put_contents($log_file, date('Y-m-d H:i:s') . " Transaction saved to thanh_toan table for ticket ID=$ticket_id\n", FILE_APPEND);
+    file_put_contents($log_file, date('Y-m-d H:i:s') . " Transaction saved to thanh_toan table\n", FILE_APPEND);
 
     // ====================================================
     // BƯỚC 8: Gửi email xác nhận
@@ -214,8 +205,38 @@ try {
  * Gửi email xác nhận thanh toán cho customer
  */
 function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $seats, $ticket_code, $amount, $points) {
+    require_once dirname(__DIR__) . '/PHPMailer/src/Exception.php';
+    require_once dirname(__DIR__) . '/PHPMailer/src/PHPMailer.php';
+    require_once dirname(__DIR__) . '/PHPMailer/src/SMTP.php';
+
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
     try {
-        $subject = "✓ Xác nhận thanh toán vé xem phim - Galaxy Studio";
+        $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'tatthiendh123@gmail.com';
+        $mail->Password   = 'qjca onic cfks clad';
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = "=?UTF-8?B?" . base64_encode("✓ Xác nhận thanh toán vé xem phim - Galaxy Studio") . "?=";
+
+        $base_path = '';
+        if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+            $base_path = '/' . $matches[1];
+        }
+
+        // Generate QR code URL
+        // Match ticket ID by query or extracting numbers from ticket_code
+        $ticket_id_numeric = preg_replace('/[^0-9]/', '', $ticket_code);
+        $qr_data = urlencode("http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $ticket_id_numeric);
+        $qr_code_url = ($_SERVER['REQUEST_SCHEME'] ?? 'http') . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/view/qr.php?data=" . $qr_data . "&t=" . time();
 
         $message = "
         <html>
@@ -257,7 +278,10 @@ function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $
                         <p><strong>Điểm thưởng:</strong> <span class='highlight'>+ " . number_format($points, 0, ',', '.') . " điểm</span></p>
                     </div>
                     
-                    <p>✓ Vé của bạn đã sẵn sàng! Vui lòng mang theo mã vé hoặc xuất vé để nhập cửa.</p>
+                    <p>✓ Vé của bạn đã sẵn sàng! Vui lòng mang theo mã vé hoặc quét mã QR bên dưới để check-in.</p>
+                    <div style='text-align: center; margin: 20px 0;'>
+                        <img src='" . $qr_code_url . "' alt='QR Code' style='width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px;'>
+                    </div>
                     <p>Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ chúng tôi.</p>
                     
                     <div class='footer'>
@@ -270,11 +294,8 @@ function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $
         </html>
         ";
 
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-        $headers .= "From: Galaxy Studio <" . MAIL_FROM_EMAIL . ">\r\n";
-
-        mail($email, $subject, $message, $headers);
+        $mail->Body = $message;
+        $mail->send();
 
     } catch (Exception $e) {
         error_log("Email error: " . $e->getMessage());

@@ -54,37 +54,41 @@ $listbl = binh_luan_select_all($id_phim);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bình luận</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" />
     <style>
         .comment-section {
             max-width: 800px;
             margin: 30px auto;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
         }
 
         .comment-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1c181c;
+            border: 1px solid #363033;
+            border-left: 4px solid #ffd564;
             color: white;
             padding: 20px 25px;
             border-radius: 8px;
             margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .comment-header h2 {
             margin: 0;
             font-size: 22px;
+            color: #ffd564;
         }
 
         .comment-count {
             font-size: 14px;
-            opacity: 0.9;
+            color: #a59b9f;
             margin-top: 5px;
         }
 
         /* Comment Form */
         .comment-form {
-            background: white;
-            border: 1px solid #e5e7eb;
+            background: #1c181c;
+            border: 1px solid #363033;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 25px;
@@ -93,7 +97,7 @@ $listbl = binh_luan_select_all($id_phim);
         .comment-form-title {
             font-size: 16px;
             font-weight: 600;
-            color: #1f2937;
+            color: #ffd564;
             margin-bottom: 15px;
         }
 
@@ -105,7 +109,9 @@ $listbl = binh_luan_select_all($id_phim);
             width: 100%;
             padding: 12px 15px;
             font-size: 14px;
-            border: 1px solid #e5e7eb;
+            background: #151215;
+            border: 1px solid #363033;
+            color: #fff;
             border-radius: 6px;
             font-family: inherit;
             resize: vertical;
@@ -115,8 +121,8 @@ $listbl = binh_luan_select_all($id_phim);
 
         .comment-form__text:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #ffd564;
+            box-shadow: 0 0 0 3px rgba(255, 213, 100, 0.2);
         }
 
         .form-actions {
@@ -126,7 +132,7 @@ $listbl = binh_luan_select_all($id_phim);
         }
 
         .btn--danger {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #fe505a;
             color: white;
             border: none;
             padding: 10px 24px;
@@ -139,20 +145,20 @@ $listbl = binh_luan_select_all($id_phim);
 
         .btn--danger:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            background: #ff656e;
         }
 
         .login-prompt {
-            background: #fef3c7;
-            border: 1px solid #fcd34d;
+            background: #2b1d0a;
+            border: 1px solid #92400e;
             padding: 15px 20px;
             border-radius: 6px;
-            color: #92400e;
+            color: #fbd38d;
             font-size: 14px;
         }
 
         .login-prompt a {
-            color: #dc2626;
+            color: #ffd564;
             font-weight: 600;
             text-decoration: none;
         }
@@ -169,15 +175,15 @@ $listbl = binh_luan_select_all($id_phim);
         }
 
         .comment {
-            background: white;
-            border: 1px solid #e5e7eb;
+            background: #1c181c;
+            border: 1px solid #363033;
             border-radius: 8px;
             padding: 15px;
             transition: all 0.3s ease;
         }
 
         .comment:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .comment-header-row {
@@ -204,30 +210,30 @@ $listbl = binh_luan_select_all($id_phim);
 
         .comment__author {
             font-weight: 600;
-            color: #1f2937;
+            color: #ffd564;
             text-decoration: none;
             font-size: 14px;
         }
 
         .comment__author:hover {
-            color: #667eea;
+            color: #ffe08d;
         }
 
         .comment__date {
             font-size: 12px;
-            color: #9ca3af;
+            color: #a59b9f;
             margin: 3px 0;
         }
 
         .comment__message {
-            color: #374151;
+            color: #e5e0e3;
             font-size: 14px;
             line-height: 1.6;
             margin: 10px 0;
-            background: #f9fafb;
+            background: #151215;
             padding: 10px 12px;
             border-radius: 4px;
-            border-left: 3px solid #667eea;
+            border-left: 3px solid #ffd564;
         }
 
         /* Replies */
@@ -235,7 +241,7 @@ $listbl = binh_luan_select_all($id_phim);
             margin-top: 12px;
             margin-left: 52px;
             padding-top: 12px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid #363033;
         }
 
         .reply-form {
@@ -247,7 +253,9 @@ $listbl = binh_luan_select_all($id_phim);
         .reply-input {
             flex: 1;
             padding: 8px 12px;
-            border: 1px solid #e5e7eb;
+            background: #151215;
+            border: 1px solid #363033;
+            color: #fff;
             border-radius: 4px;
             font-size: 13px;
             font-family: inherit;
@@ -255,13 +263,13 @@ $listbl = binh_luan_select_all($id_phim);
 
         .reply-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+            border-color: #ffd564;
+            box-shadow: 0 0 0 2px rgba(255, 213, 100, 0.2);
         }
 
         .btn-reply {
-            background: #667eea;
-            color: white;
+            background: #ffd564;
+            color: #4c4145;
             border: none;
             padding: 8px 16px;
             border-radius: 4px;
@@ -272,44 +280,46 @@ $listbl = binh_luan_select_all($id_phim);
         }
 
         .btn-reply:hover {
-            background: #764ba2;
+            background: #ffe08d;
         }
 
         .replies-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            margin-top: 10px;
         }
 
         .reply-item {
-            background: #f0f9ff;
+            background: #232023;
+            border: 1px solid #363033;
             padding: 10px 12px;
             border-radius: 4px;
-            border-left: 3px solid #0c4a6e;
+            border-left: 3px solid #10b981;
             font-size: 13px;
         }
 
         .reply-author {
             font-weight: 600;
-            color: #059669;
+            color: #10b981;
             margin-bottom: 2px;
         }
 
         .reply-time {
             font-size: 11px;
-            color: #9ca3af;
+            color: #a59b9f;
             margin-bottom: 4px;
         }
 
         .reply-text {
-            color: #374151;
+            color: #e5e0e3;
             line-height: 1.4;
         }
 
         .toggle-reply-btn {
             background: none;
             border: none;
-            color: #667eea;
+            color: #ffd564;
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
@@ -324,12 +334,13 @@ $listbl = binh_luan_select_all($id_phim);
         .empty-comments {
             text-align: center;
             padding: 40px 20px;
-            color: #9ca3af;
+            color: #a59b9f;
         }
 
         .empty-comments-icon {
             font-size: 48px;
             margin-bottom: 15px;
+            color: #7a7075;
         }
 
         .success-message {
@@ -361,17 +372,17 @@ $listbl = binh_luan_select_all($id_phim);
 <div class="comment-section">
     <!-- Header -->
     <div class="comment-header">
-        <h2>💬 Bình luận</h2>
+        <h2><i class="fa fa-comments" style="margin-right: 8px;"></i> Bình luận</h2>
         <?php foreach ($dem_bl as $bl): 
             extract($bl);
         ?>
-            <div class="comment-count">📊 Số bình luận: <strong><?= $so_binh_luan ?></strong></div>
+            <div class="comment-count"><i class="fa fa-bar-chart" style="margin-right: 8px;"></i> Số bình luận: <strong><?= $so_binh_luan ?></strong></div>
         <?php endforeach; ?>
     </div>
 
     <!-- Comment Form -->
     <div class="comment-form">
-        <div class="comment-form-title">✍️ Để lại bình luận của bạn</div>
+        <div class="comment-form-title"><i class="fa fa-pencil" style="margin-right: 8px;"></i> Để lại bình luận của bạn</div>
         <?php if (isset($_SESSION['user']) && !empty($_SESSION['user'])): ?>
             <form action="<?= $_SERVER['PHP_SELF'] ?>" method="post">
                 <input type="hidden" name="id_phim" value="<?= $id_phim ?>">
@@ -379,12 +390,12 @@ $listbl = binh_luan_select_all($id_phim);
                     <textarea name="noi_dung" class="comment-form__text" placeholder="Chia sẻ ý kiến của bạn về phim này..." required></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" name="guibinhluan" value="1" class="btn--danger">📤 Gửi bình luận</button>
+                    <button type="submit" name="guibinhluan" value="1" class="btn--danger"><i class="fa fa-paper-plane" style="margin-right: 8px;"></i> Gửi bình luận</button>
                 </div>
             </form>
         <?php else: ?>
             <div class="login-prompt">
-                🔒 Để bình luận hãy <a href="index.php?act=dangnhap">Đăng nhập</a> hoặc <a href="index.php?act=dangky">Đăng ký</a> tài khoản
+                <i class="fa fa-lock" style="margin-right: 8px;"></i> Để bình luận hãy <a href="index.php?act=dangnhap">Đăng nhập</a> hoặc <a href="index.php?act=dangky">Đăng ký</a> tài khoản
             </div>
         <?php endif; ?>
     </div>
@@ -408,7 +419,7 @@ $listbl = binh_luan_select_all($id_phim);
                         </div>
                         <div class="comment-info">
                             <a href="#" class="comment__author"><?= htmlspecialchars($name ?? 'Ẩn danh') ?></a>
-                            <p class="comment__date">🕐 <?= htmlspecialchars($ngaybinhluan) ?></p>
+                            <p class="comment__date"><i class="fa fa-clock-o" style="margin-right: 5px;"></i> <?= htmlspecialchars($ngaybinhluan) ?></p>
                         </div>
                     </div>
                     <p class="comment__message"><?= nl2br(htmlspecialchars($noidung)) ?></p>
@@ -429,8 +440,8 @@ $listbl = binh_luan_select_all($id_phim);
                                 <div class="replies-list">
                                     <?php foreach ($replies as $reply): ?>
                                         <div class="reply-item">
-                                            <div class="reply-author">✓ Admin: <?= htmlspecialchars($reply['name'] ?? 'Hệ thống') ?></div>
-                                            <div class="reply-time">🕐 <?= date('d/m/Y H:i', strtotime($reply['ngay_tao'])) ?></div>
+                                            <div class="reply-author"><i class="fa fa-check-circle"></i> Admin: <?= htmlspecialchars($reply['name'] ?? 'Hệ thống') ?></div>
+                                            <div class="reply-time"><i class="fa fa-clock-o"></i> <?= date('d/m/Y H:i', strtotime($reply['ngay_tao'])) ?></div>
                                             <div class="reply-text"><?= nl2br(htmlspecialchars($reply['noidung'])) ?></div>
                                         </div>
                                     <?php endforeach; ?>
@@ -442,7 +453,7 @@ $listbl = binh_luan_select_all($id_phim);
             <?php endforeach; ?>
         <?php else: ?>
             <div class="empty-comments">
-                <div class="empty-comments-icon">📭</div>
+                <div class="empty-comments-icon"><i class="fa fa-envelope-o" style="font-size: 50px; color: #4a3e43;"></i></div>
                 <p>Chưa có bình luận nào. Hãy đăng nhập để trở thành người đầu tiên bình luận!</p>
             </div>
         <?php endif; ?>
@@ -469,7 +480,7 @@ function submitReply(event, commentId) {
     
     const submitBtn = form.querySelector('.btn-reply');
     submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Gửi...';
+    submitBtn.textContent = 'Gửi...';
     
     fetch(window.location.pathname, {
         method: 'POST',
@@ -479,7 +490,7 @@ function submitReply(event, commentId) {
     .then(data => {
         if (data.success) {
             textarea.value = '';
-            showMessage('✅ Trả lời thành công!');
+            showMessage('Trả lời thành công!');
             setTimeout(() => location.reload(), 1500);
         } else {
             alert('Lỗi: ' + (data.message || 'Không thể gửi trả lời'));
@@ -498,7 +509,7 @@ function submitReply(event, commentId) {
 function showMessage(message) {
     const msg = document.createElement('div');
     msg.className = 'success-message';
-    msg.textContent = message;
+    msg.innerHTML = '<i class="fa fa-check-circle" style="margin-right: 8px;"></i>' + message;
     document.body.appendChild(msg);
     
     setTimeout(() => {

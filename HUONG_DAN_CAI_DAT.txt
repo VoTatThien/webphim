@@ -1,0 +1,188 @@
+========================================================================
+  HƯỚNG DẪN CÀI ĐẶT & CHẠY WEBSITE CINEPASS (GALAXY STUDIO)
+  Dành cho người nhận test - Cập nhật: 13/06/2026
+========================================================================
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  BƯỚC 1: CÀI ĐẶT PHẦN MỀM CHẠY WEB (NẾU CHƯA CÓ)                ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+1. Tải XAMPP tại: https://www.apachefriends.org/download.html
+   - Chọn phiên bản PHP 8.1 hoặc 8.2 cho Windows.
+   - Cài đặt mặc định (Next -> Next -> Install).
+
+2. Sau khi cài xong, mở XAMPP Control Panel:
+   - Nhấn nút "Start" ở hàng Apache  -> Cột Status sáng xanh là OK.
+   - Nhấn nút "Start" ở hàng MySQL   -> Cột Status sáng xanh là OK.
+
+   LƯU Ý QUAN TRỌNG VỀ CỔNG (PORT):
+   - Apache mặc định chạy cổng 80. Nếu máy bạn bị trùng cổng 80
+     (ví dụ Skype, IIS...), XAMPP sẽ báo lỗi. Khi đó hãy đổi cổng
+     Apache sang 83 hoặc 8080 (vào Config -> httpd.conf -> tìm
+     "Listen 80" đổi thành "Listen 83").
+   - MySQL mặc định chạy cổng 3306.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  BƯỚC 2: COPY MÃ NGUỒN WEBSITE                                     ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+1. Giải nén file "webphim_hung.zip" (file bạn nhận được).
+2. Copy thư mục "webphim_hung" vào thư mục htdocs của XAMPP:
+   
+   C:\xampp\htdocs\webphim_hung
+
+   (Nếu bạn cài XAMPP ở ổ khác thì thay "C:\xampp" bằng đường dẫn
+   XAMPP của bạn).
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  BƯỚC 3: TẠO DATABASE VÀ IMPORT DỮ LIỆU                           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+1. Mở trình duyệt, truy cập: http://localhost/phpmyadmin/
+   (Hoặc http://localhost:83/phpmyadmin/ nếu bạn đổi cổng Apache)
+
+2. Tạo Database mới:
+   - Click "New" (Mới) ở cột trái.
+   - Đặt tên database: cinepass
+   - Chọn Collation: utf8mb4_general_ci
+   - Nhấn "Create" (Tạo).
+
+3. Import dữ liệu:
+   - Click chọn database "cinepass" vừa tạo ở cột trái.
+   - Chọn tab "Import" (Nhập) ở thanh menu trên.
+   - Nhấn "Choose File" (Chọn file), duyệt đến:
+     C:\xampp\htdocs\webphim_hung\DB\cinepass.sql
+   - Nhấn nút "Import" / "Go" ở dưới cùng để nạp dữ liệu.
+   - Đợi cho đến khi thông báo thành công (Success) hiển thị.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  BƯỚC 4: CẤU HÌNH KẾT NỐI DATABASE (ĐÃ TỰ ĐỘNG)                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+   *** HỆ THỐNG ĐÃ CÓ TÍNH NĂNG TỰ ĐỘNG NHẬN DIỆN CỔNG MYSQL ***
+   Hẹ thống sẽ tự động thử kết nối cổng 3306 trước, nếu không được
+   sẽ tự động chuyển sang cổng 3307.
+
+   -> Bạn KHÔNG CẦN CHỈNH SỬA BẤT KỲ CỔNG NÀO TRONG CODE NỮA!
+   Chỉ cần import file DB\cinepass.sql là có thể chạy ngay.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  BƯỚC 5: TRUY CẬP VÀ TEST WEBSITE                                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  Giả sử Apache chạy cổng 80 (mặc định). Nếu đổi sang cổng khác
+  (ví dụ 83), hãy thêm :83 sau localhost.
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  TRANG KHÁCH HÀNG (Người dùng xem phim, đặt vé):              │
+  │  http://localhost/webphim_hung/Trang-nguoi-dung/                │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  TRANG QUẢN TRỊ (Admin quản lý rạp):                           │
+  │  http://localhost/webphim_hung/Trang-admin/                     │
+  └─────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  TÀI KHOẢN ĐĂNG NHẬP ĐỂ TEST                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  ★ ADMIN HỆ THỐNG (toàn quyền quản trị):
+    - User: admin
+    - Pass: 123456
+
+  ★ QUẢN LÝ CỤM (quản lý nhiều rạp):
+    - User: admin
+    - Pass: 123456
+
+  ★ NHÂN VIÊN RẠP (test chấm công, xem lịch ca):
+    - Rạp Galaxy Quận 1:  User: HuyHung_rap2    | Pass: 123456
+    - Rạp Galaxy Tuy Hòa: User: Tatthien_rap3   | Pass: 123456
+
+  ★ KHÁCH HÀNG THÀNH VIÊN (test đặt vé đăng nhập):
+    - User: huyhung    | Pass: 123456
+    - User: tatthien   | Pass: 123456
+
+  ★ KHÁCH VÃNG LAI (không cần đăng nhập):
+    - Khi đặt vé chọn "Tiếp tục không cần đăng nhập", nhập họ tên,
+      SĐT và Gmail (phải là Gmail thật tồn tại trên Google).
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  CÁC CHỨC NĂNG CHÍNH CẦN TEST                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  [TRANG KHÁCH HÀNG]
+  1. Xem danh sách phim, chi tiết phim
+  2. Đặt vé xem phim (chọn rạp -> ngày -> giờ -> ghế -> combo -> thanh toán)
+  3. Đăng ký tài khoản mới
+  4. Đăng nhập / Đổi mật khẩu / Quên mật khẩu (OTP qua email)
+  5. Xem vé đã đặt, chi tiết vé, mã QR
+  6. Gửi liên hệ (kiểm tra email thời gian thực)
+  7. Chatbot AI tư vấn (góc dưới phải)
+  8. Xem khuyến mãi / Đổi điểm tích lũy
+  9. Chuyển đổi ngôn ngữ Việt/Anh (VI | EN trên menu)
+
+  [TRANG ADMIN]
+  1. Quản lý phim (thêm/sửa/xóa phim)
+  2. Quản lý lịch chiếu (thêm suất chiếu mới)
+  3. Quản lý rạp chiếu (xem/sửa thông tin rạp, tọa độ GPS)
+  4. Quản lý nhân viên (xem/sửa thông tin, xếp lịch làm việc)
+  5. Quản lý khuyến mãi (thêm/sửa voucher giảm giá)
+  6. Quản lý liên hệ (xem và phản hồi liên hệ từ khách)
+  7. Chấm công nhân viên (check-in/out bằng webcam)
+  8. Quản lý combo đồ ăn
+  9. Soát vé bằng QR Code
+  10. Xem thống kê doanh thu, báo cáo
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  LƯU Ý KHI TEST                                                    ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  1. CHỨC NĂNG GỬI EMAIL (quên mật khẩu, nhận vé qua email, phản hồi
+     liên hệ) sẽ hoạt động bình thường vì đã cấu hình sẵn SMTP Gmail.
+     Không cần thay đổi gì thêm.
+
+  2. CHATBOT AI: Chatbot đã được cấu hình API key sẵn. Nếu hết hạn
+     miễn phí hoặc hết quota, chatbot sẽ tự chuyển sang chế độ Fallback
+     trả lời bằng dữ liệu thật từ database, vẫn hoạt động bình thường.
+
+  3. THANH TOÁN: Hệ thống tích hợp thanh toán qua Sepay (chuyển khoản
+     ngân hàng). Khi test, có thể chọn phương thức thanh toán bất kỳ
+     để xem giao diện.
+
+  4. CHECK EMAIL GMAIL: Khi đặt vé (khách vãng lai), hệ thống chỉ chấp
+     nhận email Gmail thật (@gmail.com). Hệ thống sẽ kiểm tra xem Gmail
+     đó có tồn tại trên Google không.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  XỬ LÝ SỰ CỐ THƯỜNG GẶP                                           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  ❌ Lỗi "Access denied for user 'root'@'localhost'":
+     -> Kiểm tra lại cổng MySQL đã sửa đúng chưa (Bước 4).
+
+  ❌ Lỗi trang trắng hoặc lỗi 500:
+     -> Kiểm tra Apache và MySQL đã Start chưa trên XAMPP.
+
+  ❌ Lỗi "Table doesn't exist":
+     -> Chưa import database. Quay lại Bước 3.
+
+  ❌ Giao diện bị vỡ, ảnh không hiển thị:
+     -> Kiểm tra đường dẫn: thư mục phải tên chính xác "webphim_hung"
+        nằm trong htdocs.
+
+  ❌ Không vào được trang Admin:
+     -> Truy cập đúng link: http://localhost/webphim_hung/Trang-admin/
+        (Lưu ý chữ T viết hoa ở "Trang-admin").
+
+========================================================================
+             CHÚC BẠN TEST THÀNH CÔNG VÀ TRẢI NGHIỆM TỐT!
+========================================================================

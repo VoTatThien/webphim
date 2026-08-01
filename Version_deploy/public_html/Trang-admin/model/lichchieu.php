@@ -22,12 +22,34 @@ function loadall_lichchieu_by_rap($id_rap){
 }
 
 function them_lichchieu($id_phim, $ngay_chieu, $id_rap){
+    $today = date('Y-m-d');
+    if ($ngay_chieu < $today) {
+        throw new Exception("Ngày chiếu không được là ngày đã qua (phải từ hôm nay trở đi).");
+    }
+
+    // Kiểm tra trùng lịch chiếu
+    $exists = pdo_query_one("SELECT id FROM lichchieu WHERE id_phim = ? AND ngay_chieu = ? AND id_rap = ?", $id_phim, $ngay_chieu, $id_rap);
+    if ($exists) {
+        throw new Exception("Lịch chiếu cho phim này vào ngày {$ngay_chieu} đã tồn tại tại rạp này.");
+    }
+
     // Đặt trạng thái mặc định rõ ràng để tránh phụ thuộc DEFAULT của DB
     $sql = "INSERT INTO lichchieu(id_phim,ngay_chieu,id_rap,trang_thai_duyet) VALUES (?,?,?,?)";
     pdo_execute($sql, $id_phim, $ngay_chieu, $id_rap, 'Chờ duyệt');
 }
 
 function them_lichchieu_return_id($id_phim, $ngay_chieu, $id_rap){
+    $today = date('Y-m-d');
+    if ($ngay_chieu < $today) {
+        throw new Exception("Ngày chiếu không được là ngày đã qua (phải từ hôm nay trở đi).");
+    }
+
+    // Kiểm tra trùng lịch chiếu
+    $exists = pdo_query_one("SELECT id FROM lichchieu WHERE id_phim = ? AND ngay_chieu = ? AND id_rap = ?", $id_phim, $ngay_chieu, $id_rap);
+    if ($exists) {
+        throw new Exception("Lịch chiếu cho phim này vào ngày {$ngay_chieu} đã tồn tại tại rạp này.");
+    }
+
     // Đặt trạng thái mặc định rõ ràng để tránh phụ thuộc DEFAULT của DB
     $sql = "INSERT INTO lichchieu(id_phim,ngay_chieu,id_rap,trang_thai_duyet) VALUES (?,?,?,?)";
     try {
@@ -44,6 +66,17 @@ function them_lichchieu_return_id($id_phim, $ngay_chieu, $id_rap){
 
 function sua_lichchieu($id,$id_phim,$ngay_chieu,$id_rap)
 {
+    $today = date('Y-m-d');
+    if ($ngay_chieu < $today) {
+        throw new Exception("Ngày chiếu mới không được là ngày đã qua.");
+    }
+
+    // Kiểm tra trùng lịch chiếu với dòng khác
+    $exists = pdo_query_one("SELECT id FROM lichchieu WHERE id_phim = ? AND ngay_chieu = ? AND id_rap = ? AND id != ?", $id_phim, $ngay_chieu, $id_rap, $id);
+    if ($exists) {
+        throw new Exception("Lịch chiếu cho phim này vào ngày {$ngay_chieu} đã tồn tại tại rạp này ở một bản ghi khác.");
+    }
+
     $sql = "update lichchieu set `id_phim`=?,`ngay_chieu`=?,`id_rap`=? where `lichchieu`.`id`=?";
     pdo_execute($sql, $id_phim, $ngay_chieu, $id_rap, $id);
 }
@@ -253,33 +286,25 @@ function ke_hoach_list_by_rap($id_rap) {
     return pdo_query($sql, $id_rap);
 }
 
-// Hàm mới: Lấy danh sách lịch chiếu nhóm theo mã kế hoạch để duyệt (Phục vụ quản lý cụm)
-function lc_list_grouped_for_approval($filter = 'cho_duyet', $id_cum = null) {
-    $where_parts = [];
+// Hàm mới: Lấy danh sách lịch chiếu nhóm theo mã kế hoạch để duyệt
+function lc_list_grouped_for_approval($filter = 'cho_duyet') {
+    $where_clause = "";
     $params = [];
     
     // Lọc theo trạng thái - sử dụng tên chính xác trong DB
     if ($filter === 'cho_duyet') {
-        $where_parts[] = "(lc.trang_thai_duyet = 'Chờ duyệt' OR lc.trang_thai_duyet IS NULL)";
+        $where_clause = "WHERE lc.trang_thai_duyet = 'Chờ duyệt'";
     } elseif ($filter === 'da_duyet') {
-        $where_parts[] = "lc.trang_thai_duyet = 'Đã duyệt'";
+        $where_clause = "WHERE lc.trang_thai_duyet = 'Đã duyệt'";
     } elseif ($filter === 'tu_choi') {
-        $where_parts[] = "lc.trang_thai_duyet = 'Từ chối'";
+        $where_clause = "WHERE lc.trang_thai_duyet = 'Từ chối'";
     }
-    
-    // FIX: Filtrì theo cum của manager - chỉ show kế hoạch từ các rạp thuộc cum này
-    if (!empty($id_cum)) {
-        $where_parts[] = "r.id_cum = ?";
-        $params[] = $id_cum;
-    }
-    
-    $where_clause = !empty($where_parts) ? "WHERE " . implode(" AND ", $where_parts) : "";
     
     $sql = "SELECT 
                 lc.ma_ke_hoach,
                 lc.id_phim,
                 lc.id_rap,
-                IFNULL(lc.trang_thai_duyet, 'Chờ duyệt') as trang_thai_duyet,
+                lc.trang_thai_duyet,
                 lc.ghi_chu,
                 lc.nguoi_tao,
                 lc.ngay_tao,
@@ -304,9 +329,10 @@ function lc_list_grouped_for_approval($filter = 'cho_duyet', $id_cum = null) {
             ORDER BY lc.ngay_tao DESC, p.tieu_de";
     
     try {
-        $result = empty($params) ? pdo_query($sql) : pdo_query($sql, ...$params);
+        // Không dùng ...$params khi mảng rỗng
+        $result = pdo_query($sql);
         // Debug log
-        error_log("lc_list_grouped_for_approval: Filter=$filter, ID_CUM=$id_cum, Results=" . count($result));
+        error_log("lc_list_grouped_for_approval: Filter=$filter, SQL=$sql, Results=" . count($result));
         return $result;
     } catch (Exception $e) {
         error_log("Lỗi lấy danh sách kế hoạch: " . $e->getMessage());

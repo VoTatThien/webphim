@@ -468,12 +468,16 @@ $amount = (int)$_GET['amount'];
         let checkCount = 0;
         const MAX_CHECKS = 600; // Tối đa 30 phút
 
+        // Determine base path dynamically
+        const matches = window.location.pathname.match(/^(.+)\/(Trang-nguoi-dung|Trang-admin)/);
+        const basePath = matches ? matches[1] : '';
+
         /**
          * Kiểm tra trạng thái thanh toán
          */
         async function checkPaymentStatus() {
             try {
-                const response = await fetch('/webphim/Trang-nguoi-dung/sepay/check_payment_status.php', {
+                const response = await fetch(basePath + '/Trang-nguoi-dung/sepay/check_payment_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ticket_id: TICKET_ID })
@@ -487,7 +491,7 @@ $amount = (int)$_GET['amount'];
                     
                     // Redirect tới trang thanh toán thành công (index.php sẽ xử lý case xacnhan)
                     setTimeout(() => {
-                        window.location.href = '/webphim/Trang-nguoi-dung/index.php?act=xacnhan';
+                        window.location.href = basePath + '/Trang-nguoi-dung/index.php?act=xacnhan';
                     }, 2000);
                     
                     return true;

@@ -18,11 +18,16 @@
                     } else {
                         extract($tin);
                         $ngay_format = date('d/m/Y H:i', strtotime($ngay_dang));
-                        if (!empty($hinh_anh)) {
-                            $image_path = '/webphim/Trang-admin/' . $hinh_anh;
-                        } else {
-                            $image_path = 'images/no-image.jpg';
-                        }
+                         $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+                         if (!empty($hinh_anh)) {
+                             if (strpos($hinh_anh, 'assets/news/') !== false) {
+                                 $image_path = $base_dir . 'Trang-admin/' . $hinh_anh;
+                             } else {
+                                 $image_path = $base_dir . 'Trang-admin/assets/news/' . $hinh_anh;
+                             }
+                         } else {
+                             $image_path = $base_dir . 'Trang-nguoi-dung/imgavt/no-image.jpg';
+                         }
                         
                         echo '
                         <article class="post post--news">

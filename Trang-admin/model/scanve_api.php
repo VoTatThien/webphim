@@ -139,15 +139,18 @@ function validate_ticket($ticket) {
 }
 
 function get_checkin_history($id_rap) {
-    $sql = "SELECT v.id, v.ma_ve, p.tieu_de, p.tieu_de as phim, v.check_in_luc, tk.name as staff_name
+    $sql = "SELECT v.id, v.ma_ve, v.trang_thai, v.combo, p.tieu_de as phim, 
+                   v.check_in_luc, v.fb_check_in_luc,
+                   tk1.name as staff_name, tk2.name as fb_staff_name
             FROM ve v
             JOIN phim p ON p.id = v.id_phim
-            JOIN taikhoan tk ON tk.id = v.check_in_boi
+            LEFT JOIN taikhoan tk1 ON tk1.id = v.check_in_boi
+            LEFT JOIN taikhoan tk2 ON tk2.id = v.fb_check_in_boi
             LEFT JOIN lichchieu lc ON lc.id = v.id_ngay_chieu
-            WHERE v.trang_thai = 4 
-              AND DATE(v.check_in_luc) = CURDATE()
-              AND lc.id_rap = ?
-            ORDER BY v.check_in_luc DESC
+            WHERE ((v.trang_thai = 4 AND DATE(v.check_in_luc) = CURDATE())
+               OR (v.fb_check_in_luc IS NOT NULL AND DATE(v.fb_check_in_luc) = CURDATE()))
+               AND lc.id_rap = ?
+            ORDER BY COALESCE(v.fb_check_in_luc, v.check_in_luc) DESC
             LIMIT 50";
     
     return pdo_query($sql, $id_rap);

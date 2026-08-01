@@ -2,16 +2,71 @@
 // Prevent redeclaration
 if (!function_exists('pdo_get_connection')) {
     function pdo_get_connection(){
-        $servername = "localhost";
-        $username = "u508775056_cinepass";
-        $password = "Kpy123456@@";
-        try {
-            // FIX: Thêm charset=utf8mb4 để đảm bảo dữ liệu UTF-8 từ DB
-            $conn = new PDO("mysql:host=$servername;dbname=u508775056_cinepass;charset=utf8mb4", $username, $password);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $conn;
-        } catch(PDOException $e) {
-            echo "Connection failed: " . $e->getMessage();
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $server_addr = $_SERVER['SERVER_ADDR'] ?? '';
+        
+        $is_local = false;
+        if (DIRECTORY_SEPARATOR === '\\' || strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $is_local = true;
+        } elseif (
+            strpos($host, 'localhost') !== false ||
+            strpos($host, '127.0.0.1') !== false ||
+            strpos($host, '192.168.') !== false ||
+            strpos($host, '10.') === 0 ||
+            strpos($host, '172.16.') !== false ||
+            strpos($host, '172.17.') !== false ||
+            strpos($host, '172.18.') !== false ||
+            strpos($host, '172.19.') !== false ||
+            strpos($host, '172.20.') !== false ||
+            strpos($host, '172.21.') !== false ||
+            strpos($host, '172.22.') !== false ||
+            strpos($host, '172.23.') !== false ||
+            strpos($host, '172.24.') !== false ||
+            strpos($host, '172.25.') !== false ||
+            strpos($host, '172.26.') !== false ||
+            strpos($host, '172.27.') !== false ||
+            strpos($host, '172.28.') !== false ||
+            strpos($host, '172.29.') !== false ||
+            strpos($host, '172.30.') !== false ||
+            strpos($host, '172.31.') !== false ||
+            $server_addr === '127.0.0.1' ||
+            $server_addr === '::1'
+        ) {
+            $is_local = true;
+        }
+
+        if ($is_local) {
+            // Chạy local: Tự động thử kết nối cổng 3306, nếu thất bại thử 3307
+            $ports = ["3306", "3307"];
+            $servername = "127.0.0.1";
+            $dbname = "cinepass";
+            $username = "root";
+            $password = "";
+            $last_e = null;
+            foreach ($ports as $p) {
+                try {
+                    $conn = new PDO("mysql:host=$servername;port=$p;dbname=$dbname;charset=utf8mb4", $username, $password);
+                    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    return $conn;
+                } catch (PDOException $e) {
+                    $last_e = $e;
+                }
+            }
+            throw $last_e;
+        } else {
+            // Chạy production (live server)
+            $servername = "localhost";
+            $port = "3306";
+            $dbname = "u508775056_cinepass";
+            $username = "u508775056_cinepass";
+            $password = "Kpy123456@@";
+            try {
+                $conn = new PDO("mysql:host=$servername;port=$port;dbname=$dbname;charset=utf8mb4", $username, $password);
+                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                return $conn;
+            } catch(PDOException $e) {
+                throw $e;
+            }
         }
     }
 }
@@ -29,6 +84,22 @@ if (!function_exists('pdo_execute')) {
             throw $e;
         }
         finally{
+            unset($conn);
+        }
+    }
+}
+
+if (!function_exists('pdo_execute_return_interlastid')) {
+    function pdo_execute_return_interlastid($sql) {
+        $sql_args = array_slice(func_get_args(), 1);
+        try {
+            $conn = pdo_get_connection();
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($sql_args);
+            return $conn->lastInsertId();
+        } catch (PDOException $e) {
+            throw $e;
+        } finally {
             unset($conn);
         }
     }

@@ -642,7 +642,7 @@ body {
   height: 100%;
 }
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 .wrapper {
   overflow: hidden;
@@ -660,41 +660,41 @@ body {
 h1 {
   color: #4c4145;
   font-size: 30px;
-  font-family: 'aleoregular', sans-serif;
+  font-family: 'aleoregular', 'Roboto', system-ui, sans-serif;
   margin-top: 32px;
   margin-bottom: 23px;
 }
 h2 {
   color: #4c4145;
   font-size: 27px;
-  font-family: 'aleoregular', sans-serif;
+  font-family: 'aleoregular', 'Roboto', system-ui, sans-serif;
   margin-top: 70px;
   margin-bottom: 23px;
 }
 h3 {
   color: #4c4145;
   font-size: 24px;
-  font-family: 'aleoregular', sans-serif;
+  font-family: 'aleoregular', 'Roboto', system-ui, sans-serif;
   margin-top: 40px;
   margin-bottom: 24px;
 }
 h4 {
   color: #4c4145;
   font-size: 21px;
-  font-family: 'aleoregular', sans-serif;
+  font-family: 'aleoregular', 'Roboto', system-ui, sans-serif;
   margin-top: 7px;
   margin-bottom: 24px;
 }
 h5 {
   color: #4c4145;
   font-size: 18px;
-  font-family: 'aleoregular', sans-serif;
+  font-family: 'aleoregular', 'Roboto', system-ui, sans-serif;
   margin-top: 70px;
   margin-bottom: 24px;
 }
 .unslyled {
   font-weight: bold;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
 }
 p {
   font-size: 15px;

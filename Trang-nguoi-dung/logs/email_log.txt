@@ -3,3 +3,8 @@ To: phanthienkhai111@gmail.com
 Status: FAILED
 Subject: ✓ Thanh toán thành công - Vé phim CinePass
 ---
+2026-07-18 14:57:17 - VietQR Email
+To: camtiennguyn306@gmail.com
+Status: SUCCESS
+Subject: ✓ Thanh toán thành công - Vé phim CinePass
+---

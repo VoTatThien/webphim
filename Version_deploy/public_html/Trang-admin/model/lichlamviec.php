@@ -31,6 +31,26 @@ function llv_list_by_user_month($id_user, $ym){
 }
 
 function llv_insert($id_nv, $id_rap, $ngay, $gio_bat_dau, $gio_ket_thuc, $ca_lam = null, $ghi_chu = null){
+    $today = date('Y-m-d');
+    if ($ngay < $today) {
+        throw new Exception("Không thể xếp lịch làm việc cho ngày đã qua (phải từ hôm nay trở đi).");
+    }
+    if ($gio_ket_thuc <= $gio_bat_dau) {
+        throw new Exception("Giờ kết thúc phải sau giờ bắt đầu.");
+    }
+    
+    // Kiểm tra trùng ca làm việc (overlapping)
+    $trung = pdo_query_one(
+        "SELECT id FROM lich_lam_viec 
+         WHERE id_nhan_vien = ? AND ngay = ? 
+         AND gio_bat_dau < ? AND ? < gio_ket_thuc
+         LIMIT 1",
+        $id_nv, $ngay, $gio_ket_thuc, $gio_bat_dau
+    );
+    if ($trung) {
+        throw new Exception("Nhân viên đã có lịch làm việc khác trùng hoặc giao với khoảng thời gian này.");
+    }
+
     $sql = "INSERT INTO lich_lam_viec(id_nhan_vien,id_rap,ngay,gio_bat_dau,gio_ket_thuc,ca_lam,ghi_chu)
             VALUES(?,?,?,?,?,?,?)";
     pdo_execute($sql, $id_nv, $id_rap, $ngay, $gio_bat_dau, $gio_ket_thuc, $ca_lam, $ghi_chu);
@@ -41,6 +61,33 @@ function llv_delete($id){
 }
 
 function llv_update($id, $ngay, $gio_bat_dau, $gio_ket_thuc, $ca_lam = null, $ghi_chu = null){
+    $today = date('Y-m-d');
+    if ($ngay < $today) {
+        throw new Exception("Không thể sửa lịch làm việc thành ngày đã qua.");
+    }
+    if ($gio_ket_thuc <= $gio_bat_dau) {
+        throw new Exception("Giờ kết thúc phải sau giờ bắt đầu.");
+    }
+
+    // Lấy thông tin id_nhan_vien hiện tại của lịch này
+    $llv_current = pdo_query_one("SELECT id_nhan_vien FROM lich_lam_viec WHERE id = ?", $id);
+    if (!$llv_current) {
+        throw new Exception("Lịch làm việc không tồn tại.");
+    }
+    $id_nv = $llv_current['id_nhan_vien'];
+
+    // Kiểm tra trùng ca làm việc với bản ghi khác
+    $trung = pdo_query_one(
+        "SELECT id FROM lich_lam_viec 
+         WHERE id_nhan_vien = ? AND ngay = ? AND id != ?
+         AND gio_bat_dau < ? AND ? < gio_ket_thuc
+         LIMIT 1",
+        $id_nv, $ngay, $id, $gio_ket_thuc, $gio_bat_dau
+    );
+    if ($trung) {
+        throw new Exception("Nhân viên đã có lịch làm việc khác trùng hoặc giao với khoảng thời gian này.");
+    }
+
     $sql = "UPDATE lich_lam_viec SET ngay=?, gio_bat_dau=?, gio_ket_thuc=?, ca_lam=?, ghi_chu=? WHERE id=?";
     pdo_execute($sql, $ngay, $gio_bat_dau, $gio_ket_thuc, $ca_lam, $ghi_chu, $id);
 }

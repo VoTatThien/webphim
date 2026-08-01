@@ -69,9 +69,9 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-6 col-md-2 mb-15"><label>Ngày</label><input class="form-control" type="date" name="ngay_single" required></div>
-            <div class="col-6 col-md-2 mb-15"><label>Giờ bắt đầu</label><input class="form-control" type="time" name="gio_bd_single" required></div>
-            <div class="col-6 col-md-2 mb-15"><label>Giờ kết thúc</label><input class="form-control" type="time" name="gio_kt_single" required></div>
+            <div class="col-6 col-md-2 mb-15"><label>Ngày</label><input class="form-control" type="date" name="ngay_single" id="ngay_single" min="<?= date('Y-m-d') ?>" required></div>
+            <div class="col-6 col-md-2 mb-15"><label>Giờ bắt đầu</label><input class="form-control" type="time" name="gio_bd_single" id="gio_bd_single" required></div>
+            <div class="col-6 col-md-2 mb-15"><label>Giờ kết thúc</label><input class="form-control" type="time" name="gio_kt_single" id="gio_kt_single" required></div>
             <div class="col-6 col-md-2 mb-15"><label>Loại ca</label>
                 <select class="form-control" name="loai_ca_single" onchange="applyPresetToSingle(this.value)">
                     <option value="">— Chọn —</option>
@@ -97,8 +97,8 @@
                     <?php endforeach; ?>
                 </div>
             </div>
-            <div class="col-6 col-md-3 mb-15"><label>Từ ngày</label><input class="form-control" type="date" name="bulk_from" required></div>
-            <div class="col-6 col-md-3 mb-15"><label>Đến ngày</label><input class="form-control" type="date" name="bulk_to" required></div>
+            <div class="col-6 col-md-3 mb-15"><label>Từ ngày</label><input class="form-control" type="date" name="bulk_from" id="bulk_from" min="<?= date('Y-m-d') ?>" required></div>
+            <div class="col-6 col-md-3 mb-15"><label>Đến ngày</label><input class="form-control" type="date" name="bulk_to" id="bulk_to" min="<?= date('Y-m-d') ?>" required></div>
             <div class="col-12 mb-10"><label>Template ca</label>
                 <div id="tplList"></div>
                 <button class="button button-sm" onclick="addTpl();return false;">+ Thêm template</button>
@@ -153,9 +153,140 @@
         document.getElementById('edit_kt').value = data.kt;
         document.getElementById('edit_ca').value = data.ca || '';
         document.getElementById('edit_ghi').value = data.ghi || '';
+        
+        // Cập nhật min date cho modal sửa
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('edit_ngay').min = todayStr;
+
         document.getElementById('editModal').style.display='flex';
     }
     function closeEditModal(){ document.getElementById('editModal').style.display='none'; }
+
+    // Client-side validations
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Validate form ca đơn lẻ
+        const singleBtn = document.querySelector('button[name="create_single"]');
+        if (singleBtn) {
+            const singleForm = singleBtn.form;
+            singleForm.addEventListener('submit', function(e) {
+                const ngay = document.getElementById('ngay_single').value;
+                const bd = document.getElementById('gio_bd_single').value;
+                const kt = document.getElementById('gio_kt_single').value;
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                if (ngay < todayStr) {
+                    e.preventDefault();
+                    alert("Ngày làm việc không được ở quá khứ.");
+                    return;
+                }
+
+                if (bd >= kt) {
+                    e.preventDefault();
+                    alert("Giờ kết thúc phải sau giờ bắt đầu.");
+                    return;
+                }
+            });
+        }
+
+        // 2. Validate form tạo nhiều ca (Bulk)
+        const bulkBtn = document.querySelector('button[name="bulk_templates"]');
+        if (bulkBtn) {
+            const bulkForm = bulkBtn.form;
+            const bulkFrom = document.getElementById('bulk_from');
+            const bulkTo = document.getElementById('bulk_to');
+
+            // Sync min date of bulk_to with bulk_from
+            bulkFrom.addEventListener('change', function() {
+                if (bulkFrom.value) {
+                    bulkTo.min = bulkFrom.value;
+                    if (bulkTo.value && bulkTo.value < bulkFrom.value) {
+                        bulkTo.value = bulkFrom.value;
+                    }
+                }
+            });
+
+            bulkForm.addEventListener('submit', function(e) {
+                const fromVal = bulkFrom.value;
+                const toVal = bulkTo.value;
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                if (fromVal < todayStr) {
+                    e.preventDefault();
+                    alert("Ngày bắt đầu không được ở quá khứ.");
+                    return;
+                }
+
+                if (toVal < fromVal) {
+                    e.preventDefault();
+                    alert("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+                    return;
+                }
+
+                // Kiểm tra xem đã chọn ít nhất một nhân viên chưa
+                const checkedEmployees = bulkForm.querySelectorAll('input[name="ids_nv_bulk[]"]:checked');
+                if (checkedEmployees.length === 0) {
+                    e.preventDefault();
+                    alert("Vui lòng chọn ít nhất một nhân viên.");
+                    return;
+                }
+
+                // Kiểm tra xem đã thêm ít nhất một template chưa
+                const tplBlocks = document.querySelectorAll('#tplList .card-sm');
+                if (tplBlocks.length === 0) {
+                    e.preventDefault();
+                    alert("Vui lòng thêm ít nhất một template ca làm việc.");
+                    return;
+                }
+
+                // Validate các giờ trong template ca
+                let validTpl = true;
+                tplBlocks.forEach(function(block) {
+                    const bdInput = block.querySelector('input[name*="[bd]"]');
+                    const ktInput = block.querySelector('input[name*="[kt]"]');
+                    const checkboxes = block.querySelectorAll('input[type="checkbox"]:checked');
+                    
+                    if (bdInput && ktInput) {
+                        if (bdInput.value >= ktInput.value) {
+                            validTpl = false;
+                            alert("Trong template ca: Giờ kết thúc (" + ktInput.value + ") phải sau giờ bắt đầu (" + bdInput.value + ").");
+                        }
+                        if (checkboxes.length === 0) {
+                            validTpl = false;
+                            alert("Vui lòng chọn ít nhất một ngày áp dụng (T2-CN) cho mỗi template ca.");
+                        }
+                    }
+                });
+
+                if (!validTpl) {
+                    e.preventDefault();
+                    return;
+                }
+            });
+        }
+
+        // 3. Validate form sửa ca (Modal)
+        const editForm = document.querySelector('#editModal form');
+        if (editForm) {
+            editForm.addEventListener('submit', function(e) {
+                const ngay = document.getElementById('edit_ngay').value;
+                const bd = document.getElementById('edit_bd').value;
+                const kt = document.getElementById('edit_kt').value;
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                if (ngay < todayStr) {
+                    e.preventDefault();
+                    alert("Ngày làm việc không được sửa thành ngày trong quá khứ.");
+                    return;
+                }
+
+                if (bd >= kt) {
+                    e.preventDefault();
+                    alert("Giờ kết thúc phải sau giờ bắt đầu.");
+                    return;
+                }
+            });
+        }
+    });
     </script>
 
     <div id="editModal" class="modal">

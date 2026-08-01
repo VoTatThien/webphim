@@ -451,7 +451,7 @@
 
             // Redirect to return page
             setTimeout(() => {
-                window.location.href = '/webphim/Trang-nguoi-dung/vietqr_return.php?orderId=' + encodeURIComponent(orderId) + '&amount=' + amount + '&status=confirmed';
+                window.location.href = '/webphim_hung/Trang-nguoi-dung/vietqr_return.php?orderId=' + encodeURIComponent(orderId) + '&amount=' + amount + '&status=confirmed';
             }, 1000);
         }
 

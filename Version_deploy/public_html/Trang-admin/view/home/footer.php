@@ -3,7 +3,7 @@
             <div class="container-fluid">
 
                 <div class="footer-copyright text-center">
-                    <p class="text-body-light">2025 &copy; <a href="https://themeforest.net/user/codecarnival">Thien Khai</a></p>
+                    <p class="text-body-light">2026 &copy; <a href="https://themeforest.net/user/codecarnival">Huy Hung</a></p>
                 </div>
 
             </div>

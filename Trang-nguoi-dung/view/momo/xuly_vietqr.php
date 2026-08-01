@@ -59,7 +59,6 @@ if (!$qrResult['success']) {
  */
 function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $description) {
     // Format: Banking QR Code format
-    // Đây là format cơ bản, có thể cần điều chỉnh theo chuẩn VietQR chính thức
     $qrData = "00020101021135360010A000000727301240060704{$bankCode}0711{$accountNumber}520441115802VN5913" . 
               strtoupper($accountName) . "6009HO CHI MINH6304" . base_convert(crc32($description), 10, 16);
     return $qrData;
@@ -72,6 +71,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh toán QR Banking</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" />
     <style>
         * {
             margin: 0;
@@ -81,7 +81,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1619;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -90,29 +90,33 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .payment-container {
-            background: white;
+            background: #232023;
+            border: 1px solid #4a3e43;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             max-width: 600px;
             width: 100%;
             overflow: hidden;
+            color: #fff;
         }
         
         .payment-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #1c181c;
+            border-bottom: 1px solid #4a3e43;
+            color: #ffd564;
             padding: 30px;
             text-align: center;
         }
         
         .payment-header h1 {
-            font-size: 28px;
+            font-size: 26px;
             margin-bottom: 10px;
         }
         
         .payment-header p {
             opacity: 0.9;
             font-size: 15px;
+            color: #a59b9f;
         }
         
         .payment-content {
@@ -120,7 +124,8 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .info-section {
-            background: #f8f9fa;
+            background: #151215;
+            border: 1px solid #363033;
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
@@ -134,21 +139,21 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .info-label {
-            color: #6b7280;
+            color: #a59b9f;
             font-weight: 500;
         }
         
         .info-value {
-            color: #1f2937;
+            color: #fff;
             font-weight: 600;
         }
         
         .qr-container {
             text-align: center;
-            background: white;
+            background: #1c181c;
             padding: 20px;
             border-radius: 12px;
-            border: 2px solid #e5e7eb;
+            border: 1px solid #363033;
             margin: 30px 0;
         }
         
@@ -160,22 +165,23 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .instructions {
-            background: #eff6ff;
-            border-left: 4px solid #667eea;
+            background: #1c181c;
+            border: 1px solid #363033;
+            border-left: 4px solid #ffd564;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
         }
         
         .instructions h3 {
-            color: #1f2937;
+            color: #ffd564;
             font-size: 16px;
             margin-bottom: 15px;
         }
         
         .instructions ol {
             margin-left: 20px;
-            color: #4b5563;
+            color: #e5e0e3;
             font-size: 14px;
             line-height: 1.8;
         }
@@ -185,7 +191,8 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .payment-details {
-            background: #ecfdf5;
+            background: #13241b;
+            border: 1px solid #1c3629;
             border-left: 4px solid #10b981;
             padding: 20px;
             border-radius: 8px;
@@ -200,12 +207,12 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .detail-label {
-            color: #047857;
+            color: #10b981;
             font-weight: 500;
         }
         
         .detail-value {
-            color: #065f46;
+            color: #fff;
             font-weight: 600;
             font-family: 'Courier New', monospace;
         }
@@ -216,7 +223,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .amount-label {
-            color: #6b7280;
+            color: #a59b9f;
             font-size: 14px;
             margin-bottom: 10px;
         }
@@ -224,7 +231,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         .amount-value {
             font-size: 32px;
             font-weight: 700;
-            color: #667eea;
+            color: #fe505a;
             margin-bottom: 5px;
         }
         
@@ -246,49 +253,54 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #ffd564;
+            color: #4c4145;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            background: #ffe08d;
+            box-shadow: 0 8px 20px rgba(255, 213, 100, 0.25);
         }
         
         .btn-secondary {
-            background: #e5e7eb;
-            color: #374151;
+            background: #4c4145;
+            color: white;
         }
         
         .btn-secondary:hover {
-            background: #d1d5db;
+            background: #5c5155;
         }
         
         .timer {
             text-align: center;
             margin-top: 20px;
             font-size: 14px;
-            color: #6b7280;
+            color: #a59b9f;
         }
         
         .copy-btn {
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            padding: 8px 12px;
+            background: #232023;
+            border: 1px solid #4a3e43;
+            color: #ffd564;
+            padding: 4px 10px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             transition: all 0.2s;
+            margin-left: 5px;
         }
         
         .copy-btn:hover {
-            background: #e5e7eb;
+            background: #ffd564;
+            color: #4c4145;
         }
         
         .warning {
-            background: #fff5f5;
+            background: #2d1818;
+            border: 1px solid #f56565;
             border-left: 4px solid #f56565;
-            color: #742a2a;
+            color: #ff8080;
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
@@ -301,7 +313,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
             }
             
             .payment-header h1 {
-                font-size: 24px;
+                font-size: 22px;
             }
             
             .payment-content {
@@ -321,7 +333,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
 <body>
     <div class="payment-container">
         <div class="payment-header">
-            <h1>💳 Thanh Toán QR Banking</h1>
+            <h1><i class="fa fa-credit-card" style="margin-right: 8px;"></i> Thanh Toán QR Banking</h1>
             <p>Quét mã QR bằng ứng dụng ngân hàng của bạn</p>
         </div>
         
@@ -329,15 +341,15 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
             <!-- Thông tin đơn hàng -->
             <div class="info-section">
                 <div class="info-row">
-                    <span class="info-label">🎬 Phim:</span>
+                    <span class="info-label"><i class="fa fa-film"></i> Phim:</span>
                     <span class="info-value"><?= htmlspecialchars($_SESSION['tong']['tieu_de'] ?? 'N/A') ?></span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">📅 Ngày chiếu:</span>
+                    <span class="info-label"><i class="fa fa-calendar"></i> Ngày chiếu:</span>
                     <span class="info-value"><?= htmlspecialchars($_SESSION['tong']['ngay_chieu'] ?? 'N/A') ?></span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">🎟️ Ghế:</span>
+                    <span class="info-label"><i class="fa fa-circle-o"></i> Ghế:</span>
                     <span class="info-value"><?= htmlspecialchars($_SESSION['tong']['ghe'] ?? 'N/A') ?></span>
                 </div>
             </div>
@@ -345,13 +357,13 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
             <!-- Số tiền thanh toán -->
             <div class="amount-section">
                 <div class="amount-label">Số tiền cần thanh toán</div>
-                <div class="amount-value"><?= formatVND($amount) ?></div>
+                <div class="amount-value"><?= number_format($amount, 0, ',', '.') ?> VND</div>
             </div>
             
             <!-- Mã QR -->
             <?php if ($qrResult['success']): ?>
                 <div class="qr-container">
-                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">Quét mã QR dưới đây</p>
+                    <p style="color: #a59b9f; font-size: 14px; margin-bottom: 15px;">Quét mã QR dưới đây</p>
                     <div id="qrcode"></div>
                     <script>
                         // Tạo QR Code từ URL
@@ -370,22 +382,22 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
             <!-- Thông tin chuyển khoản -->
             <div class="payment-details">
                 <div class="detail-row">
-                    <span class="detail-label">👤 Tên chủ tài khoản:</span>
+                    <span class="detail-label"><i class="fa fa-user"></i> Tên chủ tài khoản:</span>
                     <span class="detail-value"><?= htmlspecialchars(BANK_ACCOUNT_NAME) ?></span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">🏦 Số tài khoản:</span>
+                    <span class="detail-label"><i class="fa fa-university"></i> Số tài khoản:</span>
                     <span class="detail-value">
                         <?= htmlspecialchars(BANK_ACCOUNT_NUMBER) ?>
                         <button class="copy-btn" onclick="copyToClipboard('<?= BANK_ACCOUNT_NUMBER ?>')">Copy</button>
                     </span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">💰 Số tiền:</span>
+                    <span class="detail-label"><i class="fa fa-money"></i> Số tiền:</span>
                     <span class="detail-value"><?= number_format($amount) ?></span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">📝 Nội dung:</span>
+                    <span class="detail-label"><i class="fa fa-file-text-o"></i> Nội dung:</span>
                     <span class="detail-value" style="font-size: 12px;">
                         <?= htmlspecialchars($orderInfo) ?>
                         <button class="copy-btn" onclick="copyToClipboard('<?= htmlspecialchars($orderInfo) ?>')">Copy</button>
@@ -395,7 +407,7 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
             
             <!-- Hướng dẫn -->
             <div class="instructions">
-                <h3>📱 Hướng dẫn thanh toán:</h3>
+                <h3><i class="fa fa-info-circle"></i> Hướng dẫn thanh toán:</h3>
                 <ol>
                     <li>Mở ứng dụng ngân hàng hoặc ví điện tử của bạn (VCB Pay, VIB, BIDV, v.v.)</li>
                     <li>Chọn chức năng "Quét mã QR" hoặc "Thanh toán QR"</li>
@@ -407,13 +419,13 @@ function encodeVietQR($accountNumber, $bankCode, $accountName, $amount, $descrip
             
             <!-- Cảnh báo -->
             <div class="warning">
-                ⚠️ <strong>Lưu ý:</strong> Vui lòng chuyển đúng số tiền và nội dung như hướng dẫn để hệ thống tự động xác nhận thanh toán.
+                <i class="fa fa-warning"></i> <strong>Lưu ý:</strong> Vui lòng chuyển đúng số tiền và nội dung như hướng dẫn để hệ thống tự động xác nhận thanh toán.
             </div>
             
             <!-- Nút hành động -->
             <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="history.back();">← Quay lại</button>
-                <button class="btn btn-primary" onclick="confirmPayment();">✓ Tôi đã thanh toán</button>
+                <button class="btn btn-secondary" onclick="history.back();"><i class="fa fa-arrow-left"></i> Quay lại</button>
+                <button class="btn btn-primary" onclick="confirmPayment();"><i class="fa fa-check"></i> Tôi đã thanh toán</button>
             </div>
             
             <!-- Timer -->

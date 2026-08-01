@@ -67,7 +67,12 @@ try {
     
     // Status: 0 = Unpaid, 1 = Paid
     $status = $ticket['trang_thai'] == 1 ? 'paid' : 'unpaid';
-    $redirect_url = $status === 'paid' ? '/webphim/Trang-nguoi-dung/index.php?act=ve&id=' . $ticket_id : null;
+    
+    $base_path = '';
+    if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $base_path = '/' . $matches[1];
+    }
+    $redirect_url = $status === 'paid' ? $base_path . '/Trang-nguoi-dung/index.php?act=ve&id=' . $ticket_id : null;
     
     echo json_encode([
         'success' => true,

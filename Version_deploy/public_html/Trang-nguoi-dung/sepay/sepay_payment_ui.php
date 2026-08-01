@@ -1,20 +1,22 @@
 <?php
 /**
- * Sepay Payment UI - Hiển thị QR code khi user chọn thanh toán Sepay
- * Được gọi từ: Trang-nguoi-dung/view/thanhtoan.php
+ * Sepay Payment UI
+ * Hiển thị QR code khi user chọn thanh toán Sepay
+ * Được gọi từ: Trang-nguoi-dung/view/thanhtoan.php (payment method selection)
  */
+
 session_start();
 
-if (!isset($_GET['amount'])) {
-    die('Missing amount parameter');
+// Giả sử $ticket_id và $amount được truyền từ thanhtoan.php
+if (!isset($_GET['ticket_id']) || !isset($_GET['amount'])) {
+    die('Missing parameters');
 }
 
-// Get parameters from URL
+$ticket_id = (int)$_GET['ticket_id'];
 $amount = (int)$_GET['amount'];
-$trans_id = $_GET['trans_id'] ?? 'NOTX' . time();
-$ve_id = (int)($_GET['id'] ?? 0);  // Get ve id from URL
-$booking_encoded = $_GET['booking'] ?? '';
-?><!DOCTYPE html>
+?>
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -387,7 +389,7 @@ $booking_encoded = $_GET['booking'] ?? '';
                     <div class="qr-container">
                         <p>Quét mã QR bằng app ngân hàng</p>
                         <div class="qr-image" id="qr-code-container">
-                            <img src="https://qr.sepay.vn/img?bank=MBBANK&acc=0384104942&template=compact&amount=<?= $amount ?>&des=VE<?= $ve_id ?>" alt="QR Code Thanh Toán" />
+                            <img src="https://qr.sepay.vn/img?bank=MBBANK&acc=0384104942&template=compact&amount=<?= $amount ?>&des=VE<?= $ticket_id ?>" alt="QR Code Thanh Toán" />
                         </div>
                     </div>
                     
@@ -410,7 +412,7 @@ $booking_encoded = $_GET['booking'] ?? '';
                     <div class="payment-details">
                         <div class="detail-row">
                             <strong>🎟️ Mã vé:</strong>
-                            <span>VE<?= $ve_id ?></span>
+                            <span>VE<?= $ticket_id ?></span>
                         </div>
                         <div class="detail-row">
                             <strong>💰 Số tiền:</strong>
@@ -449,7 +451,6 @@ $booking_encoded = $_GET['booking'] ?? '';
                     <!-- Action Buttons -->
                     <div class="action-buttons">
                         <button class="btn btn-primary" onclick="checkPaymentStatus()">🔄 Kiểm tra</button>
-                        <button class="btn btn-success" onclick="manualConfirm()" style="background: #51cf66; margin-left: 10px;">✅ Đã chuyển rồi? Xác nhận!</button>
                         <button class="btn btn-secondary" onclick="window.history.back()">← Quay lại</button>
                     </div>
 
@@ -462,110 +463,44 @@ $booking_encoded = $_GET['booking'] ?? '';
     </div>
 
     <script>
-        const AMOUNT = <?= $amount ?>;
-        const TRANS_ID = '<?= $trans_id ?>';
-        const VE_ID = <?= $ve_id ?>;
-        const BOOKING_DATA = <?= json_encode($booking_data) ?>;
+        const TICKET_ID = <?= $ticket_id ?>;
         const CHECK_INTERVAL = 3000; // 3 giây
         let checkCount = 0;
         const MAX_CHECKS = 600; // Tối đa 30 phút
+
+        // Determine base path dynamically
+        const matches = window.location.pathname.match(/^(.+)\/(Trang-nguoi-dung|Trang-admin)/);
+        const basePath = matches ? matches[1] : '';
 
         /**
          * Kiểm tra trạng thái thanh toán
          */
         async function checkPaymentStatus() {
             try {
-                // Get ticket ID from ma_ve (SEPAY_DDMMYY_TIMESTAMP format)
-                // Or query status from database
-                const response = await fetch('/Trang-nguoi-dung/sepay/check_payment_status.php', {
+                const response = await fetch(basePath + '/Trang-nguoi-dung/sepay/check_payment_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        amount: AMOUNT,
-                        trans_id: TRANS_ID,
-                        booking: BOOKING_DATA
-                    })
+                    body: JSON.stringify({ ticket_id: TICKET_ID })
                 });
 
                 const result = await response.json();
-                console.log('✅ Check payment response:', result);
-                console.log('Response status:', response.status);
-                console.log('Result paid:', result.paid);
 
-                if (result.paid) {
-                    console.log('✅ Payment confirmed! Redirecting to success page...');
+                if (result.success && result.status === 'paid') {
                     showSuccess();
                     clearInterval(autoCheckInterval);
                     
+                    // Redirect tới trang thanh toán thành công (index.php sẽ xử lý case xacnhan)
                     setTimeout(() => {
-                        const redirectUrl = result.redirect_url || '/Trang-nguoi-dung/index.php?act=thankyou';
-                        console.log('Redirecting to:', redirectUrl);
-                        window.location.href = redirectUrl;
-                    }, 1500);
+                        window.location.href = basePath + '/Trang-nguoi-dung/index.php?act=xacnhan';
+                    }, 2000);
                     
                     return true;
                 } else {
-                    console.log('⏳ Payment not yet confirmed, will check again...');
-                    console.log('Status:', result.status);
                     showLoading();
                     return false;
                 }
             } catch (error) {
                 showError('❌ Lỗi: ' + error.message);
-                console.error('Full error:', error);
-                return false;
-            }
-        }
-
-        /**
-         * Manual confirmation - when webhook doesn't work (XAMPP on Hostinger)
-         */
-        async function manualConfirm() {
-            try {
-                console.log('🔄 Requesting manual confirmation for ve', VE_ID);
-                
-                const response = await fetch('/Trang-nguoi-dung/sepay/manual_confirm.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        amount: AMOUNT,
-                        trans_id: TRANS_ID,
-                        ve_id: VE_ID
-                    })
-                });
-
-                const result = await response.json();
-                console.log('✅ Manual confirm response:', result);
-
-                if (result.success) {
-                    console.log('✅ Payment confirmed successfully!');
-                    showSuccess('✅ ' + result.message);
-                    clearInterval(autoCheckInterval);
-                    
-                    // Redirect with id_hd as query parameter
-                    // Server sẽ parse và set session
-                    setTimeout(() => {
-                        const redirectUrl = result.redirect_url + '&id_hd=' + result.id_hd + '&ve_id=' + result.ve_id;
-                        console.log('Redirecting to:', redirectUrl);
-                        window.location.href = redirectUrl;
-                    }, 1500);
-                    
-                    return true;
-                } else {
-                    if (result.already_paid) {
-                        showSuccess('✅ Vé đã thanh toán rồi');
-                        console.log('Vé đã thanh toán rồi');
-                    } else {
-                        // Check if transfer not found (402 Payment Required)
-                        const errorMsg = result.message || 'Không thể xác nhận';
-                        console.warn('❌ Xác nhận thất bại:', errorMsg);
-                        showError(errorMsg);
-                    }
-                    return false;
-                }
-            } catch (error) {
-                showError('❌ Lỗi: ' + error.message);
-                console.error('Manual confirm error:', error);
                 return false;
             }
         }

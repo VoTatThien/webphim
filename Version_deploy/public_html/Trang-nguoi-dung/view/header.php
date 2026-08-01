@@ -12,12 +12,15 @@ if (file_exists($config_file)) {
     try {
         $config_response = @json_decode(file_get_contents($config_file), true);
         if (!is_array($config_response)) {
-            // Fetch từ API endpoint - Use dynamic protocol
-            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            // Fetch từ API endpoint thay vì include
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
             $host = $_SERVER['HTTP_HOST'];
+            $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+            $api_url = $protocol . $host . $base_dir . 'Trang-nguoi-dung/api_config.php';
+
             $curl = curl_init();
             curl_setopt_array($curl, [
-                CURLOPT_URL => $protocol . '://' . $host . '/webphim/Trang-nguoi-dung/api_config.php',
+                CURLOPT_URL => $api_url,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT => 5
             ]);
@@ -54,9 +57,10 @@ if (file_exists($config_file)) {
 
     <!-- Fonts -->
     <!-- Font awesome - icon font -->
-    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-    <!-- Google Fonts - Roboto & Open Sans (HTTPS) -->
+    <link href="netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <!-- Roboto -->
     <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,700' rel='stylesheet' type='text/css'>
+    <!-- Open Sans -->
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:800italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/style.css">
     <!-- Stylesheets -->
@@ -76,7 +80,12 @@ if (file_exists($config_file)) {
     <!-- Modernizr -->
     <script src="js/external/modernizr.custom.js"></script>
 
-    <!-- No longer need IE8 support for HTML5 - removed html5shiv and respond.js -->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/respond.js/1.3.0/respond.js"></script>
+    <script src="js/custom.js"></script>
+    <![endif]-->
 </head>
 
 <body>
@@ -104,38 +113,38 @@ if (file_exists($config_file)) {
                 <ul id="navigation">
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="index.php">Trang chủ</a>
+                        <a href="index.php"><?= __("Trang chủ") ?></a>
 
                     </li>
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="index.php?act=dsphim1&sotrang=1">Phim</a>
+                        <a href="index.php?act=dsphim1&sotrang=1"><?= __("Phim") ?></a>
                         <ul>
-                            <li class="menu__nav-item"><a href="index.php?act=phimdangchieu" >Tất cả Phim</a></li>
+                            <li class="menu__nav-item"><a href="index.php?act=phimdangchieu" ><?= __("Tất cả Phim") ?></a></li>
                         </ul>
                     </li>
 
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="">Thể loại</a>
+                        <a href=""><?= __("Thể loại") ?></a>
                         <ul>
                             <?php foreach ($loadloai as $loaip){
                                 extract($loaip);
                                 $linkloaip = 'index.php?act=theloai&id_loai='.$id;
-                                echo '<li class="menu__nav-item"><a href="'.$linkloaip.'" >'.$name.'</a></li>';
+                                echo '<li class="menu__nav-item"><a href="'.$linkloaip.'" >'.__($name).'</a></li>';
                             } ?>
 
                         </ul>
                     </li>
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="index.php?act=rapchieu">Rạp chiếu</a>
+                        <a href="index.php?act=rapchieu"><?= __("Rạp chiếu") ?></a>
                         <?php if (!empty($allRaps) && is_array($allRaps)) { ?>
                         <ul>
                             <?php foreach ($allRaps as $r) {
                                 // Link mới: dẫn tới trang phim theo rạp
                                 $r_link = 'index.php?act=phim_theo_rap&id_rap=' . $r['id'];
-                                echo '<li class="menu__nav-item"><a href="' . $r_link . '">' . htmlspecialchars($r['ten_rap']) . '</a></li>'; 
+                                echo '<li class="menu__nav-item"><a href="' . $r_link . '">' . htmlspecialchars(__($r['ten_rap'])) . '</a></li>'; 
                             } ?>
                         </ul>
                         <?php } ?>
@@ -143,22 +152,29 @@ if (file_exists($config_file)) {
                     </li>
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="index.php?act=khuyenmai">Khuyến mãi</a>
+                        <a href="index.php?act=khuyenmai"><?= __("Khuyến mãi") ?></a>
 
                     </li>
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="index.php?act=lienhe">Liên hệ</a>
+                        <a href="index.php?act=lienhe"><?= __("Liên hệ") ?></a>
 
                     </li>
                     <li>
                         <span class="sub-nav-toggle plus"></span>
-                        <a href="index.php?act=tintuc">Tin tức</a>
+                        <a href="index.php?act=tintuc"><?= __("Tin tức") ?></a>
 
                     </li>
                 </ul>
             </nav>
             <div class="control-panel">
+                <!-- Chuyển đổi ngôn ngữ -->
+                <div style="display: inline-flex; align-items: center; margin-right: 20px; vertical-align: middle; font-family: 'Roboto', sans-serif;">
+                    <a href="<?= get_lang_url('vi') ?>" style="color: <?= get_current_lang() === 'vi' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'vi' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 14px;">VI</a>
+                    <span style="color: #666; margin: 0 8px;">|</span>
+                    <a href="<?= get_lang_url('en') ?>" style="color: <?= get_current_lang() === 'en' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'en' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 14px;">EN</a>
+                </div>
+                
                 <?php if (isset($_SESSION['user'])): 
                     $user_data = $_SESSION['user'];
                     $name = isset($user_data['name']) ? $user_data['name'] : 'User';
@@ -198,17 +214,22 @@ if (file_exists($config_file)) {
                         <div id="userMenuDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 5px; background: white; min-width: 200px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border-radius: 10px; z-index: 1000; overflow: hidden;">
                             <?php if ($vai_tro_user == 0): ?>
                                 <a href="index.php?act=lich_su_diem" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">
-                                    <i class="fa fa-star"></i> Lịch sử điểm
+                                    <i class="fa fa-star"></i> <?= __("Lịch sử điểm") ?>
                                 </a>
                             <?php endif; ?>
                             <a href="index.php?act=ve&id=<?= $id_user ?>" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">
-                                <i class="fa fa-ticket"></i> Vé của tôi
+                                <i class="fa fa-ticket"></i> <?= __("Vé của tôi") ?>
                             </a>
+                            <?php if ($vai_tro_user == 0): ?>
+                                <a href="index.php?act=cinepass_sub" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">
+                                    <i class="fa fa-ticket-alt" style="color: #ffc107;"></i> <?= __("Gói CinePass") ?>
+                                </a>
+                            <?php endif; ?>
                             <a href="index.php?act=dangnhap" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">
-                                <i class="fa fa-user"></i> Thông tin cá nhân
+                                <i class="fa fa-user"></i> <?= __("Thông tin cá nhân") ?>
                             </a>
                             <a href="index.php?act=dangxuat" style="display: block; padding: 12px 20px; color: #dc3545; text-decoration: none;">
-                                <i class="fa fa-sign-out"></i> Đăng xuất
+                                <i class="fa fa-sign-out"></i> <?= __("Đăng xuất") ?>
                             </a>
                         </div>
                     </div>
@@ -229,7 +250,7 @@ if (file_exists($config_file)) {
                     });
                     </script>
                 <?php else: ?>
-                    <a href="index.php?act=dangnhap" class="btn btn-md btn--warning btn--book">Đăng nhập</a>
+                    <a href="index.php?act=dangnhap" class="btn btn-md btn--warning btn--book"><?= __("Đăng nhập") ?></a>
                 <?php endif; ?>
             </div>
 

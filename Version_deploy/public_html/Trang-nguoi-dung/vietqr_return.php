@@ -7,9 +7,9 @@
 session_start();
 
 // Get parameters
-$orderId = $_GET['orderId'] ?? $_SESSION['current_order_id'] ?? '';
-$amount = (int)($_GET['amount'] ?? $_SESSION['current_order_amount'] ?? 0);
-$status = $_GET['status'] ?? 'confirmed';
+$orderId = $_GET['orderId'] ?? '';
+$amount = (int)($_GET['amount'] ?? 0);
+$status = $_GET['status'] ?? 'pending';
 
 // ====================================================
 // CREATE TỰ ĐỘNG: VÉ + HÓA ĐƠN
@@ -22,8 +22,8 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
     // Get $pdo instance
     $pdo = pdo_get_connection();
     
-    // Get user info - thử multiple session keys
-    $user_id = $_SESSION['user']['id'] ?? $_SESSION['id_tk'] ?? $_SESSION['user_id'] ?? 0;
+    // Get user info - sửa từ $_SESSION['id_user'] thành $_SESSION['user']['id']
+    $user_id = $_SESSION['user']['id'] ?? 0;
     if ($user_id <= 0) {
         http_response_code(401);
         echo "Lỗi: Vui lòng đăng nhập trước";
@@ -31,19 +31,6 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
     }
 
     try {
-        // ====================================================
-        // 0. UPDATE ORDER STATUS TRONG DATABASE
-        // ====================================================
-        
-        $sql_update_order = "UPDATE payment_orders SET status = 'confirmed', updated_at = NOW() WHERE order_id = :order_id";
-        $stmt = $pdo->prepare($sql_update_order);
-        $stmt->execute([':order_id' => $orderId]);
-        
-        // Log payment received
-        $log_file = __DIR__ . '/logs/payment_log.txt';
-        if (!is_dir(dirname($log_file))) @mkdir(dirname($log_file), 0755, true);
-        @file_put_contents($log_file, date('Y-m-d H:i:s') . " - Payment Confirmed: $orderId | Amount: $amount | User: $user_id\n", FILE_APPEND);
-        
         // ====================================================
         // 1. CREATE TỰ ĐỘNG: VÉ (VE)
         // ====================================================
@@ -87,6 +74,12 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
         if ($user_info && !empty($user_info['email'])) {
             $to = $user_info['email'];
             $subject = "✓ Thanh toán thành công - Vé phim CinePass";
+            
+            $base_path = '';
+            if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+                $base_path = '/' . $matches[1];
+            }
+
             $message = "
                 <html>
                 <head>
@@ -106,18 +99,39 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
                     </ul>
                     
                     <p>Vui lòng đến rạp chiếu trước giờ chiếu 15 phút để check-in với vé của bạn.</p>
-                    <p><a href='<?php $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; echo $protocol . "://" . $_SERVER['HTTP_HOST'] . "/Trang-nguoi-dung/index.php?p=ve_cua_toi"; ?>'>👉 Xem vé của tôi</a></p>
+                    <p><a href='http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?p=ve_cua_toi'>👉 Xem vé của tôi</a></p>
                     
                     <p>Cảm ơn bạn!</p>
                 </body>
                 </html>
             ";
             
-            $headers = "MIME-Version: 1.0" . "\r\n";
-            $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-            $headers .= "From: noreply@cinepass.com" . "\r\n";
+            require_once 'PHPMailer/src/Exception.php';
+            require_once 'PHPMailer/src/PHPMailer.php';
+            require_once 'PHPMailer/src/SMTP.php';
             
-            $mail_sent = @mail($to, $subject, $message, $headers);
+            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+            try {
+                $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'tatthiendh123@gmail.com';
+                $mail->Password   = 'qjca onic cfks clad';
+                $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = 587;
+                
+                $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+                $mail->addAddress($to);
+                $mail->isHTML(true);
+                $mail->Subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";
+                $mail->Body = $message;
+                $mail->send();
+                $mail_sent = true;
+            } catch (Exception $mailEx) {
+                $mail_sent = false;
+                error_log("PHPMailer error in vietqr_return.php: " . $mailEx->getMessage());
+            }
             
             // Debug log
             $log_file = __DIR__ . '/logs/email_log.txt';
@@ -138,8 +152,6 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
 
         unset($_SESSION['ghe_da_chon']);
         unset($_SESSION['tong']);
-        unset($_SESSION['current_order_id']);
-        unset($_SESSION['current_order_amount']);
 
         $success = true;
         $message = "Thanh toán thành công! Vé của bạn đã được tạo.";
@@ -377,10 +389,16 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
 
             <!-- Buttons -->
             <div class="buttons">
-                <a href="/Trang-nguoi-dung/index.php?p=ve_cua_toi">
+                <?php
+                $base_path = '';
+                if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+                    $base_path = '/' . $matches[1];
+                }
+                ?>
+                <a href="<?= $base_path ?>/Trang-nguoi-dung/index.php?p=ve_cua_toi">
                     <button class="btn-primary">📽️ Xem Vé Của Tôi</button>
                 </a>
-                <a href="/Trang-nguoi-dung/index.php">
+                <a href="<?= $base_path ?>/Trang-nguoi-dung/index.php">
                     <button class="btn-secondary">← Quay Lại Trang Chủ</button>
                 </a>
             </div>

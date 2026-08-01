@@ -10,17 +10,17 @@ function rap_one($id){
     return pdo_query_one($sql, $id);
 }
 
-function rap_insert($ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta = null, $logo = null, $trang_thai = 1){
-    $sql = "INSERT INTO rap_chieu(ten_rap, dia_chi, so_dien_thoai, email, trang_thai, mo_ta, logo)
-            VALUES(?, ?, ?, ?, ?, ?, ?)";
-    pdo_execute($sql, $ten_rap, $dia_chi, $so_dien_thoai, $email, $trang_thai, $mo_ta, $logo);
+function rap_insert($ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta = null, $logo = null, $trang_thai = 1, $latitude = null, $longitude = null){
+    $sql = "INSERT INTO rap_chieu(ten_rap, dia_chi, so_dien_thoai, email, trang_thai, mo_ta, logo, latitude, longitude)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    pdo_execute($sql, $ten_rap, $dia_chi, $so_dien_thoai, $email, $trang_thai, $mo_ta, $logo, $latitude, $longitude);
 }
 
-function rap_update($id, $ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta = null, $logo = null, $trang_thai = 1){
+function rap_update($id, $ten_rap, $dia_chi, $so_dien_thoai, $email, $mo_ta = null, $logo = null, $trang_thai = 1, $latitude = null, $longitude = null){
     $sql = "UPDATE rap_chieu 
-            SET ten_rap = ?, dia_chi = ?, so_dien_thoai = ?, email = ?, trang_thai = ?, mo_ta = ?, logo = ?
+            SET ten_rap = ?, dia_chi = ?, so_dien_thoai = ?, email = ?, trang_thai = ?, mo_ta = ?, logo = ?, latitude = ?, longitude = ?
             WHERE id = ?";
-    pdo_execute($sql, $ten_rap, $dia_chi, $so_dien_thoai, $email, $trang_thai, $mo_ta, $logo, $id);
+    pdo_execute($sql, $ten_rap, $dia_chi, $so_dien_thoai, $email, $trang_thai, $mo_ta, $logo, $latitude, $longitude, $id);
 }
 
 function rap_delete($id){

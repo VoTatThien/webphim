@@ -13,7 +13,7 @@ define('QR_SERVER_IP', '192.168.0.105');
 define('QR_SERVER_PORT', 80);
 
 // Cách sử dụng trong code:
-// $qr_url = "http://" . QR_SERVER_IP . ":".QR_SERVER_PORT."/webphim/...";
+// $qr_url = "http://" . QR_SERVER_IP . ":".QR_SERVER_PORT."/webphim_hung/...";
 
 // ⚠️ LƯU Ý: Đừng dùng:
 // - 192.168.80.1 (đó là VMware Network, không phải server thực)

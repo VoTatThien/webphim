@@ -33,7 +33,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
         <!-- Page Heading Start -->
         <div class="col-12 col-lg-auto mb-20">
             <div class="page-heading">
-                <h3>Trang Chủ</h3>
+                <h3><?php echo __('Trang Chủ'); ?></h3>
 
             </div>
         </div><!-- Page Heading End -->
@@ -54,15 +54,15 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng doanh thu</h4>
+                    <h4><?php echo __('Tổng doanh thu'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
                 <!-- Content -->
                 <div class="content">
                     <?php foreach ($tong as $t){
-                        extract($t);
-                        echo ' <h2>'.number_format($tong_doanh_thu).' VNĐ</h2>';
+                         extract($t);
+                         echo ' <h2>'.number_format($tong_doanh_thu).' ' . __('VNĐ') . '</h2>';
                     } ?>
 
                 </div>
@@ -78,7 +78,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng vé đã bán</h4>
+                    <h4><?php echo __('Tổng vé đã bán'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -86,7 +86,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($tong as $t){
                         extract($t);
-                        echo ' <h2>'.$tong_so_luong_ve_dat.' VÉ</h2>';
+                        echo ' <h2>'.$tong_so_luong_ve_dat.' ' . __('VÉ') . '</h2>';
                     } ?>
                 </div>
 
@@ -100,7 +100,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng doanh thu hôm nay</h4>
+                    <h4><?php echo __('Tổng doanh thu hôm nay'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -108,7 +108,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($tong_day as $t){
                         extract($t);
-                        echo ' <h2>'.number_format($tong_doanh_thu).' VNĐ</h2>';
+                        echo ' <h2>'.number_format($tong_doanh_thu).' ' . __('VNĐ') . '</h2>';
                     } ?>
 
                 </div>
@@ -122,7 +122,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng doanh thu tuần này</h4>
+                    <h4><?php echo __('Tổng doanh thu tuần này'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -130,7 +130,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($tong_tuan as $t){
                         extract($t);
-                        echo ' <h2>'.number_format($tong_doanh_thu).' VNĐ</h2>';
+                        echo ' <h2>'.number_format($tong_doanh_thu).' ' . __('VNĐ') . '</h2>';
                     } ?>
 
                 </div>
@@ -144,7 +144,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng doanh thu tháng này</h4>
+                    <h4><?php echo __('Tổng doanh thu tháng này'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -152,7 +152,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($tong_thang as $t){
                         extract($t);
-                        echo ' <h2>'.number_format($tong_doanh_thu).' VNĐ</h2>';
+                        echo ' <h2>'.number_format($tong_doanh_thu).' ' . __('VNĐ') . '</h2>';
                     } ?>
 
                 </div>
@@ -166,7 +166,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng Phim Đang Chiếu</h4>
+                    <h4><?php echo __('Tổng Phim Đang Chiếu'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -174,7 +174,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($tpdc as $t){
                         extract($t);
-                        echo ' <h2>'.$total_phim.' Phim</h2>';
+                        echo ' <h2>'.$total_phim.' ' . __('Phim') . '</h2>';
                     } ?>
                 </div>
 
@@ -187,7 +187,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Tổng Phim Sắp Chiếu</h4>
+                    <h4><?php echo __('Tổng Phim Sắp Chiếu'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -195,7 +195,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($tpsc as $t){
                         extract($t);
-                        echo ' <h2>'.$total_phim.' Phim</h2>';
+                        echo ' <h2>'.$total_phim.' ' . __('Phim') . '</h2>';
                     } ?>
                 </div>
 
@@ -208,7 +208,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
 
                 <!-- Head -->
                 <div class="head">
-                    <h4>Combo được đặt nhiều nhất</h4>
+                    <h4><?php echo __('Combo được đặt nhiều nhất'); ?></h4>
                     <a href="#" class="view"><i class="zmdi zmdi-eye"></i></a>
                 </div>
 
@@ -216,7 +216,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
                 <div class="content">
                     <?php foreach ($best_combo as $t){
                         extract($t);
-                        echo ' <h2>Đã có '.$so_luong_dat.' '.$combo.' được đặt</h2>';
+                        echo ' <h2>' . __('Đã có') . ' '.$so_luong_dat.' '.htmlspecialchars($combo).' ' . __('được đặt') . '</h2>';
                     } ?>
 
                 </div>
@@ -234,7 +234,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
         <div class="col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>📊 Biểu Đồ Doanh Thu 30 Ngày Qua</h4>
+                    <h4><?php echo __('📊 Biểu Đồ Doanh Thu 30 Ngày Qua'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="revenueChart" height="80"></canvas>
@@ -247,7 +247,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
         <div class="col-xlg-6 col-md-6 col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>🎬 Phân Bổ Phim Theo Trạng Thái</h4>
+                    <h4><?php echo __('🎬 Phân Bổ Phim Theo Trạng Thái'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="movieStatusChart" height="100"></canvas>
@@ -258,7 +258,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
         <div class="col-xlg-6 col-md-6 col-12 mb-30">
             <div class="box">
                 <div class="head">
-                    <h4>💰 Doanh Thu Theo Loại Combo</h4>
+                    <h4><?php echo __('💰 Doanh Thu Theo Loại Combo'); ?></h4>
                 </div>
                 <div class="content" style="padding: 20px;">
                     <canvas id="comboChart" height="100"></canvas>
@@ -271,7 +271,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
     <?php else: ?>
         <div class="row">
             <div class="col-12">
-                <h1>Chào mừng <?= htmlspecialchars($_SESSION['user1']['name'] ?? 'Người dùng') ?> đến với trang làm việc của Galaxy Studio</h1>
+                <h1><?php echo __('Chào mừng'); ?> <?= htmlspecialchars($_SESSION['user1']['name'] ?? __('Người dùng')) ?> <?php echo __('đến với trang làm việc của Galaxy Studio'); ?></h1>
             </div>
         </div>
     <?php endif; ?>
@@ -334,7 +334,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Doanh Thu (Triệu VNĐ)',
+                    label: '<?php echo __('Doanh Thu (Triệu VNĐ)'); ?>',
                     data: data,
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -379,7 +379,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Đang Chiếu', 'Sắp Chiếu', 'Kết Thúc'],
+                labels: ['<?php echo __('Đang Chiếu'); ?>', '<?php echo __('Sắp Chiếu'); ?>', '<?php echo __('Kết Thúc'); ?>'],
                 datasets: [{
                     data: [12, 8, 5],
                     backgroundColor: [
@@ -413,7 +413,7 @@ if (isset($_SESSION['user1']['vai_tro']) && $_SESSION['user1']['vai_tro'] == ROL
             data: {
                 labels: ['Combo A', 'Combo B', 'Combo C', 'Combo D'],
                 datasets: [{
-                    label: 'Doanh Thu (Triệu VNĐ)',
+                    label: '<?php echo __('Doanh Thu (Triệu VNĐ)'); ?>',
                     data: [35, 28, 42, 31],
                     backgroundColor: [
                         '#667eea',
