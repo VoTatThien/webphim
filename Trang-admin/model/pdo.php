@@ -36,8 +36,8 @@ if (!function_exists('pdo_get_connection')) {
         }
 
         if ($is_local) {
-            // Chạy local: Tự động thử kết nối cổng 3306, nếu thất bại thử 3307
-            $ports = ["3306", "3307"];
+            // Chạy local: Tự động thử kết nối cổng 3307 trước (nhanh), nếu thất bại thử 3306
+            $ports = ['3307', '3306'];
             $servername = "127.0.0.1";
             $dbname = "cinepass";
             $username = "root";
