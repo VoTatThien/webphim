@@ -262,7 +262,7 @@ Full session tong: {"id_phim":26,"tieu_de":"K\u1eba \u0102N H\u1ed2N","img":"anh
 2025-12-03 12:20:28 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-03 12:20:28 - 💰 Tính điểm: Price=200000, Diem_tang=200 (mỗi 1000 VND = 1 điểm)
 2025-12-03 12:20:28 - ✅ Điểm cộng: +200 (kết quả: OK)
-2025-12-03 12:20:30 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-03 12:20:30 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-03 12:20:30 - ✅ Session user reload: điểm = 1200
 2025-12-03 12:31:26 - Session Debug:
 id_ngay_chieu: 1668
@@ -275,7 +275,7 @@ Full session tong: {"id_phim":24,"tieu_de":"CH\u00daA T\u1ec2 C\u1ee6A NH\u1eeeN
 2025-12-03 12:31:26 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-03 12:31:26 - 💰 Tính điểm: Price=1000000, Diem_tang=1000 (mỗi 1000 VND = 1 điểm)
 2025-12-03 12:31:26 - ✅ Điểm cộng: +1000 (kết quả: OK)
-2025-12-03 12:31:28 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-03 12:31:28 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-03 12:31:28 - ✅ Session user reload: điểm = 2800
 2025-12-03 16:29:26 - Session Debug:
 id_ngay_chieu: 1637
@@ -288,7 +288,7 @@ Full session tong: {"id_phim":6,"tieu_de":"B\u00fap b\u00ea","img":"N\u0103m \u0
 2025-12-03 16:29:26 - 💸 Trừ điểm: -1000 (lý do: Sử dụng giảm giá, kết quả: OK)
 2025-12-03 16:29:26 - 💰 Tính điểm: Price=300000, Diem_tang=300 (mỗi 1000 VND = 1 điểm)
 2025-12-03 16:29:26 - ✅ Điểm cộng: +300 (kết quả: OK)
-2025-12-03 16:29:29 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-03 16:29:29 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-03 16:29:29 - ✅ Session user reload: điểm = 2160
 2025-12-03 16:37:43 - Session Debug:
 id_ngay_chieu: 1637
@@ -301,7 +301,7 @@ Full session tong: {"id_phim":6,"tieu_de":"B\u00fap b\u00ea","img":"N\u0103m \u0
 2025-12-03 16:37:43 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-03 16:37:43 - 💰 Tính điểm: Price=360000, Diem_tang=360 (mỗi 1000 VND = 1 điểm)
 2025-12-03 16:37:43 - ✅ Điểm cộng: +360 (kết quả: FAIL)
-2025-12-03 16:37:46 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-03 16:37:46 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-03 16:37:46 - ✅ Session user reload: điểm = 0
 2025-12-04 17:06:40 - Session Debug:
 id_ngay_chieu: 1700
@@ -314,7 +314,7 @@ Full session tong: {"id_phim":26,"tieu_de":"K\u1eba \u0102N H\u1ed2N","img":"anh
 2025-12-04 17:06:40 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-04 17:06:40 - 💰 Tính điểm: Price=210000, Diem_tang=210 (mỗi 1000 VND = 1 điểm)
 2025-12-04 17:06:40 - ✅ Điểm cộng: +210 (kết quả: OK)
-2025-12-04 17:06:42 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-04 17:06:42 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-04 17:06:42 - ✅ Session user reload: điểm = 2412
 2025-12-04 17:59:32 - Session Debug:
 id_ngay_chieu: 1824
@@ -327,7 +327,7 @@ Full session tong: {"id_phim":27,"tieu_de":"NG\u01af\u1edcI V\u1ee2 CU\u1ed0I C\
 2025-12-04 17:59:32 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-04 17:59:32 - 💰 Tính điểm: Price=500000, Diem_tang=500 (mỗi 1000 VND = 1 điểm)
 2025-12-04 17:59:32 - ✅ Điểm cộng: +500 (kết quả: OK)
-2025-12-04 17:59:34 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-04 17:59:34 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-04 17:59:34 - ✅ Session user reload: điểm = 3012
 2025-12-04 18:38:06 - Session Debug:
 id_ngay_chieu: 1607
@@ -340,7 +340,7 @@ Full session tong: {"id_phim":29,"tieu_de":"B\u1ea3y Vi\u00ean Ng\u1ecdc R\u1ed3
 2025-12-04 18:38:06 - 💸 Trừ điểm: -1200 (lý do: Sử dụng giảm giá, kết quả: OK)
 2025-12-04 18:38:06 - 💰 Tính điểm: Price=75000, Diem_tang=75 (mỗi 1000 VND = 1 điểm)
 2025-12-04 18:38:06 - ✅ Điểm cộng: +75 (kết quả: OK)
-2025-12-04 18:38:08 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-04 18:38:08 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-04 18:38:08 - ✅ Session user reload: điểm = 1902
 2025-12-05 15:41:19 - Session Debug:
 id_ngay_chieu: 1608
@@ -353,7 +353,7 @@ Full session tong: {"id_phim":29,"tieu_de":"B\u1ea3y Vi\u00ean Ng\u1ecdc R\u1ed3
 2025-12-05 15:41:19 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-05 15:41:19 - 💰 Tính điểm: Price=750000, Diem_tang=750 (mỗi 1000 VND = 1 điểm)
 2025-12-05 15:41:19 - ✅ Điểm cộng: +750 (kết quả: OK)
-2025-12-05 15:41:21 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-05 15:41:21 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-05 15:41:21 - ✅ Session user reload: điểm = 750
 2025-12-05 15:43:04 - Session Debug:
 id_ngay_chieu: 2283
@@ -366,7 +366,7 @@ Full session tong: {"id_phim":37,"tieu_de":"L\u1eadt m\u1eb7t","img":"Latmat8.pn
 2025-12-05 15:43:04 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-05 15:43:04 - 💰 Tính điểm: Price=500000, Diem_tang=500 (mỗi 1000 VND = 1 điểm)
 2025-12-05 15:43:04 - ✅ Điểm cộng: +500 (kết quả: OK)
-2025-12-05 15:43:06 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-05 15:43:06 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-05 15:43:06 - ✅ Session user reload: điểm = 1250
 2025-12-05 16:07:13 - Session Debug:
 id_ngay_chieu: 1610
@@ -379,7 +379,7 @@ Full session tong: {"id_phim":29,"tieu_de":"B\u1ea3y Vi\u00ean Ng\u1ecdc R\u1ed3
 2025-12-05 16:07:14 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-05 16:07:14 - 💰 Tính điểm: Price=550000, Diem_tang=550 (mỗi 1000 VND = 1 điểm)
 2025-12-05 16:07:14 - ✅ Điểm cộng: +550 (kết quả: OK)
-2025-12-05 16:07:16 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-05 16:07:16 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-05 16:07:16 - ✅ Session user reload: điểm = 550
 2025-12-05 16:08:45 - Session Debug:
 id_ngay_chieu: 2329
@@ -392,7 +392,7 @@ Full session tong: {"id_phim":36,"tieu_de":"\u0110\u1ecaA \u0110\u1ea0O","img":"
 2025-12-05 16:08:45 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-05 16:08:45 - 💰 Tính điểm: Price=450000, Diem_tang=450 (mỗi 1000 VND = 1 điểm)
 2025-12-05 16:08:45 - ✅ Điểm cộng: +450 (kết quả: OK)
-2025-12-05 16:08:47 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-05 16:08:47 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-05 16:08:47 - ✅ Session user reload: điểm = 1000
 2025-12-05 16:13:29 - Session Debug:
 id_ngay_chieu: 1704
@@ -405,7 +405,7 @@ Full session tong: {"id_phim":26,"tieu_de":"K\u1eba \u0102N H\u1ed2N","img":"anh
 2025-12-05 16:13:29 - 💸 Trừ điểm: -5500 (lý do: Sử dụng giảm giá, kết quả: OK)
 2025-12-05 16:13:29 - 💰 Tính điểm: Price=5000, Diem_tang=5 (mỗi 1000 VND = 1 điểm)
 2025-12-05 16:13:29 - ✅ Điểm cộng: +5 (kết quả: OK)
-2025-12-05 16:13:31 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-05 16:13:31 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-05 16:13:31 - ✅ Session user reload: điểm = 1006
 2025-12-06 17:26:52 - Session Debug:
 id_ngay_chieu: 1829
@@ -551,7 +551,7 @@ Full session tong: {"id_phim":24,"tieu_de":"CH\u00daA T\u1ec2 C\u1ee6A NH\u1eeeN
 2025-12-06 17:45:03 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-06 17:45:03 - 💰 Tính điểm: Price=60000, Diem_tang=60 (mỗi 1000 VND = 1 điểm)
 2025-12-06 17:45:03 - ✅ Điểm cộng: +60 (kết quả: OK)
-2025-12-06 17:45:06 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-06 17:45:06 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-06 17:45:06 - ✅ Session user reload: điểm = 1096
 2025-12-06 17:49:55 - Session Debug:
 id_ngay_chieu: 1641
@@ -564,7 +564,7 @@ Full session tong: {"id_phim":6,"tieu_de":"B\u00fap b\u00ea","img":"N\u0103m \u0
 2025-12-06 17:49:55 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-06 17:49:55 - 💰 Tính điểm: Price=350000, Diem_tang=350 (mỗi 1000 VND = 1 điểm)
 2025-12-06 17:49:55 - ✅ Điểm cộng: +350 (kết quả: OK)
-2025-12-06 17:49:57 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-06 17:49:57 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-06 17:49:57 - ✅ Session user reload: điểm = 1621
 2025-12-06 19:22:03 - Session Debug:
 id_ngay_chieu: 1674
@@ -577,7 +577,7 @@ Full session tong: {"id_phim":24,"tieu_de":"CH\u00daA T\u1ec2 C\u1ee6A NH\u1eeeN
 2025-12-06 19:22:03 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-06 19:22:03 - 💰 Tính điểm: Price=250000, Diem_tang=250 (mỗi 1000 VND = 1 điểm)
 2025-12-06 19:22:03 - ✅ Điểm cộng: +250 (kết quả: OK)
-2025-12-06 19:22:05 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-06 19:22:05 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-06 19:22:05 - ✅ Session user reload: điểm = 250
 2025-12-06 20:20:59 - Session Debug:
 id_ngay_chieu: 1705
@@ -590,7 +590,7 @@ Full session tong: {"id_phim":26,"tieu_de":"K\u1eba \u0102N H\u1ed2N","img":"anh
 2025-12-06 20:20:59 - ℹ️ Không dùng điểm để giảm giá (diem_doi không tồn tại hoặc = 0)
 2025-12-06 20:20:59 - 💰 Tính điểm: Price=200000, Diem_tang=200 (mỗi 1000 VND = 1 điểm)
 2025-12-06 20:20:59 - ✅ Điểm cộng: +200 (kết quả: OK)
-2025-12-06 20:21:01 - 📧 Email gửi tới: phanthienkhai111@gmail.com
+2025-12-06 20:21:01 - 📧 Email gửi tới: customer@cinepass.com
 2025-12-06 20:21:01 - ✅ Session user reload: điểm = 5550
 2026-06-05 10:56:01 - Session Debug:
 id_ngay_chieu: 1635
