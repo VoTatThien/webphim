@@ -703,6 +703,29 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                 $_SESSION['tong']['ghe_string'] = $ghe;
                 $_SESSION['tong']['combo_string'] = $combo;
                 
+                // --- TRACKING: Cập nhật Recommendation Log ---
+                // Kiểm tra khách có chọn combo được gợi ý hay không
+                if (isset($_SESSION['reco_log_id']) && $_SESSION['reco_log_id'] > 0) {
+                    try {
+                        include_once __DIR__ . '/model/combo_recommend.php';
+                        $reco_combo_name = $_SESSION['reco_combo_name'] ?? '';
+                        $was_accepted = false;
+                        if (!empty($combo) && !empty($reco_combo_name)) {
+                            // Kiểm tra combo được gợi ý có nằm trong danh sách combo khách chọn không
+                            $was_accepted = (strpos($combo, $reco_combo_name) !== false);
+                        }
+                        reco_log_update_result(
+                            $_SESSION['reco_log_id'],
+                            $was_accepted,
+                            $combo
+                        );
+                    } catch (Exception $e) {
+                        // Không để lỗi tracking ảnh hưởng flow đặt vé
+                    }
+                    unset($_SESSION['reco_log_id'], $_SESSION['reco_combo_name']);
+                }
+
+                
                 // Tính giá cuối cùng (sau giảm giá nếu có)
                 $gia_luu_db = $gia_tong; // Mặc định dùng giá gốc
                 if (isset($_SESSION['tong']['gia_sau_giam']) && $_SESSION['tong']['gia_sau_giam'] > 0) {

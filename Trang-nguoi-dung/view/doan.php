@@ -252,13 +252,26 @@
         <h1><?= __("Combo Đồ ăn") ?></h1>
 
         <?php
-        // LOGIC GỢI Ý COMBO THÔNG MINH ĐA TIÊU CHÍ (SỐ GHẾ + TUỔI + GIỚI TÍNH)
+        // ====================================================================
+        // HYBRID RECOMMENDATION ENGINE - GỢI Ý COMBO THÔNG MINH ĐA TIÊU CHÍ
+        // ====================================================================
+        // Thuật toán: Weighted Multi-Criteria Scoring
+        // S(combo_i) = w1*F_keyword + w2*F_popularity + w3*F_genre + w4*F_time + w5*F_price + w6*F_cf
+        // Phương pháp: Content-Based Filtering + Item-Based Collaborative Filtering
+        // ====================================================================
+        
+        // Include model Collaborative Filtering & Tracking
+        include_once __DIR__ . '/../model/combo_recommend.php';
+        
+        // --- BƯỚC 1: Thu thập dữ liệu đầu vào (Input Features) ---
+        
+        // 1a. Số ghế đã chọn
         $so_ghe = 1;
         if (isset($ten_ghe['ghe']) && is_array($ten_ghe['ghe'])) {
             $so_ghe = count($ten_ghe['ghe']);
         }
         
-        // Truy cập thông tin Giới tính & Ngày sinh của Thành viên từ CSDL
+        // 1b. Truy cập thông tin Giới tính & Ngày sinh của Thành viên từ CSDL
         $user_id = $_SESSION['user']['id'] ?? 0;
         $ngay_sinh = null;
         $gioi_tinh = null;
@@ -276,6 +289,25 @@
             }
         }
         
+        // 1c. Thông tin phim đang đặt (thể loại, ID)
+        $id_phim = $_SESSION['tong']['id_phim'] ?? 0;
+        $phim_info = pdo_query_one(
+            "SELECT p.id_loai, lp.name as the_loai FROM phim p 
+             LEFT JOIN loaiphim lp ON p.id_loai = lp.id 
+             WHERE p.id = ?", $id_phim
+        );
+        $the_loai = mb_strtolower($phim_info['the_loai'] ?? '', 'UTF-8');
+        $id_loai_phim = $phim_info['id_loai'] ?? 0;
+        
+        // 1d. Giờ chiếu → xác định khung thời gian
+        $gio_chieu = $_SESSION['tong']['thoi_gian_chieu'] ?? '19:00';
+        $hour = (int) explode(':', $gio_chieu)[0];
+        $time_preference = 'normal';
+        if ($hour < 12) $time_preference = 'light';       // Sáng → combo nhẹ
+        elseif ($hour >= 18) $time_preference = 'full';    // Tối → combo đầy đủ
+        
+        // --- BƯỚC 2: Phân loại khách hàng (Rule-Based Classification) ---
+        
         $reco_type = ""; 
         $reco_title = "";
         $reco_desc_label = "";
@@ -289,7 +321,6 @@
             $reco_title = __("Ưu đãi cho cặp đôi (Couple)");
             $reco_desc_label = __("Combo 2 ly nước lớn kèm bắp ngọt ngào chia sẻ cùng người thương.");
         } else {
-            // Solo - Cá nhân hóa theo Tuổi và Giới tính
             if ($tuoi !== null && $tuoi < 18) {
                 $reco_type = 'kid';
                 $reco_title = __("Combo Trẻ em & Học sinh (Dưới 18 tuổi)");
@@ -307,59 +338,155 @@
                 $reco_title = __("Combo Lành mạnh (Người lớn tuổi)");
                 $reco_desc_label = __("Combo bắp ít ngọt, bổ sung nước tinh khiết/trà bảo vệ sức khỏe.");
             } else {
-                // Khách vãng lai / Fallback mặc định
                 $reco_type = 'solo';
                 $reco_title = __("Gợi ý cho 1 người (Solo)");
                 $reco_desc_label = __("Combo đơn tiện lợi vừa vặn thưởng thức trọn vẹn bộ phim.");
             }
         }
         
+        // --- BƯỚC 3: Thu thập dữ liệu Collaborative Filtering ---
+        
+        // 3a. Popularity Map - tần suất mua combo toàn hệ thống
+        $popularity_map = get_combo_popularity_map();
+        $max_pop = max(1, !empty($popularity_map) ? max($popularity_map) : 1);
+        
+        // 3b. CF theo phim: combo phổ biến nhất cho phim đang đặt
+        $cf_movie_combos = get_popular_combo_by_movie($id_phim);
+        $cf_movie_names = [];
+        foreach ($cf_movie_combos as $cfc) {
+            $names = array_map('trim', explode(',', $cfc['combo']));
+            foreach ($names as $n) {
+                $cf_movie_names[] = preg_replace('/\s*x\d+$/i', '', $n);
+            }
+        }
+        
+        // 3c. CF theo thể loại phim
+        $cf_genre_combos = get_popular_combo_by_genre($id_loai_phim);
+        $cf_genre_names = [];
+        foreach ($cf_genre_combos as $cfc) {
+            $names = array_map('trim', explode(',', $cfc['combo']));
+            foreach ($names as $n) {
+                $cf_genre_names[] = preg_replace('/\s*x\d+$/i', '', $n);
+            }
+        }
+        
+        // 3d. Ma trận Genre → Keyword (Content-Based)
+        $genre_combo_keywords = [
+            'hài'       => ['family', 'nhóm', 'group', 'lớn', 'premium'],
+            'ngôn tình' => ['couple', 'đôi', 'ngọt', 'caramel', 'premium'],
+            'kinh dị'   => ['premium', 'vip', 'mặn', 'pepsi', 'coke'],
+            'hoạt hình' => ['kid', 'trẻ em', 'ngọt', 'standard'],
+            'ca nhạc'   => ['premium', 'vip', 'lớn'],
+            'cổ trang'  => ['standard', 'đơn', 'premium'],
+        ];
+        $genre_keywords = $genre_combo_keywords[$the_loai] ?? [];
+        
+        // --- BƯỚC 4: WEIGHTED MULTI-CRITERIA SCORING ---
+        
         $suggested_combo = null;
         $best_match_score = -1;
+        $best_scoring_detail = [];
         
         if (isset($combos) && is_array($combos) && count($combos) > 0) {
             foreach ($combos as $combo) {
                 $name_lower = mb_strtolower($combo['ten_combo'], 'UTF-8');
-                $desc_lower = mb_strtolower($combo['mo_ta'], 'UTF-8');
+                $desc_lower = mb_strtolower($combo['mo_ta'] ?? '', 'UTF-8');
+                $combo_price = (float)($combo['gia'] ?? 0);
                 
-                $score = 0;
+                // ---- F1: Keyword Match (Content-Based) → max +10 ----
+                $f_keyword = 0;
                 if ($reco_type === 'family') {
                     if (strpos($name_lower, 'family') !== false || strpos($name_lower, 'gia đình') !== false || strpos($name_lower, 'nhóm') !== false || strpos($name_lower, 'group') !== false || strpos($name_lower, 'big') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 } elseif ($reco_type === 'couple') {
                     if (strpos($name_lower, 'couple') !== false || strpos($name_lower, 'đôi') !== false || strpos($name_lower, 'hai') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 } elseif ($reco_type === 'kid') {
                     if (strpos($name_lower, 'kid') !== false || strpos($name_lower, 'trẻ em') !== false || strpos($name_lower, 'đồ chơi') !== false || strpos($name_lower, 'toy') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 } elseif ($reco_type === 'sweet_girl') {
                     if (strpos($name_lower, 'ngọt') !== false || strpos($name_lower, 'caramel') !== false || strpos($name_lower, 'phô mai') !== false || strpos($name_lower, 'cheese') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 } elseif ($reco_type === 'solo_king') {
                     if (strpos($name_lower, 'lớn') !== false || strpos($name_lower, 'mặn') !== false || strpos($name_lower, 'king') !== false || strpos($name_lower, 'coke') !== false || strpos($name_lower, 'pepsi') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 } elseif ($reco_type === 'healthy') {
                     if (strpos($name_lower, 'nước lọc') !== false || strpos($name_lower, 'suối') !== false || strpos($name_lower, 'healthy') !== false || strpos($name_lower, 'mặn') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 } else {
                     if (strpos($name_lower, 'solo') !== false || strpos($name_lower, 'đơn') !== false || strpos($name_lower, 'cá nhân') !== false) {
-                        $score += 10;
+                        $f_keyword = 10;
                     }
                 }
                 
-                if ($score > $best_match_score) {
-                    $best_match_score = $score;
+                // ---- F2: Popularity Score → max +7 ----
+                $pop_count = $popularity_map[$combo['ten_combo']] ?? 0;
+                $f_popularity = round(($pop_count / $max_pop) * 7, 1);
+                
+                // ---- F3: Genre Match (Content-Based + CF) → max +5 ----
+                $f_genre = 0;
+                foreach ($genre_keywords as $gk) {
+                    if (strpos($name_lower, $gk) !== false || strpos($desc_lower, $gk) !== false) {
+                        $f_genre = 3;
+                        break;
+                    }
+                }
+                if (in_array($combo['ten_combo'], $cf_genre_names)) {
+                    $f_genre = min(5, $f_genre + 3);
+                }
+                
+                // ---- F4: Time Context → max +3 ----
+                $f_time = 0;
+                if ($time_preference === 'light' && $combo_price < 70000) {
+                    $f_time = 3;
+                } elseif ($time_preference === 'full' && $combo_price >= 80000) {
+                    $f_time = 3;
+                } elseif ($time_preference === 'normal') {
+                    $f_time = 1;
+                }
+                
+                // ---- F5: Price Fitness → max +4 ----
+                $budget_per_person = 80000;
+                $total_budget = $budget_per_person * $so_ghe;
+                $price_ratio = $combo_price / max($total_budget, 1);
+                $f_price = 0;
+                if ($price_ratio >= 0.3 && $price_ratio <= 1.2) {
+                    $f_price = 4;
+                } elseif ($price_ratio < 0.3) {
+                    $f_price = 1;
+                }
+                
+                // ---- F6: Collaborative Filtering (Phim → Combo) → max +6 ----
+                $f_cf = 0;
+                if (in_array($combo['ten_combo'], $cf_movie_names)) {
+                    $f_cf = 6;
+                }
+                
+                // ---- TỔNG ĐIỂM (Weighted Sum) ----
+                $total_score = $f_keyword + $f_popularity + $f_genre + $f_time + $f_price + $f_cf;
+                
+                if ($total_score > $best_match_score) {
+                    $best_match_score = $total_score;
                     $suggested_combo = $combo;
+                    $best_scoring_detail = [
+                        'F1_keyword'    => $f_keyword,
+                        'F2_popularity' => $f_popularity,
+                        'F3_genre'      => $f_genre,
+                        'F4_time'       => $f_time,
+                        'F5_price'      => $f_price,
+                        'F6_cf_movie'   => $f_cf,
+                        'total'         => $total_score
+                    ];
                 }
             }
             
-            // Fallback nếu không có từ khóa trùng khớp
+            // Fallback nếu tất cả combo đều score = 0
             if (($suggested_combo === null || $best_match_score == 0) && !empty($combos)) {
                 $temp_combos = $combos;
                 if ($so_ghe == 1) {
@@ -386,8 +513,29 @@
                     });
                     $suggested_combo = $temp_combos[0];
                 }
+                $best_scoring_detail = ['fallback' => true, 'reco_type' => $reco_type];
             }
         }
+        
+        // --- BƯỚC 5: Ghi log Recommendation (Tracking) ---
+        $reco_log_id = 0;
+        if ($suggested_combo) {
+            try {
+                $reco_log_id = reco_log_suggestion(
+                    $user_id,
+                    $id_phim,
+                    $suggested_combo['id'] ?? 0,
+                    $reco_type,
+                    $best_match_score,
+                    $best_scoring_detail
+                );
+                $_SESSION['reco_log_id'] = $reco_log_id;
+                $_SESSION['reco_combo_name'] = $suggested_combo['ten_combo'] ?? '';
+            } catch (Exception $e) {
+                $reco_log_id = 0;
+            }
+        }
+
         
         if ($suggested_combo):
         ?>
