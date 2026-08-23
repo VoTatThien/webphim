@@ -64,6 +64,7 @@ function get_combo_popularity_map() {
  * @return array        Mảng ['combo' => tên, 'frequency' => số lần]
  */
 function get_popular_combo_by_movie($id_phim, $limit = 3) {
+    $lim = (int)$limit;
     $sql = "SELECT combo, COUNT(*) as frequency 
             FROM ve 
             WHERE id_phim = ? 
@@ -71,8 +72,8 @@ function get_popular_combo_by_movie($id_phim, $limit = 3) {
               AND trang_thai IN (1, 2, 4)
             GROUP BY combo 
             ORDER BY frequency DESC 
-            LIMIT ?";
-    return pdo_query($sql, $id_phim, $limit);
+            LIMIT $lim";
+    return pdo_query($sql, $id_phim);
 }
 
 
@@ -85,6 +86,7 @@ function get_popular_combo_by_movie($id_phim, $limit = 3) {
  * @return array
  */
 function get_popular_combo_by_genre($id_loai_phim, $limit = 3) {
+    $lim = (int)$limit;
     $sql = "SELECT v.combo, COUNT(*) as frequency
             FROM ve v
             INNER JOIN phim p ON v.id_phim = p.id
@@ -92,9 +94,9 @@ function get_popular_combo_by_genre($id_loai_phim, $limit = 3) {
               AND v.combo != '' AND v.combo != '[]' AND v.combo IS NOT NULL
               AND v.trang_thai IN (1, 2, 4)
             GROUP BY v.combo
-            ORDER BY frequency DESC
-            LIMIT ?";
-    return pdo_query($sql, $id_loai_phim, $limit);
+            ORDER BY frequency DESC 
+            LIMIT $lim";
+    return pdo_query($sql, $id_loai_phim);
 }
 
 
@@ -112,16 +114,17 @@ function get_popular_combo_by_genre($id_loai_phim, $limit = 3) {
  * @return array
  */
 function get_popular_combo_by_timeslot($hour_start, $hour_end, $limit = 3) {
+    $lim = (int)$limit;
     $sql = "SELECT v.combo, COUNT(*) as frequency
             FROM ve v
             INNER JOIN khung_gio_chieu kg ON v.id_thoi_gian_chieu = kg.id
-            WHERE HOUR(kg.thoi_gian_bat_dau) BETWEEN ? AND ?
+            WHERE HOUR(kg.thoi_gian_chieu) BETWEEN ? AND ?
               AND v.combo != '' AND v.combo != '[]' AND v.combo IS NOT NULL
               AND v.trang_thai IN (1, 2, 4)
             GROUP BY v.combo
-            ORDER BY frequency DESC
-            LIMIT ?";
-    return pdo_query($sql, $hour_start, $hour_end, $limit);
+            ORDER BY frequency DESC 
+            LIMIT $lim";
+    return pdo_query($sql, $hour_start, $hour_end);
 }
 
 
@@ -143,6 +146,7 @@ function get_popular_combo_by_profile($tuoi, $gioi_tinh, $limit = 3) {
     
     $tuoi_min = max(0, $tuoi - 5);
     $tuoi_max = $tuoi + 5;
+    $lim = (int)$limit;
     $sql = "SELECT v.combo, COUNT(*) as frequency
             FROM ve v
             INNER JOIN taikhoan tk ON v.id_tk = tk.id
@@ -151,9 +155,9 @@ function get_popular_combo_by_profile($tuoi, $gioi_tinh, $limit = 3) {
               AND v.combo != '' AND v.combo != '[]' AND v.combo IS NOT NULL
               AND v.trang_thai IN (1, 2, 4)
             GROUP BY v.combo
-            ORDER BY frequency DESC
-            LIMIT ?";
-    return pdo_query($sql, $gioi_tinh, $tuoi_min, $tuoi_max, $limit);
+            ORDER BY frequency DESC 
+            LIMIT $lim";
+    return pdo_query($sql, $gioi_tinh, $tuoi_min, $tuoi_max);
 }
 
 
@@ -198,13 +202,11 @@ function reco_ensure_log_table() {
 function reco_log_suggestion($id_user, $id_phim, $id_combo, $reco_type, $reco_score, $scoring_factors = []) {
     reco_ensure_log_table();
     $factors_json = json_encode($scoring_factors, JSON_UNESCAPED_UNICODE);
-    pdo_execute(
+    return (int)pdo_execute_return_interlastid(
         "INSERT INTO recommendation_log (id_user, id_phim, id_combo_suggested, reco_type, reco_score, scoring_factors)
          VALUES (?, ?, ?, ?, ?, ?)",
         $id_user, $id_phim, $id_combo, $reco_type, $reco_score, $factors_json
     );
-    // Trả về ID vừa insert
-    return pdo_query_value("SELECT LAST_INSERT_ID()");
 }
 
 /**
