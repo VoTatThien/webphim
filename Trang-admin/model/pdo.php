@@ -2,6 +2,19 @@
 // Prevent redeclaration
 if (!function_exists('pdo_get_connection')) {
     function pdo_get_connection(){
+        static $conn = null;
+        static $working_port = null;
+        
+        // Nếu đã có kết nối đang mở trong phiên request, tái sử dụng ngay (Singleton)
+        if ($conn !== null) {
+            try {
+                $conn->query("SELECT 1");
+                return $conn;
+            } catch (Exception $e) {
+                $conn = null;
+            }
+        }
+
         $host = $_SERVER['HTTP_HOST'] ?? '';
         $server_addr = $_SERVER['SERVER_ADDR'] ?? '';
         
@@ -36,22 +49,44 @@ if (!function_exists('pdo_get_connection')) {
         }
 
         if ($is_local) {
-            // Chạy local: Tự động thử kết nối cổng 3307 trước (nhanh), nếu thất bại thử 3306
-            $ports = ['3307', '3306'];
+            // Tự động phát hiện cổng: Thử port đã lưu trước, nếu chưa có thử 3306 và 3307
+            $ports = $working_port !== null ? [$working_port] : ['3306', '3307'];
             $servername = "127.0.0.1";
             $dbname = "cinepass";
             $username = "root";
             $password = "";
             $last_e = null;
+            
             foreach ($ports as $p) {
                 try {
-                    $conn = new PDO("mysql:host=$servername;port=$p;dbname=$dbname;charset=utf8mb4", $username, $password);
-                    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $options = [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_TIMEOUT => 1
+                    ];
+                    $conn = new PDO("mysql:host=$servername;port=$p;dbname=$dbname;charset=utf8mb4", $username, $password, $options);
+                    $working_port = $p;
                     return $conn;
                 } catch (PDOException $e) {
                     $last_e = $e;
                 }
             }
+            
+            // Thử tất cả các port còn lại nếu port đã lưu bị đổi
+            $fallback_ports = ['3306', '3307'];
+            foreach ($fallback_ports as $p) {
+                try {
+                    $options = [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_TIMEOUT => 1
+                    ];
+                    $conn = new PDO("mysql:host=$servername;port=$p;dbname=$dbname;charset=utf8mb4", $username, $password, $options);
+                    $working_port = $p;
+                    return $conn;
+                } catch (PDOException $e) {
+                    $last_e = $e;
+                }
+            }
+            
             throw $last_e;
         } else {
             // Chạy production (live server)
@@ -78,13 +113,9 @@ if (!function_exists('pdo_execute')) {
             $conn=pdo_get_connection();
             $stmt=$conn->prepare($sql);
             $stmt->execute($sql_args);
-
         }
         catch(PDOException $e){
             throw $e;
-        }
-        finally{
-            unset($conn);
         }
     }
 }
@@ -99,8 +130,6 @@ if (!function_exists('pdo_execute_return_interlastid')) {
             return $conn->lastInsertId();
         } catch (PDOException $e) {
             throw $e;
-        } finally {
-            unset($conn);
         }
     }
 }
@@ -109,7 +138,6 @@ if (!function_exists('pdo_query')) {
     // truy vấn nhiều dữ liệu
     function pdo_query($sql){
         $sql_args=array_slice(func_get_args(),1);
-
         try{
             $conn=pdo_get_connection();
             $stmt=$conn->prepare($sql);
@@ -119,9 +147,6 @@ if (!function_exists('pdo_query')) {
         }
         catch(PDOException $e){
             throw $e;
-        }
-        finally{
-            unset($conn);
         }
     }
 }
@@ -135,14 +160,10 @@ if (!function_exists('pdo_query_one')) {
             $stmt=$conn->prepare($sql);
             $stmt->execute($sql_args);
             $row=$stmt->fetch(PDO::FETCH_ASSOC);
-            // đọc và hiển thị giá trị trong danh sách trả về
             return $row;
         }
         catch(PDOException $e){
             throw $e;
-        }
-        finally{
-            unset($conn);
         }
     }
 }
