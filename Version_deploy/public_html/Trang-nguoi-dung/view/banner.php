@@ -1,35 +1,7 @@
 <?php
-// Lấy video banner từ cấu hình admin
-$video_banner_url = 'video/OFFICIAL TRAILER.mp4'; // Video mặc định
-
-// Cố gắng lấy từ API config
-if (!function_exists('website_get_banner_video')) {
-    try {
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-        $host = $_SERVER['HTTP_HOST'];
-        $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
-        $api_url = $protocol . $host . $base_dir . 'Trang-nguoi-dung/api_config.php';
-
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $api_url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 3
-        ]);
-        $response = curl_exec($curl);
-        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-        
-        if ($http_code === 200 && $response) {
-            $data = json_decode($response, true);
-            if ($data && $data['success'] && !empty($data['data']['video_banner'])) {
-                $video_banner_url = $data['data']['video_banner'];
-            }
-        }
-    } catch (Exception $e) {
-        // Dùng video mặc định nếu lỗi
-    }
-}
+// Lấy video banner từ cấu hình (siêu nhanh, không cURL)
+$cfg = function_exists('get_website_config') ? get_website_config() : [];
+$video_banner_url = !empty($cfg['video_banner']) ? $cfg['video_banner'] : 'video/OFFICIAL TRAILER.mp4';
 ?>
 <!-- Slider -->
 <div class="bannercontainer">

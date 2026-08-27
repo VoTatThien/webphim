@@ -192,3 +192,45 @@ function pdo_query_value($sql)
         throw $e;
     }
 }
+
+/**
+ * Lấy cấu hình website trực tiếp từ Database nhanh chóng (không dùng cURL)
+ */
+function get_website_config() {
+    static $config = null;
+    if ($config !== null) return $config;
+    
+    $default = [
+        'id' => 1,
+        'ten_website' => 'Galaxy Studio',
+        'logo' => 'imgavt/Galaxy_Studio_2003_(Wordmark)_(Grey).webp',
+        'dia_chi' => '',
+        'so_dien_thoai' => '',
+        'email' => '',
+        'facebook' => '',
+        'instagram' => '',
+        'youtube' => '',
+        'mo_ta' => 'Nền tảng mua vé xem phim hàng đầu',
+        'video_banner' => 'video/OFFICIAL TRAILER.mp4',
+        'ngay_cap_nhat' => date('Y-m-d H:i:s')
+    ];
+    
+    try {
+        $row = pdo_query_one("SELECT * FROM thong_tin_website WHERE id = 1");
+        if ($row) {
+            $config = array_merge($default, $row);
+            if (!empty($config['logo']) && strpos($config['logo'], 'http') === false && strpos($config['logo'], 'imgavt/') === false) {
+                $config['logo'] = 'imgavt/' . $config['logo'];
+            }
+            if (!empty($config['video_banner']) && strpos($config['video_banner'], 'http') === false && strpos($config['video_banner'], 'video/') === false) {
+                $config['video_banner'] = 'video/' . $config['video_banner'];
+            }
+            return $config;
+        }
+    } catch (Exception $e) {
+        // Fallback default
+    }
+    
+    $config = $default;
+    return $config;
+}

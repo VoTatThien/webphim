@@ -1,43 +1,11 @@
 <?php
-// Lấy cấu hình website từ API
-$web_config = [
+// Lấy cấu hình website trực tiếp từ Database (siêu nhanh, không cURL)
+$web_config = function_exists('get_website_config') ? get_website_config() : [
     'ten_website' => 'Galaxy Studio',
     'logo' => 'imgavt/Galaxy_Studio_2003_(Wordmark)_(Grey).webp',
-    'mo_ta' => 'Nền tảng mua vé xem phim hàng đầu'
+    'mo_ta' => 'Nền tảng mua vé xem phim hàng đầu',
+    'video_banner' => 'video/OFFICIAL TRAILER.mp4'
 ];
-
-// Cố gắng lấy từ API (nếu có)
-$config_file = dirname(__FILE__) . '/../api_config.php';
-if (file_exists($config_file)) {
-    try {
-        $config_response = @json_decode(file_get_contents($config_file), true);
-        if (!is_array($config_response)) {
-            // Fetch từ API endpoint thay vì include
-            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-            $host = $_SERVER['HTTP_HOST'];
-            $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
-            $api_url = $protocol . $host . $base_dir . 'Trang-nguoi-dung/api_config.php';
-
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $api_url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 5
-            ]);
-            $response = curl_exec($curl);
-            curl_close($curl);
-            
-            if ($response) {
-                $data = json_decode($response, true);
-                if ($data && $data['success'] && isset($data['data'])) {
-                    $web_config = array_merge($web_config, $data['data']);
-                }
-            }
-        }
-    } catch (Exception $e) {
-        // Dùng config mặc định nếu lỗi
-    }
-}
 ?>
 <!doctype html>
 <html>
