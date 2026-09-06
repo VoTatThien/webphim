@@ -1,7 +1,6 @@
 <?php
 session_start();
 header('Content-type: text/html; charset=utf-8');
-require('../../config/domain_config.php');
 
 // MoMo Credentials
 $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
@@ -33,15 +32,16 @@ if ($resultCode == "0" && $signature == $expectedSignature) {
     
     try {
         // Cập nhật trạng thái vé thanh toán
-        $sql = "UPDATE ve SET trang_thai = 1 WHERE id = ? LIMIT 1";
+        $sql = "UPDATE ve SET trang_thai = 1 WHERE id = ? OR ma_ve = ? OR ma_ve LIKE ? LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$orderId_int]);
+        $stmt->execute([$orderId_int, $orderId, "%" . $orderId . "%"]);
         
         // Ghi log thành công
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Payment SUCCESSFUL for Order: $orderId_int\n", FILE_APPEND);
         
-        // Redirect về trang vé - Use production domain config
-        header('Location: ' . BASE_URL . '/index.php?act=ve');
+        $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+        // Redirect về trang vé
+        header('Location: http://' . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/index.php?act=ve');
         exit();
     } catch (Exception $e) {
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Database Error: " . $e->getMessage() . "\n", FILE_APPEND);
@@ -50,8 +50,9 @@ if ($resultCode == "0" && $signature == $expectedSignature) {
     // Thanh toán thất bại
     file_put_contents($logFile, date('Y-m-d H:i:s') . " - Payment FAILED or Invalid Signature\n", FILE_APPEND);
     
-    // Redirect về trang vé - Use production domain config
-    header('Location: ' . BASE_URL . '/index.php?act=ve&error=payment_failed');
+    $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+    // Redirect về trang vé
+    header('Location: http://' . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/index.php?act=ve&error=payment_failed');
     exit();
 }
 ?>

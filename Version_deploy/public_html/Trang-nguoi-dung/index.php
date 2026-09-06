@@ -318,7 +318,7 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                 
         include "view/login/dangnhap.php";
                 break;
-  
+
             case "dangky": //đăng ký tk
                 $min_password_length = 6;
 
@@ -329,6 +329,8 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     $user = $_POST['user'];
                     $pass = $_POST['pass'];
                     $email = $_POST['email'];
+                    $ngay_sinh = !empty($_POST['ngay_sinh']) ? $_POST['ngay_sinh'] : null;
+                    $gioi_tinh = !empty($_POST['gioi_tinh']) ? $_POST['gioi_tinh'] : null;
 
                     if (
                         !empty($name) && !empty($sdt) &&
@@ -348,7 +350,7 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                                 $thongbao = "Email đã tồn tại!";
                             } else {
                                 // Thêm tài khoản mới
-                                insert_taikhoan($email, $user, $pass, $name, $sdt, $dc);
+                                insert_taikhoan($email, $user, $pass, $name, $sdt, $dc, $ngay_sinh, $gioi_tinh);
                                 $thongbao = "Đăng ký thành công xin mời đăng nhập!";
                             }
                         }
@@ -428,6 +430,7 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                     }
                     include "view/login/sua.php";
                     break;
+
                 case "updatetk":
                         if (isset($_GET['idsua'])) 
                         {
@@ -445,8 +448,13 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                                     $email = $_POST['email'];
                                     $sdt = $_POST['phone'];
                                     $dc = $_POST['dia_chi'];
-                                    sua_tk($id, $user, $email, $sdt, $dc);
+                                    $ngay_sinh = !empty($_POST['ngay_sinh']) ? $_POST['ngay_sinh'] : null;
+                                    $gioi_tinh = !empty($_POST['gioi_tinh']) ? $_POST['gioi_tinh'] : null;
+                                    sua_tk($id, $user, $email, $sdt, $dc, $ngay_sinh, $gioi_tinh);
                                     $thongbao= "Sửa thành công ";
+                                    if (isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == $id) {
+                                        $_SESSION['user'] = loadone_taikhoan($id);
+                                    }
                                     } else {
                                         $thongbao= "Tên người dùng không hợp lệ. Tên người dùng không được chứa khoảng trắng và dấu.";
                                     }
@@ -457,9 +465,6 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                         }
                         $loadtk = loadone_taikhoan($id);
                         include "view/login/sua.php";
-                        // } else {
-                        //     include "view/login/sua.php";
-                        // }
                         break;
 
         case "datve": //Đặt vé - Flow: Chọn rạp → Chọn ngày → Chọn giờ
@@ -698,6 +703,29 @@ if(isset($_GET['act']) && $_GET['act']!=""){
                 $_SESSION['tong']['ghe_string'] = $ghe;
                 $_SESSION['tong']['combo_string'] = $combo;
                 
+                // --- TRACKING: Cập nhật Recommendation Log ---
+                // Kiểm tra khách có chọn combo được gợi ý hay không
+                if (isset($_SESSION['reco_log_id']) && $_SESSION['reco_log_id'] > 0) {
+                    try {
+                        include_once __DIR__ . '/model/combo_recommend.php';
+                        $reco_combo_name = $_SESSION['reco_combo_name'] ?? '';
+                        $was_accepted = false;
+                        if (!empty($combo) && !empty($reco_combo_name)) {
+                            // Kiểm tra combo được gợi ý có nằm trong danh sách combo khách chọn không
+                            $was_accepted = (strpos($combo, $reco_combo_name) !== false);
+                        }
+                        reco_log_update_result(
+                            $_SESSION['reco_log_id'],
+                            $was_accepted,
+                            $combo
+                        );
+                    } catch (Exception $e) {
+                        // Không để lỗi tracking ảnh hưởng flow đặt vé
+                    }
+                    unset($_SESSION['reco_log_id'], $_SESSION['reco_combo_name']);
+                }
+
+                
                 // Tính giá cuối cùng (sau giảm giá nếu có)
                 $gia_luu_db = $gia_tong; // Mặc định dùng giá gốc
                 if (isset($_SESSION['tong']['gia_sau_giam']) && $_SESSION['tong']['gia_sau_giam'] > 0) {
@@ -789,6 +817,19 @@ if(isset($_GET['act']) && $_GET['act']!=""){
             break;
 
         case "ve" : //Trang vé đã mua
+            // Xử lý khi MoMo thanh toán xong redirect về
+            if (isset($_GET['momo_return']) && isset($_GET['ticket_id'])) {
+                $momo_tid = (int)$_GET['ticket_id'];
+                $result_code = $_GET['resultCode'] ?? null;
+                if ($result_code === '0' || $result_code === 0) {
+                    pdo_execute("UPDATE ve SET trang_thai = 1 WHERE id = ?", $momo_tid);
+                    echo '<script>alert("Thanh toán MoMo thành công! Vé của bạn đã sẵn sàng.");</script>';
+                } elseif ($result_code !== null && $result_code !== '0') {
+                    pdo_execute("UPDATE ve SET trang_thai = 3 WHERE id = ?", $momo_tid);
+                    echo '<script>alert("Thanh toán MoMo chưa hoàn tất hoặc đã bị hủy.");</script>';
+                }
+            }
+
             $user_id = 0;
             if (isset($_GET['id']) && $_GET['id'] > 0) {
                 $user_id = (int)$_GET['id'];

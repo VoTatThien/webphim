@@ -139,7 +139,10 @@ try {
         throw new Exception("Không thể tạo vé - " . $error_info[2]);
     }
     
-    file_put_contents(__DIR__ . '/momo_debug.log', date('Y-m-d H:i:s') . " - ✅ Vé tạo thành công! Số ghế: " . count($ghe_list) . ", Ghế: " . $ghe_string . "\n", FILE_APPEND);
+    $id_ve = (int)$pdo->lastInsertId();
+    $_SESSION['momo_pending_ticket_id'] = $id_ve;
+    
+    file_put_contents(__DIR__ . '/momo_debug.log', date('Y-m-d H:i:s') . " - ✅ Vé tạo thành công! ID: " . $id_ve . ", Số ghế: " . count($ghe_list) . ", Ghế: " . $ghe_string . "\n", FILE_APPEND);
     
     // DEBUG: Log session tong để xem có diem_doi không
     file_put_contents(__DIR__ . '/momo_debug.log', date('Y-m-d H:i:s') . " - DEBUG SESSION TONG: " . json_encode($_SESSION['tong'] ?? []) . "\n", FILE_APPEND);
@@ -274,7 +277,7 @@ if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $
     $base_path = '/' . $matches[1];
 }
 $baseUrl = "http://" . $currentHost . $base_path . "/Trang-nguoi-dung";
-$redirectUrl = $baseUrl . "/index.php?act=ve";
+$redirectUrl = $baseUrl . "/index.php?act=ve&momo_return=1&ticket_id=" . $id_ve;
 $ipnUrl = $baseUrl . "/view/momo/xuly_callback_momo.php";
 $extraData = "";
 

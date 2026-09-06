@@ -30,3 +30,5 @@
 2026-07-18 14:56:07 [FALLBACK] Generating direct image URL: https://img.vietqr.io/image/970436-1234567890-compact.png?amount=339000&addInfo=Test+CinePass+Booking+-+CINEMA_1784379367_1351&accountName=CINEPASS+THEATER
 2026-07-18 14:56:59 Order: CINEMA_1784379418_8947 | Amount: 339000 | HTTP: 200 | Error: 
 2026-07-18 14:56:59 [FALLBACK] Generating direct image URL: https://img.vietqr.io/image/970436-1234567890-compact.png?amount=339000&addInfo=Ve+phim+CinePass+-+CINEMA_1784379418_8947&accountName=CINEPASS+THEATER
+2026-09-06 09:43:14 Order: CINEMA_1788680594_8743 | Amount: 151000 | HTTP: 200 | Error: 
+2026-09-06 09:43:14 [FALLBACK] Generating direct image URL: https://img.vietqr.io/image/970436-1234567890-compact.png?amount=151000&addInfo=Ve+phim+CinePass+-+CINEMA_1788680594_8743&accountName=CINEPASS+THEATER

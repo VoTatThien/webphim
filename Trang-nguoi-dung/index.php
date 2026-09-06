@@ -817,6 +817,19 @@ if(isset($_GET['act']) && $_GET['act']!=""){
             break;
 
         case "ve" : //Trang vé đã mua
+            // Xử lý khi MoMo thanh toán xong redirect về
+            if (isset($_GET['momo_return']) && isset($_GET['ticket_id'])) {
+                $momo_tid = (int)$_GET['ticket_id'];
+                $result_code = $_GET['resultCode'] ?? null;
+                if ($result_code === '0' || $result_code === 0) {
+                    pdo_execute("UPDATE ve SET trang_thai = 1 WHERE id = ?", $momo_tid);
+                    echo '<script>alert("Thanh toán MoMo thành công! Vé của bạn đã sẵn sàng.");</script>';
+                } elseif ($result_code !== null && $result_code !== '0') {
+                    pdo_execute("UPDATE ve SET trang_thai = 3 WHERE id = ?", $momo_tid);
+                    echo '<script>alert("Thanh toán MoMo chưa hoàn tất hoặc đã bị hủy.");</script>';
+                }
+            }
+
             $user_id = 0;
             if (isset($_GET['id']) && $_GET['id'] > 0) {
                 $user_id = (int)$_GET['id'];

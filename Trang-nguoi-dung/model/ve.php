@@ -319,3 +319,32 @@ function can_cancel_or_exchange_ticket($id) {
     }
 }
 
+/**
+ * Tạo mã QR Code dạng Data URI Base64 trực tiếp
+ * Không phụ thuộc file tĩnh, không sợ lỗi relative path hay mạng chập chờn
+ */
+function get_qr_base64($url) {
+    static $qr_lib_loaded = false;
+    if (!$qr_lib_loaded) {
+        $lib = __DIR__ . '/phpqrcode/qrlib.php';
+        if (file_exists($lib)) {
+            require_once $lib;
+            $qr_lib_loaded = true;
+        }
+    }
+    if (class_exists('QRcode')) {
+        try {
+            ob_start();
+            QRcode::png($url, null, QR_ECLEVEL_L, 4, 1);
+            $raw = ob_get_clean();
+            if (!empty($raw)) {
+                return 'data:image/png;base64,' . base64_encode($raw);
+            }
+        } catch (Exception $e) {
+            if (ob_get_level() > 0) ob_end_clean();
+        }
+    }
+    // Fallback nếu không có thư viện phpqrcode
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($url);
+}
+

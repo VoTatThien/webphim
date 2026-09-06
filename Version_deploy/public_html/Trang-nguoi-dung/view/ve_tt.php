@@ -76,8 +76,12 @@ include "view/search.php";
                             <span class="ticket__item ticket__price" style="margin-top: 5px"><i class="fa fa-money" style="color:#ffd564; margin-right:5px;"></i> <?= __('Giá:') ?> <strong class="ticket__cost"><?= number_format($thanh_tien) ?> vnđ</strong></span>
                         </div>
                         <div class="ticket-primery" style="position: relative;">
+                            <?php
+                            $qr_url = "http://" . $qr_host . $base_dir . "Trang-nguoi-dung/quete.php?id=" . $id;
+                            $qr_src = function_exists('get_qr_base64') ? get_qr_base64($qr_url) : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($qr_url);
+                            ?>
                             <div style="position: absolute; top: 86px; right: -1px; width: 107px; height: 107px; background: #fff; border: 2px solid #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                                <img src="view/qr.php?data=<?php echo urlencode("http://" . $qr_host . $base_dir . "Trang-nguoi-dung/quete.php?id=" . $id); ?>&t=<?= time() ?>" alt="QR Code" style="width: 115px; height: 115px; object-fit: contain;" />
+                                <img src="<?= $qr_src ?>" alt="QR Code" style="width: 100px; height: 100px; object-fit: contain;" />
                             </div>
                             <span class="ticket__item ticket__item--primery ticket__film"><?= __('Phim:') ?> <br><strong class="ticket__movie"><?= __($tieu_de) ?></strong></span>
                             <span class="ticket__item ticket__time"><i class="fa fa-circle-o" style="color:#ffd564; margin-right:5px;"></i> <?= __('Ghế:') ?> <?= $ghe ?></span>

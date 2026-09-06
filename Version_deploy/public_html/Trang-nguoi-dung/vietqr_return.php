@@ -16,21 +16,13 @@ $status = $_GET['status'] ?? 'pending';
 // ====================================================
 
 if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
-    // Include PDO connection
-    require_once 'model/pdo.php';
-    
-    // Get $pdo instance
-    $pdo = pdo_get_connection();
-    
-    // Get user info - sửa từ $_SESSION['id_user'] thành $_SESSION['user']['id']
-    $user_id = $_SESSION['user']['id'] ?? 0;
-    if ($user_id <= 0) {
-        http_response_code(401);
-        echo "Lỗi: Vui lòng đăng nhập trước";
-        exit;
+    $base_path = '';
+    if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
+        $base_path = '/' . $matches[1];
     }
-
-    try {
+    header('Location: ' . $base_path . '/Trang-nguoi-dung/index.php?act=xacnhan&vietqr=1');
+    exit;
+}
         // ====================================================
         // 1. CREATE TỰ ĐỘNG: VÉ (VE)
         // ====================================================

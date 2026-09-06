@@ -96,7 +96,7 @@ function khoa_ghe($id_kgc, $id_lc, $id_phim)
 
 
 function loadone_vephim($id){
-    $sql="SELECT v.id, v.id_tk, phim.tieu_de, lichchieu.ngay_chieu, v.price, v.ngay_dat, v.ghe, v.combo, taikhoan.name, khung_gio_chieu.thoi_gian_chieu, v.id_hd, v.trang_thai, phongchieu.name as tenphong, rap_chieu.ten_rap, rap_chieu.dia_chi as dia_chi_rap
+    $sql="SELECT v.id, v.id_tk, phim.tieu_de, lichchieu.ngay_chieu, v.price, v.ngay_dat, v.ghe, v.combo, taikhoan.name, khung_gio_chieu.thoi_gian_chieu, v.id_hd, v.trang_thai, phongchieu.name as tenphong, rap_chieu.ten_rap, rap_chieu.dia_chi as dia_chi_rap, v.fb_check_in_luc, v.fb_check_in_boi
     FROM ve v
     LEFT JOIN taikhoan ON taikhoan.id = v.id_tk
     LEFT JOIN khung_gio_chieu ON khung_gio_chieu.id = v.id_thoi_gian_chieu
@@ -317,5 +317,34 @@ function can_cancel_or_exchange_ticket($id) {
     } catch (Exception $e) {
         return ['can_cancel' => true, 'remaining_hours' => 999, 'message' => 'Không thể xác định thời gian chiếu'];
     }
+}
+
+/**
+ * Tạo mã QR Code dạng Data URI Base64 trực tiếp
+ * Không phụ thuộc file tĩnh, không sợ lỗi relative path hay mạng chập chờn
+ */
+function get_qr_base64($url) {
+    static $qr_lib_loaded = false;
+    if (!$qr_lib_loaded) {
+        $lib = __DIR__ . '/phpqrcode/qrlib.php';
+        if (file_exists($lib)) {
+            require_once $lib;
+            $qr_lib_loaded = true;
+        }
+    }
+    if (class_exists('QRcode')) {
+        try {
+            ob_start();
+            QRcode::png($url, null, QR_ECLEVEL_L, 4, 1);
+            $raw = ob_get_clean();
+            if (!empty($raw)) {
+                return 'data:image/png;base64,' . base64_encode($raw);
+            }
+        } catch (Exception $e) {
+            if (ob_get_level() > 0) ob_end_clean();
+        }
+    }
+    // Fallback nếu không có thư viện phpqrcode
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($url);
 }
 

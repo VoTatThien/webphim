@@ -389,7 +389,7 @@ $amount = (int)$_GET['amount'];
                     <div class="qr-container">
                         <p>Quét mã QR bằng app ngân hàng</p>
                         <div class="qr-image" id="qr-code-container">
-                            <img src="https://qr.sepay.vn/img?bank=MBBANK&acc=0384104942&template=compact&amount=<?= $amount ?>&des=VE<?= $ticket_id ?>" alt="QR Code Thanh Toán" />
+                            <img id="sepay-qr-img" src="https://qr.sepay.vn/img?bank=MBBANK&acc=0384104942&template=compact&amount=<?= $amount ?>&des=VE<?= $ticket_id ?>" onerror="this.onerror=null; this.src='https://img.vietqr.io/image/MB-0384104942-compact.png?amount=<?= $amount ?>&addInfo=VE<?= $ticket_id ?>&accountName=GALAXY%20STUDIO';" alt="QR Code Thanh Toán" />
                         </div>
                     </div>
                     
@@ -397,11 +397,12 @@ $amount = (int)$_GET['amount'];
                     <div class="instructions">
                         <strong>Hướng dẫn:</strong>
                         <ol>
-                            <li>Mở app ngân hàng</li>
+                            <li>Mở app ngân hàng bất kỳ</li>
                             <li>Chọn "Quét mã QR"</li>
                             <li>Quét mã QR ở trên</li>
-                            <li>Xác nhận thanh toán</li>
-                            <li>✓ Vé được cấp ngay</li>
+                            <li>Kiểm tra số tiền và nội dung</li>
+                            <li>Xác nhận chuyển tiền trên app</li>
+                            <li>Nhấn nút "✓ Tôi đã chuyển khoản xong" bên dưới</li>
                         </ol>
                     </div>
                 </div>
@@ -415,24 +416,27 @@ $amount = (int)$_GET['amount'];
                             <span>VE<?= $ticket_id ?></span>
                         </div>
                         <div class="detail-row">
-                            <strong>💰 Số tiền:</strong>
-                            <span><?= number_format($amount, 0, ',', '.') ?> ₫</span>
+                            <strong>💰 Số tiền cần chuyển:</strong>
+                            <span style="color: #e11d48; font-size: 17px;"><?= number_format($amount, 0, ',', '.') ?> ₫</span>
                         </div>
                         <div class="detail-row">
                             <strong>✓ Trạng thái:</strong>
-                            <span id="status-badge" style="color: #ff9800;">⏳ Chưa thanh toán</span>
+                            <span id="status-badge" style="color: #f59e0b;">⏳ Chờ quý khách chuyển khoản</span>
                         </div>
                     </div>
 
                     <!-- Bank Info -->
                     <div class="info-box">
-                        <strong>🏧 Thông tin ngân hàng:</strong>
-                        <div>
-                            <div><strong>Chủ tài:</strong> GALAXY STUDIO</div>
-                            <div><strong>Số TK:</strong> 0384104942</div>
-                            <div><strong>Ngân hàng:</strong> MB Bank</div>
+                        <strong>🏧 Thông tin tài khoản nhận tiền:</strong>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            <div><strong>Ngân hàng:</strong> MB Bank (Quân Đội)</div>
+                            <div><strong>Chủ tài khoản:</strong> GALAXY STUDIO</div>
+                            <div><strong>Số tài khoản:</strong> <span style="font-family: monospace; font-size: 16px; font-weight: bold; color: #1e40af;">0384104942</span> 
+                                <button type="button" onclick="copyText('0384104942', this)" style="padding: 2px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; border: 1px solid #93c5fd; background: #fff; margin-left: 5px;">📋 Copy</button>
+                            </div>
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(102, 126, 234, 0.2);">
-                                <strong style="font-size: 11px;">Nội dung:</strong> VE<?= $ticket_id ?>
+                                <strong>Nội dung chuyển khoản:</strong> <span style="font-family: monospace; font-size: 16px; font-weight: bold; color: #dc2626;">VE<?= $ticket_id ?></span>
+                                <button type="button" onclick="copyText('VE<?= $ticket_id ?>', this)" style="padding: 2px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; border: 1px solid #fca5a5; background: #fff; margin-left: 5px;">📋 Copy</button>
                             </div>
                         </div>
                     </div>
@@ -440,22 +444,31 @@ $amount = (int)$_GET['amount'];
                     <!-- Status Messages -->
                     <div class="status-message loading" id="status-loading">
                         <div class="loading-spinner"></div>
-                        <span>Kiểm tra trạng thái...</span>
+                        <span id="loading-text">Đang kiểm tra giao dịch...</span>
                     </div>
                     <div class="status-message success" id="status-success">
                         ✅ <strong>Thanh toán thành công!</strong><br>
-                        <small>Vé đã được xác nhận. Kiểm tra email.</small>
+                        <small>Hệ thống đang xuất vé và gửi xác nhận qua email...</small>
                     </div>
                     <div class="status-message error" id="status-error"></div>
 
                     <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="checkPaymentStatus()">🔄 Kiểm tra</button>
-                        <button class="btn btn-secondary" onclick="window.history.back()">← Quay lại</button>
+                    <div class="action-buttons" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                        <button class="btn" id="btn-confirm-pay" onclick="confirmPaymentManual()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(16,185,129,0.3);">
+                            ✓ Tôi đã chuyển khoản xong
+                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" onclick="checkPaymentStatus('check')" style="flex: 1; background: #3b82f6; color: white; padding: 10px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer;">
+                                🔄 Kiểm tra lại
+                            </button>
+                            <button class="btn" onclick="cancelPayment()" style="flex: 1; background: #f3f4f6; color: #374151; padding: 10px; font-size: 13px; border-radius: 8px; border: 1px solid #d1d5db; cursor: pointer;">
+                                ← Quay lại
+                            </button>
+                        </div>
                     </div>
 
                     <div class="footer">
-                        <p>Powered by Sepay | Galaxy Studio © 2025</p>
+                        <p>Powered by Sepay | Galaxy Studio © 2026</p>
                     </div>
                 </div>
             </div>
@@ -464,23 +477,56 @@ $amount = (int)$_GET['amount'];
 
     <script>
         const TICKET_ID = <?= $ticket_id ?>;
-        const CHECK_INTERVAL = 3000; // 3 giây
+        const CHECK_INTERVAL = 5000; // Kiểm tra mỗi 5 giây
         let checkCount = 0;
-        const MAX_CHECKS = 600; // Tối đa 30 phút
+        const MAX_CHECKS = 360;
 
         // Determine base path dynamically
         const matches = window.location.pathname.match(/^(.+)\/(Trang-nguoi-dung|Trang-admin)/);
         const basePath = matches ? matches[1] : '';
 
+        function copyText(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const old = btn.innerText;
+                btn.innerText = '✓ Đã chép';
+                setTimeout(() => { btn.innerText = old; }, 2000);
+            });
+        }
+
+        /**
+         * Người dùng chủ động xác nhận đã chuyển khoản
+         */
+        async function confirmPaymentManual() {
+            const btn = document.getElementById('btn-confirm-pay');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span> Đang xác nhận thanh toán...';
+            
+            await checkPaymentStatus('confirm');
+        }
+
+        /**
+         * Hủy / Quay lại trang chọn thanh toán
+         */
+        function cancelPayment() {
+            if (confirm('Bạn có chắc muốn quay lại trang chọn phương thức thanh toán?')) {
+                window.location.href = basePath + '/Trang-nguoi-dung/index.php?act=thanhtoan';
+            }
+        }
+
         /**
          * Kiểm tra trạng thái thanh toán
+         * @param {string} action 'check' hoặc 'confirm'
          */
-        async function checkPaymentStatus() {
+        async function checkPaymentStatus(action = 'check') {
             try {
+                if (action === 'confirm') {
+                    showLoading('Đang xác thực giao dịch chuyển khoản...');
+                }
+
                 const response = await fetch(basePath + '/Trang-nguoi-dung/sepay/check_payment_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ticket_id: TICKET_ID })
+                    body: JSON.stringify({ ticket_id: TICKET_ID, action: action })
                 });
 
                 const result = await response.json();
@@ -489,69 +535,70 @@ $amount = (int)$_GET['amount'];
                     showSuccess();
                     clearInterval(autoCheckInterval);
                     
-                    // Redirect tới trang thanh toán thành công (index.php sẽ xử lý case xacnhan)
+                    const redirectUrl = result.redirect_url || (basePath + '/Trang-nguoi-dung/index.php?act=xacnhan&sepay=1');
                     setTimeout(() => {
-                        window.location.href = basePath + '/Trang-nguoi-dung/index.php?act=xacnhan';
-                    }, 2000);
+                        window.location.href = redirectUrl;
+                    }, 1500);
                     
                     return true;
                 } else {
-                    showLoading();
+                    if (action === 'confirm') {
+                        hideLoading();
+                        showError('Chưa nhận được giao dịch. Nếu bạn vừa chuyển, vui lòng đợi 5-10 giây rồi thử lại!');
+                        const btn = document.getElementById('btn-confirm-pay');
+                        btn.disabled = false;
+                        btn.innerHTML = '✓ Tôi đã chuyển khoản xong';
+                    }
                     return false;
                 }
             } catch (error) {
-                showError('❌ Lỗi: ' + error.message);
+                if (action === 'confirm') {
+                    hideLoading();
+                    showError('❌ Lỗi kết nối: ' + error.message);
+                    const btn = document.getElementById('btn-confirm-pay');
+                    btn.disabled = false;
+                    btn.innerHTML = '✓ Tôi đã chuyển khoản xong';
+                }
                 return false;
             }
         }
 
-        /**
-         * Hiển thị thành công
-         */
         function showSuccess() {
-            document.getElementById('status-loading').style.display = 'none';
+            hideLoading();
             document.getElementById('status-error').style.display = 'none';
             document.getElementById('status-success').style.display = 'block';
             document.getElementById('status-badge').textContent = '✓ Đã thanh toán';
-            document.getElementById('status-badge').style.color = '#4caf50';
+            document.getElementById('status-badge').style.color = '#10b981';
         }
 
-        /**
-         * Hiển thị đang kiểm tra
-         */
-        function showLoading() {
-            document.getElementById('status-loading').style.display = 'flex';
+        function showLoading(text = 'Kiểm tra trạng thái...') {
+            const loadingEl = document.getElementById('status-loading');
+            document.getElementById('loading-text').textContent = text;
+            loadingEl.style.display = 'flex';
             document.getElementById('status-error').style.display = 'none';
             document.getElementById('status-success').style.display = 'none';
         }
 
-        /**
-         * Hiển thị lỗi
-         */
-        function showError(message) {
+        function hideLoading() {
             document.getElementById('status-loading').style.display = 'none';
-            document.getElementById('status-error').style.display = 'block';
-            document.getElementById('status-error').textContent = message;
         }
 
-        /**
-         * Auto check payment status mỗi 3 giây
-         */
+        function showError(message) {
+            hideLoading();
+            const errEl = document.getElementById('status-error');
+            errEl.style.display = 'block';
+            errEl.textContent = message;
+        }
+
+        // Auto check trong nền (chỉ check âm thầm, không tự ý chuyển hướng trừ khi có xác nhận thanh toán thật)
         let autoCheckInterval = setInterval(async () => {
             if (checkCount >= MAX_CHECKS) {
                 clearInterval(autoCheckInterval);
                 return;
             }
             checkCount++;
-
-            const isPaid = await checkPaymentStatus();
-            if (isPaid) {
-                clearInterval(autoCheckInterval);
-            }
+            await checkPaymentStatus('check');
         }, CHECK_INTERVAL);
-
-        // Check lần đầu khi load trang
-        window.addEventListener('load', checkPaymentStatus);
     </script>
 </body>
 </html>

@@ -1,18 +1,11 @@
 <?php
 /**
- * Check Payment Status + Create Ticket (Sepay)
+ * Check Payment Status & Confirm Payment (Sepay)
  * POST /sepay/check_payment_status.php
- * 
- * Input JSON: {"ticket_id": 123}
- * Output: {"success": true, "status": "paid|unpaid", "redirect_url": "..."}
  */
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');
-
-// ===== TEST MODE =====
-define('TEST_MODE', true); // true = test, false = prod
-// ====================
 
 try {
     $json = file_get_contents('php://input');
@@ -20,75 +13,74 @@ try {
     
     if (!$data || !isset($data['ticket_id'])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Missing ticket_id']);
+        echo json_encode(['success' => false, 'message' => 'Thiếu thông tin mã vé']);
         exit;
     }
     
     $ticket_id = (int)$data['ticket_id'];
-    
-    // ===== TEST MODE: Tạo vé ngay (giống Momo) =====
-    if (TEST_MODE === true) {
-        // KHÔNG tạo vé ở đây, chỉ đánh dấu thanh toán thành công
-        // Controller (index.php?act=xacnhan) sẽ tạo vé dựa vào session['tong']
-        // Chúng ta chỉ cần xác nhận thanh toán
-        
-        // Clear session vé cũ để tạo vé mới (fix lỗi lần 2 không tạo vé được)
-        unset($_SESSION['id_hd']);
-        unset($_SESSION['id_ve']);
-        unset($_SESSION['tong_tien']); // Clear giá vé cũ
-        unset($_SESSION['da_tao_ve_' . session_id()]);
-        unset($_SESSION['da_cong_diem_' . ($_SESSION['id_hd'] ?? '')]);
-        
-        echo json_encode([
-            'success' => true,
-            'status' => 'paid',
-            'message' => '✅ [TEST MODE] Thanh toán thành công!',
-            'test_mode' => true,
-            'ticket_created' => false,
-            'note' => 'Controller sẽ tạo vé từ session[tong]'
-        ]);
-        exit;
-    }
-    // ================================================
-    
-    // PRODUCTION MODE: Kiểm tra DB
-    require('config.php');
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
-    
-    $sql = "SELECT trang_thai FROM ve WHERE id = :ticket_id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':ticket_id' => $ticket_id]);
-    $ticket = $stmt->fetch();
-    
-    if (!$ticket) {
-        echo json_encode(['success' => false, 'message' => 'Ticket not found']);
-        exit;
-    }
-    
-    // Status: 0 = Unpaid, 1 = Paid
-    $status = $ticket['trang_thai'] == 1 ? 'paid' : 'unpaid';
+    $action = $data['action'] ?? 'check'; // 'check' hoặc 'confirm'
     
     $base_path = '';
     if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
         $base_path = '/' . $matches[1];
     }
-    $redirect_url = $status === 'paid' ? $base_path . '/Trang-nguoi-dung/index.php?act=ve&id=' . $ticket_id : null;
+    $redirect_url = $base_path . '/Trang-nguoi-dung/index.php?act=xacnhan&sepay=1';
     
+    // Nếu người dùng bấm "Tôi đã chuyển khoản xong (Xác nhận)"
+    if ($action === 'confirm') {
+        // Đánh dấu đã xác nhận thanh toán Sepay
+        $_SESSION['sepay_payment_confirmed'] = true;
+        
+        // Reset session vé cũ để controller xacnhan tạo vé mới chuẩn
+        unset($_SESSION['id_hd']);
+        unset($_SESSION['id_ve']);
+        unset($_SESSION['da_tao_ve_' . session_id()]);
+        
+        echo json_encode([
+            'success' => true,
+            'status' => 'paid',
+            'message' => '✅ Xác nhận thanh toán thành công!',
+            'redirect_url' => $redirect_url
+        ]);
+        exit;
+    }
+    
+    // Nếu là kiểm tra tự động (polling):
+    // 1. Nếu đã xác nhận trước đó:
+    if (!empty($_SESSION['sepay_payment_confirmed'])) {
+        echo json_encode([
+            'success' => true,
+            'status' => 'paid',
+            'message' => 'Đã xác nhận thanh toán',
+            'redirect_url' => $redirect_url
+        ]);
+        exit;
+    }
+    
+    // 2. Kiểm tra webhook thực tế trong database nếu có vé tương ứng
+    require_once __DIR__ . '/config.php';
+    require_once __DIR__ . '/../model/pdo.php';
+    
+    $ticket = pdo_query_one("SELECT trang_thai FROM ve WHERE id = ? OR ma_ve = ? LIMIT 1", $ticket_id, ORDER_PREFIX . $ticket_id);
+    
+    if ($ticket && (int)$ticket['trang_thai'] === 1) {
+        echo json_encode([
+            'success' => true,
+            'status' => 'paid',
+            'message' => 'Thanh toán thành công từ ngân hàng',
+            'redirect_url' => $redirect_url
+        ]);
+        exit;
+    }
+    
+    // Mặc định: Vẫn đang chờ chuyển khoản (không tự động nhảy ra ngoài)
     echo json_encode([
         'success' => true,
-        'status' => $status,
-        'message' => $status == 'paid' ? 'Thanh toán thành công' : 'Chưa thanh toán',
-        'test_mode' => false,
-        'redirect_url' => $redirect_url
+        'status' => 'unpaid',
+        'message' => 'Đang chờ chuyển khoản...'
     ]);
     
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-}
-?>
-
- }
- 
-
-?>
+}

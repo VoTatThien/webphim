@@ -32,9 +32,9 @@ if ($resultCode == "0" && $signature == $expectedSignature) {
     
     try {
         // Cập nhật trạng thái vé thanh toán
-        $sql = "UPDATE ve SET trang_thai = 1 WHERE id = ? LIMIT 1";
+        $sql = "UPDATE ve SET trang_thai = 1 WHERE id = ? OR ma_ve = ? OR ma_ve LIKE ? LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$orderId_int]);
+        $stmt->execute([$orderId_int, $orderId, "%" . $orderId . "%"]);
         
         // Ghi log thành công
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Payment SUCCESSFUL for Order: $orderId_int\n", FILE_APPEND);

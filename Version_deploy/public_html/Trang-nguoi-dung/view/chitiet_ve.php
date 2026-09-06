@@ -40,30 +40,37 @@ if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $
                 echo "<h2>" . __('CHI TIẾT VÉ') . "</h2>";
                     extract($loadone_ve);
                     switch ($trang_thai) {
+                        case 0:
+                            $thong_bao = '<span style="color: #f59e0b; font-weight: bold;"><i class="fa fa-clock-o"></i> ' . __('Chờ thanh toán') . '</span>';
+                            $huy_ve_style = '';
+                            break;
                         case 1:
-                            $thong_bao = __('Đã thanh toán');
+                            $thong_bao = '<span style="color: #10b981; font-weight: bold;"><i class="fa fa-check-circle"></i> ' . __('Đã thanh toán') . '</span>';
                             $huy_ve_style = '';
                             break;
                         case 2:
-                            $thong_bao = __('Đã dùng');
+                            $thong_bao = '<span style="color: #3b82f6; font-weight: bold;"><i class="fa fa-ticket"></i> ' . __('Đã dùng') . '</span>';
                             $huy_ve_style = 'style="display:none;"';
                             break;
                         case 3:
-                            $thong_bao = __('Đã hủy');
+                            $thong_bao = '<span style="color: #ef4444; font-weight: bold;"><i class="fa fa-times-circle"></i> ' . __('Đã hủy') . '</span>';
                             $huy_ve_style = 'style="display:none;"';
                             break;
                         case 4:
-                            $thong_bao = __('Hết hạn');
+                            $thong_bao = '<span style="color: #9ca3af; font-weight: bold;"><i class="fa fa-ban"></i> ' . __('Hết hạn') . '</span>';
                             $huy_ve_style = 'style="display:none;"';
                             break;
                         default:
-                            $thong_bao = __('Trạng thái không xác định');
+                            $thong_bao = '<span style="color: #9ca3af;">' . __('Chưa xác định') . '</span>';
                             $huy_ve_style = '';
                     }
                     
                     // Lấy thông tin rạp nếu không có thì dùng default
                     $ten_rap_hienthi = !empty($ten_rap) ? __($ten_rap) : __('Galaxy Studio Gò Vấp');
                     $dia_chi_hienthi = !empty($dia_chi_rap) ? $dia_chi_rap : __('Địa chỉ chưa cập nhật');
+                    
+                    $qr_url = "http://" . $qr_host . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $id;
+                    $qr_src = function_exists('get_qr_base64') ? get_qr_base64($qr_url) : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($qr_url);
                     
                     echo '
                        <div class="ticket">
@@ -84,7 +91,7 @@ if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $
 
                                 <div class="ticket-primery" style="position: relative;">
                                     <div style="position: absolute; top: 86px; right: -1px; width: 107px; height: 107px; background: #fff; border: 2px solid #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode("http://" . $qr_host . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $id) . '" alt="QR Code" style="width: 115px; height: 115px; object-fit: contain;" />
+                                        <img src="' . $qr_src . '" alt="QR Code" style="width: 100px; height: 100px; object-fit: contain;" />
                                     </div>
                                     <span class="ticket__item ticket__item--primery ticket__film" style="display:flex;"> <strong class="ticket__movie" >' . __('PHIM:') . ' ' . __($tieu_de) . '</strong></span>
                                     <span class="ticket__item ticket__item--primery"><i class="fa fa-circle-o" style="color:#ffd564; margin-right:5px;"></i> ' . __('Ghế:') . ' <span class="ticket__place">' . $ghe . '</span></span>
@@ -112,8 +119,33 @@ if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $
                         }
                         
                         echo '                        </div>
-                    </div>
-                     ';
+                    </div>';
+                    
+                    if (!empty($combo)) {
+                        $fb_status = !empty($fb_check_in_luc) ? '<span style="color: #43e97b;"><i class="fa fa-check-circle"></i> ' . __("Đã nhận vào:") . ' ' . $fb_check_in_luc . '</span>' : '<span style="color: #ffd564; font-weight: bold;"><i class="fa fa-spinner"></i> ' . __("Chờ nhận đồ ăn (Fast Track)") . '</span>';
+                        $fb_qr_url = "http://" . $qr_host . $base_path . "/Trang-nguoi-dung/index.php?act=quetve&id=" . $id . "&fb=1";
+                        echo '
+                        <div class="fb-ticket-card" style="margin-top: 25px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; color: #fff; text-align: left;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <h4 style="margin: 0 0 10px 0; color: #ffd564; font-size: 16px; font-weight: bold; text-transform: uppercase;">
+                                    🍿 ' . __('Mã Nhận Đồ Ăn F&B Fast Track') . '
+                                </h4>
+                                <p style="margin: 5px 0; font-size: 14px;"><strong>' . __('Combo:') . '</strong> ' . $combo . '</p>
+                                <p style="margin: 5px 0; font-size: 13px;"><strong>' . __('Trạng thái:') . '</strong> ' . $fb_status . '</p>
+                                <p style="margin: 10px 0 0 0; font-size: 12px; color: #ccc;"><i class="fa fa-info-circle"></i> ' . __('Trình mã này tại quầy ưu tiên để nhận đồ ăn nhanh chóng mà không cần xếp hàng.') . '</p>
+                            </div>
+                            ';
+                        if (empty($fb_check_in_luc)) {
+                            echo '
+                            <div style="background: #fff; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . urlencode($fb_qr_url) . '" alt="F&B QR Code" style="width: 100px; height: 100px; display: block; object-fit: contain;" />
+                            </div>
+                            ';
+                        }
+                        echo '
+                        </div>
+                        ';
+                    }
             ?>
         </div>
     </section>
