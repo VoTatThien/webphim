@@ -232,12 +232,12 @@ try {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'cinepass.studio@gmail.com';
+        $mail->Username   = 'thanhbang0162@gmail.com';
         $mail->Password   = 'qjca onic cfks clad';
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
-        $mail->setFrom('cinepass.studio@gmail.com', 'Galaxy Studio');
+        $mail->setFrom('thanhbang0162@gmail.com', 'Galaxy Studio');
         $mail->addAddress($to);
         $mail->isHTML(true);
         $mail->Subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";

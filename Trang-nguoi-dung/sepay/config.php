@@ -87,10 +87,10 @@ define('DOMAIN', 'https://webphim.gt.tc');
 // ====================================================
 define('MAIL_HOST', 'smtp.gmail.com');
 define('MAIL_PORT', 587);
-define('MAIL_USERNAME', 'cinepass.studio@gmail.com');
+define('MAIL_USERNAME', 'thanhbang0162@gmail.com');
 define('MAIL_PASSWORD', 'qjca onic cfks clad');     // Gmail App Password từ ve.php
 define('MAIL_FROM_NAME', 'Galaxy Studio');
-define('MAIL_FROM_EMAIL', 'cinepass.studio@gmail.com');
+define('MAIL_FROM_EMAIL', 'thanhbang0162@gmail.com');
 
 // ====================================================
 // POINT CONFIGURATION

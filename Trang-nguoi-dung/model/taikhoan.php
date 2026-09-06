@@ -85,13 +85,13 @@ function sendMailPass($email, $name, $pass)
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'cinepass.studio@gmail.com';
+        $mail->Username   = 'thanhbang0162@gmail.com';
         $mail->Password   = 'qjca onic cfks clad'; // Lưu ý: Không nên hardcode mật khẩu thật
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         // Người gửi & người nhận
-        $mail->setFrom('cinepass.studio@gmail.com', 'Galaxy Studio');
+        $mail->setFrom('thanhbang0162@gmail.com', 'Galaxy Studio');
         $mail->addAddress($email, $name);
 
         // Gửi HTML email
@@ -127,11 +127,11 @@ function sendMailOTP($email, $otp) {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'cinepass.studio@gmail.com'; // Thay bằng email gửi OTP
+        $mail->Username   = 'thanhbang0162@gmail.com'; // Thay bằng email gửi OTP
         $mail->Password   = 'qjca onic cfks clad'; // Thay bằng app password
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
-        $mail->setFrom('cinepass.studio@gmail.com', 'Galaxy Studio');
+        $mail->setFrom('thanhbang0162@gmail.com', 'Galaxy Studio');
         $mail->addAddress($email);
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
@@ -232,7 +232,7 @@ function verify_gmail($email) {
         fgets($fp, 1024);
         
         // MAIL FROM (Dùng một email gửi đi hợp lệ)
-        fputs($fp, "MAIL FROM:<cinepass.studio@gmail.com>\r\n");
+        fputs($fp, "MAIL FROM:<thanhbang0162@gmail.com>\r\n");
         fgets($fp, 1024);
         
         // RCPT TO
@@ -337,12 +337,12 @@ function send_cinepass_subscription_email($email, $username, $type, $tickets, $c
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'cinepass.studio@gmail.com'; 
+        $mail->Username   = 'thanhbang0162@gmail.com'; 
         $mail->Password   = 'qjca onic cfks clad'; 
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
-        $mail->setFrom('cinepass.studio@gmail.com', 'Galaxy Studio');
+        $mail->setFrom('thanhbang0162@gmail.com', 'Galaxy Studio');
         $mail->addAddress($email, $username);
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
