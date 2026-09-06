@@ -86,7 +86,7 @@ function sendMailPass($email, $name, $pass)
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'thanhbang0162@gmail.com';
-        $mail->Password   = 'qjca onic cfks clad'; // Lưu ý: Không nên hardcode mật khẩu thật
+        $mail->Password   = 'cooh jnvf szck cwux'; // Lưu ý: Không nên hardcode mật khẩu thật
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
@@ -128,7 +128,7 @@ function sendMailOTP($email, $otp) {
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'thanhbang0162@gmail.com'; // Thay bằng email gửi OTP
-        $mail->Password   = 'qjca onic cfks clad'; // Thay bằng app password
+        $mail->Password   = 'cooh jnvf szck cwux'; // Thay bằng app password
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         $mail->setFrom('thanhbang0162@gmail.com', 'Galaxy Studio');
@@ -338,7 +338,7 @@ function send_cinepass_subscription_email($email, $username, $type, $tickets, $c
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'thanhbang0162@gmail.com'; 
-        $mail->Password   = 'qjca onic cfks clad'; 
+        $mail->Password   = 'cooh jnvf szck cwux'; 
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
