@@ -104,13 +104,18 @@
     - Rạp Galaxy Quận 1:  User: HuyHung_rap2    | Pass: 123456
     - Rạp Galaxy Tuy Hòa: User: admin_rap3   | Pass: 123456
 
-  ★ KHÁCH HÀNG THÀNH VIÊN (test đặt vé đăng nhập):
+  ★ KHÁCH HÀNG THÀNH VIÊN (test đặt vé đăng nhập & test gợi ý combo):
+    - User: minhtuan   | Pass: 123456 (Nam, 2000 - thích phim Hài/Hành động)
+    - User: thihuong   | Pass: 123456 (Nữ, 1998 - thích phim Ngôn tình/Lãng mạn)
+    - User: vankhoa    | Pass: 123456 (Nam, 1995 - hay xem suất tối)
+    - User: ngocanh    | Pass: 123456 (Nữ, 2003 - Gen Z thích bắp nước ngọt)
     - User: huyhung    | Pass: 123456
-    - User: admin   | Pass: 123456
+    - User: admin      | Pass: 123456
 
   ★ KHÁCH VÃNG LAI (không cần đăng nhập):
     - Khi đặt vé chọn "Tiếp tục không cần đăng nhập", nhập họ tên,
       SĐT và Gmail (phải là Gmail thật tồn tại trên Google).
+
 
 
 ╔══════════════════════════════════════════════════════════════════════╗
