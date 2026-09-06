@@ -216,12 +216,12 @@ function send_confirmation_email($email, $name, $movie, $date, $time, $cinema, $
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'tatthiendh123@gmail.com';
+        $mail->Username   = 'cinepass.studio@gmail.com';
         $mail->Password   = 'qjca onic cfks clad';
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+        $mail->setFrom('cinepass.studio@gmail.com', 'Galaxy Studio');
         $mail->addAddress($email);
 
         $mail->isHTML(true);

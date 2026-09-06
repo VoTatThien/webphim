@@ -102,11 +102,11 @@
 
   ★ NHÂN VIÊN RẠP (test chấm công, xem lịch ca):
     - Rạp Galaxy Quận 1:  User: HuyHung_rap2    | Pass: 123456
-    - Rạp Galaxy Tuy Hòa: User: Tatthien_rap3   | Pass: 123456
+    - Rạp Galaxy Tuy Hòa: User: admin_rap3   | Pass: 123456
 
   ★ KHÁCH HÀNG THÀNH VIÊN (test đặt vé đăng nhập):
     - User: huyhung    | Pass: 123456
-    - User: tatthien   | Pass: 123456
+    - User: admin   | Pass: 123456
 
   ★ KHÁCH VÃNG LAI (không cần đăng nhập):
     - Khi đặt vé chọn "Tiếp tục không cần đăng nhập", nhập họ tên,

@@ -5,7 +5,7 @@
  */
 
 // 🔴 Địa chỉ email gửi đi (Thay thế bằng Gmail mới của bạn)
-define('SMTP_USERNAME', 'tatthiendh123@gmail.com');
+define('SMTP_USERNAME', 'cinepass.studio@gmail.com');
 
 // 🔴 Mật khẩu ứng dụng 16 ký tự (Thay thế bằng Mật khẩu ứng dụng của Gmail mới)
 // Cách tạo: Tài khoản Google -> Bảo mật -> Mật khẩu ứng dụng (App Passwords)

@@ -201,13 +201,13 @@ if (!function_exists('gui_mail_ve')) {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'tatthiendh123@gmail.com';
+            $mail->Username   = 'cinepass.studio@gmail.com';
             $mail->Password   = 'qjca onic cfks clad';
             $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
             // Email sender/recipient
-            $mail->setFrom('tatthiendh123@gmail.com', 'Galaxy Studio');
+            $mail->setFrom('cinepass.studio@gmail.com', 'Galaxy Studio');
             $mail->addAddress($email);
 
             // Determine base path dynamically
