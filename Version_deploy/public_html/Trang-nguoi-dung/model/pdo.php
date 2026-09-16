@@ -1,0 +1,207 @@
+<?php
+
+/**
+ * Mở kết nối đến CSDL sử dụng PDO
+ */
+
+function pdo_get_connection(){
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $server_addr = $_SERVER['SERVER_ADDR'] ?? '';
+    
+    $is_local = false;
+    if (DIRECTORY_SEPARATOR === '\\' || strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        $is_local = true;
+    } elseif (
+        strpos($host, 'localhost') !== false ||
+        strpos($host, '127.0.0.1') !== false ||
+        strpos($host, '192.168.') !== false ||
+        strpos($host, '10.') === 0 ||
+        strpos($host, '172.16.') !== false ||
+        strpos($host, '172.17.') !== false ||
+        strpos($host, '172.18.') !== false ||
+        strpos($host, '172.19.') !== false ||
+        strpos($host, '172.20.') !== false ||
+        strpos($host, '172.21.') !== false ||
+        strpos($host, '172.22.') !== false ||
+        strpos($host, '172.23.') !== false ||
+        strpos($host, '172.24.') !== false ||
+        strpos($host, '172.25.') !== false ||
+        strpos($host, '172.26.') !== false ||
+        strpos($host, '172.27.') !== false ||
+        strpos($host, '172.28.') !== false ||
+        strpos($host, '172.29.') !== false ||
+        strpos($host, '172.30.') !== false ||
+        strpos($host, '172.31.') !== false ||
+        $server_addr === '127.0.0.1' ||
+        $server_addr === '::1'
+    ) {
+        $is_local = true;
+    }
+
+    if ($is_local) {
+        // Chạy local: Tự động thử kết nối cổng 3306, nếu thất bại thử 3307
+        $ports = ['3306', '3307'];
+        $username = 'root';
+        $password = '';
+        $last_exception = null;
+        foreach ($ports as $port) {
+            try {
+                $dburl = "mysql:host=127.0.0.1;port=$port;dbname=cinepass;charset=utf8mb4";
+                $conn = new PDO($dburl, $username, $password);
+                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                return $conn;
+            } catch (PDOException $e) {
+                $last_exception = $e;
+            }
+        }
+        throw $last_exception;
+    } else {
+        // Chạy production (live server)
+        $dburl = "mysql:host=localhost;port=3306;dbname=u508775056_cinepass;charset=utf8mb4";
+        $username = 'u508775056_cinepass';
+        $password = 'Kpy123456@@';
+        $conn = new PDO($dburl, $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $conn;
+    }
+}
+/**
+ * Thực thi câu lệnh sql thao tác dữ liệu (INSERT, UPDATE, DELETE)
+ * @param string $sql câu lệnh sql
+ * @param array $args mảng giá trị cung cấp cho các tham số của $sql
+ * @throws PDOException lỗi thực thi câu lệnh
+ */
+function pdo_execute($sql)
+{
+    $sql_args = array_slice(func_get_args(), 1);
+    try {
+        $conn = pdo_get_connection();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($sql_args);
+    } catch (PDOException $e) {
+        throw $e;
+    } finally {
+        unset($conn);
+    }
+}
+
+function pdo_execute_return_interlastid($sql)
+{
+    $sql_args = array_slice(func_get_args(), 1);
+    try {
+        $conn = pdo_get_connection();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($sql_args);
+        return $conn->lastInsertID();
+    } catch (PDOException $e) {
+        throw $e;
+    } finally {
+        unset($conn);
+    }
+}
+/**
+ * Thực thi câu lệnh sql truy vấn dữ liệu (SELECT)
+ * @param string $sql câu lệnh sql
+ * @param array $args mảng giá trị cung cấp cho các tham số của $sql
+ * @return array mảng các bản ghi
+ * @throws PDOException lỗi thực thi câu lệnh
+ */
+function pdo_query($sql)
+{
+    $sql_args = array_slice(func_get_args(), 1);
+    try {
+        $conn = pdo_get_connection();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($sql_args);
+        $rows = $stmt->fetchAll();
+        return $rows;
+    } catch (PDOException $e) {
+        throw $e;
+    } finally {
+        unset($conn);
+    }
+}
+/**
+ * Thực thi câu lệnh sql truy vấn một bản ghi
+ * @param string $sql câu lệnh sql
+ * @param array $args mảng giá trị cung cấp cho các tham số của $sql
+ * @return array mảng chứa bản ghi
+ * @throws PDOException lỗi thực thi câu lệnh
+ */
+function pdo_query_one($sql)
+{
+    $sql_args = array_slice(func_get_args(), 1);
+    try {
+        $conn = pdo_get_connection();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($sql_args);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row;
+    } catch (PDOException $e) {
+        throw $e;
+    } finally {
+        unset($conn);
+    }
+}
+/**
+ * Thực thi câu lệnh sql truy vấn một giá trị
+ * @param string $sql câu lệnh sql
+ * @param array $args mảng giá trị cung cấp cho các tham số của $sql
+ * @return *giá trị
+ * @throws PDOException lỗi thực thi câu lệnh
+ */
+function pdo_query_value($sql)
+{
+    $sql_args = array_slice(func_get_args(), 1);
+    try {
+        $conn = pdo_get_connection();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($sql_args);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? array_values($row)[0] : null;
+    } catch (PDOException $e) {
+        throw $e;
+    }
+}
+
+/**
+ * Lấy cấu hình website trực tiếp từ Database nhanh chóng (không dùng cURL)
+ */
+function get_website_config() {
+    static $config = null;
+    if ($config !== null) return $config;
+    
+    $default = [
+        'id' => 1,
+        'ten_website' => 'Galaxy Studio',
+        'logo' => 'imgavt/Galaxy_Studio_2003_(Wordmark)_(Grey).webp',
+        'dia_chi' => '',
+        'so_dien_thoai' => '',
+        'email' => '',
+        'facebook' => '',
+        'instagram' => '',
+        'youtube' => '',
+        'mo_ta' => 'Nền tảng mua vé xem phim hàng đầu',
+        'video_banner' => 'video/OFFICIAL TRAILER.mp4',
+        'ngay_cap_nhat' => date('Y-m-d H:i:s')
+    ];
+    
+    try {
+        $row = pdo_query_one("SELECT * FROM thong_tin_website WHERE id = 1");
+        if ($row) {
+            $config = array_merge($default, $row);
+            if (!empty($config['logo']) && strpos($config['logo'], 'http') === false && strpos($config['logo'], 'imgavt/') === false) {
+                $config['logo'] = 'imgavt/' . $config['logo'];
+            }
+            if (!empty($config['video_banner']) && strpos($config['video_banner'], 'http') === false && strpos($config['video_banner'], 'video/') === false) {
+                $config['video_banner'] = 'video/' . $config['video_banner'];
+            }
+            return $config;
+        }
+    } catch (Exception $e) {
+        // Fallback default
+    }
+    
+    $config = $default;
+    return $config;
+}
