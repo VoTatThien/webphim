@@ -54,7 +54,7 @@ switch ($ticket['trang_thai'] ?? 0) {
 }
 
 // Fix image path
-$base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+$base_dir = (preg_match('#^/([^/]+)/(Trang-nguoi-dung|Trang-admin)#', $_SERVER['REQUEST_URI'] ?? '', $m)) ? '/' . $m[1] . '/' : '/';
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $img_url = $ticket['img'] ?? '';
 if (!empty($img_url)) {

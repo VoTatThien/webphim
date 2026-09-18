@@ -35,7 +35,7 @@ if (file_exists(__DIR__ . '/../config/qr_config.php')) {
         }
     }
 }
-$base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+$base_dir = (preg_match('#^/([^/]+)/(Trang-nguoi-dung|Trang-admin)#', $_SERVER['REQUEST_URI'] ?? '', $m)) ? '/' . $m[1] . '/' : '/';
 include "view/search.php"; 
 ?>
 <form action="index.php?act=huy_ve" method="post">

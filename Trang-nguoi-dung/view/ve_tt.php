@@ -31,7 +31,8 @@ include "view/search.php";
             }
         }
     }
-    $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+    $detected_dir = dirname(dirname($_SERVER['PHP_SELF'] ?? ''));
+    $base_dir = (!empty($detected_dir) && $detected_dir !== '/' && $detected_dir !== '\\') ? rtrim($detected_dir, '/\\') . '/' : '/';
     ?>
     <section class="container">
         <div class="order-container">

@@ -120,7 +120,7 @@ try {
     // 6. SEND EMAIL
     // ====================================================
     
-    $base_dir = (strpos($_SERVER['REQUEST_URI'], '/webphim_hung/') !== false) ? '/webphim_hung/' : '/';
+    $base_dir = (preg_match('#^/([^/]+)/(Trang-nguoi-dung|Trang-admin)#', $_SERVER['REQUEST_URI'] ?? '', $m)) ? '/' . $m[1] . '/' : '/';
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $view_tickets_url = $protocol . $_SERVER['HTTP_HOST'] . $base_dir . 'Trang-nguoi-dung/index.php?p=ve_cua_toi';
 

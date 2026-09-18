@@ -25,15 +25,15 @@
                     </div>
                     
                     <div style="margin-bottom: 20px; text-align: left;">
-                        <label style="color: #666; font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;"><?= __('Giới tính') ?></label>
+                        <label style="color: #333; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px;"><?= __('Giới tính') ?></label>
                         <div style="display: flex; gap: 15px; margin-top: 5px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; background: rgba(255,255,255,0.05); color: #fff; font-weight: 500; transition: all 0.2s; min-width: 95px; justify-content: center; user-select: none;">
-                                <input type="radio" name="gioi_tinh" value="nam" <?= (isset($gioi_tinh) && $gioi_tinh === 'nam') ? 'checked' : '' ?> style="accent-color: #ffd564; width: 16px; height: 16px; margin: 0; cursor: pointer;">
-                                <span><?= __('Nam') ?></span>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; color: #333; font-weight: 500; transition: all 0.2s; min-width: 110px; justify-content: center; user-select: none;">
+                                <input type="radio" name="gioi_tinh" value="nam" <?= (isset($gioi_tinh) && $gioi_tinh === 'nam') ? 'checked' : '' ?> style="accent-color: #fe505a; width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                                <span style="color: #333; font-size: 15px; font-weight: 600;"><?= __('Nam') ?></span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; background: rgba(255,255,255,0.05); color: #fff; font-weight: 500; transition: all 0.2s; min-width: 95px; justify-content: center; user-select: none;">
-                                <input type="radio" name="gioi_tinh" value="nu" <?= (isset($gioi_tinh) && $gioi_tinh === 'nu') ? 'checked' : '' ?> style="accent-color: #ffd564; width: 16px; height: 16px; margin: 0; cursor: pointer;">
-                                <span><?= __('Nữ') ?></span>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; color: #333; font-weight: 500; transition: all 0.2s; min-width: 110px; justify-content: center; user-select: none;">
+                                <input type="radio" name="gioi_tinh" value="nu" <?= (isset($gioi_tinh) && $gioi_tinh === 'nu') ? 'checked' : '' ?> style="accent-color: #fe505a; width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                                <span style="color: #333; font-size: 15px; font-weight: 600;"><?= __('Nữ') ?></span>
                             </label>
                         </div>
                     </div>

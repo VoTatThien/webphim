@@ -25,11 +25,20 @@ function insert_taikhoan($email, $user, $pass, $name, $sdt, $dc, $ngay_sinh = nu
 }
 
 // Sửa tài khoản
-function sua_tk($id, $user, $email, $sdt, $dc, $ngay_sinh = null, $gioi_tinh = null) {
+function sua_tk($id, $user, $email, $sdt, $dc, $ngay_sinh = null, $gioi_tinh = null, $khoang_tuoi = null) {
+    if (empty($khoang_tuoi) && !empty($ngay_sinh)) {
+        $birthDate = new DateTime($ngay_sinh);
+        $tuoi = (new DateTime())->diff($birthDate)->y;
+        if ($tuoi < 18) $khoang_tuoi = 'duoi_18';
+        elseif ($tuoi <= 25) $khoang_tuoi = '18_25';
+        elseif ($tuoi <= 35) $khoang_tuoi = '26_35';
+        elseif ($tuoi <= 45) $khoang_tuoi = '36_45';
+        else $khoang_tuoi = 'tren_45';
+    }
     $sql = "UPDATE taikhoan 
-            SET user = ?, email = ?, phone = ?, dia_chi = ?, ngay_sinh = ?, gioi_tinh = ? 
+            SET user = ?, email = ?, phone = ?, dia_chi = ?, ngay_sinh = ?, gioi_tinh = ?, khoang_tuoi = ? 
             WHERE id = ?";
-    pdo_execute($sql, $user, $email, $sdt, $dc, $ngay_sinh, $gioi_tinh, $id);
+    pdo_execute($sql, $user, $email, $sdt, $dc, $ngay_sinh, $gioi_tinh, $khoang_tuoi, $id);
 }
 
 // Lấy mật khẩu cũ

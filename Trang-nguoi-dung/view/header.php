@@ -52,8 +52,26 @@ $web_config = function_exists('get_website_config') ? get_website_config() : [
     <!--[if lt IE 9]>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/respond.js/1.3.0/respond.js"></script>
-    <script src="js/custom.js"></script>
-    <![endif]-->
+    <style>
+    @media (min-width: 992px) {
+        .header-wrapper ul#navigation {
+            margin-right: 360px !important;
+        }
+        .header-wrapper ul#navigation > li > a {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+    }
+    @media (min-width: 1200px) {
+        .header-wrapper ul#navigation {
+            margin-right: 400px !important;
+        }
+        .header-wrapper ul#navigation > li > a {
+            padding-left: 14px !important;
+            padding-right: 14px !important;
+        }
+    }
+    </style>
 </head>
 
 <body>
@@ -137,10 +155,10 @@ $web_config = function_exists('get_website_config') ? get_website_config() : [
             </nav>
             <div class="control-panel">
                 <!-- Chuyển đổi ngôn ngữ -->
-                <div style="display: inline-flex; align-items: center; margin-right: 20px; vertical-align: middle; font-family: 'Roboto', sans-serif;">
-                    <a href="<?= get_lang_url('vi') ?>" style="color: <?= get_current_lang() === 'vi' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'vi' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 14px;">VI</a>
-                    <span style="color: #666; margin: 0 8px;">|</span>
-                    <a href="<?= get_lang_url('en') ?>" style="color: <?= get_current_lang() === 'en' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'en' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 14px;">EN</a>
+                <div style="display: inline-flex; align-items: center; margin-right: 12px; vertical-align: middle; font-family: 'Roboto', sans-serif;">
+                    <a href="<?= get_lang_url('vi') ?>" style="color: <?= get_current_lang() === 'vi' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'vi' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 13px;">VI</a>
+                    <span style="color: #666; margin: 0 6px;">|</span>
+                    <a href="<?= get_lang_url('en') ?>" style="color: <?= get_current_lang() === 'en' ? '#ffd564' : '#ffffff' ?>; font-weight: <?= get_current_lang() === 'en' ? 'bold' : 'normal' ?>; text-decoration: none; font-size: 13px;">EN</a>
                 </div>
                 
                 <?php if (isset($_SESSION['user'])): 
@@ -166,11 +184,11 @@ $web_config = function_exists('get_website_config') ? get_website_config() : [
                     <!-- Dropdown menu user -->
                     <div style="position: relative; display: inline-block;">
                         <button class="btn btn-md btn--warning btn--book" 
-                                style="display: flex; align-items: center; gap: 10px; cursor: pointer; border: none;"
+                                style="display: flex; align-items: center; gap: 8px; cursor: pointer; border: none; padding: 0 14px;"
                                 onclick="toggleUserMenu()">
-                            <span><?= htmlspecialchars($name) ?></span>
+                            <span style="max-width: 125px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;" title="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></span>
                             <?php if ($vai_tro_user == 0 && $diem_user >= 0): ?>
-                                <span style="background: <?= $mau_hang ?>; color: white; padding: 4px 10px; border-radius: 15px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                                <span style="background: <?= $mau_hang ?>; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                     <i class="fa fa-star"></i>
                                     <?= number_format($diem_user) ?>
                                 </span>

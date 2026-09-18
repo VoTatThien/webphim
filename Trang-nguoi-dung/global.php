@@ -94,7 +94,9 @@ if ($id_lc) {
 }
 $day_num = date('N', strtotime($show_date));
 $is_weekend = ($day_num >= 5); // Fri, Sat, Sun
-$days_diff = (strtotime($show_date) - time()) / 86400;
+$today_ts = strtotime(date('Y-m-d'));
+$show_date_ts = strtotime($show_date);
+$days_diff = (int)round(($show_date_ts - $today_ts) / 86400);
 $is_early_bird = ($days_diff >= 3);
 
 if (!function_exists('calculate_dynamic_price')) {
@@ -224,7 +226,15 @@ if ($id_kgc) {
                     <?= $is_weekend ? '<span style="color: #ff758c; font-weight: bold;">' . __("Suất chiếu Cuối tuần (+10% áp dụng)") . '</span>' : '<span style="color: #43e97b;">' . __("Suất chiếu Ngày thường") . '</span>' ?>
                 </div>
                 <div>
-                    <?= $is_early_bird ? '<span style="background: rgba(67, 233, 123, 0.2); color: #43e97b; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;"><i class="fa fa-percentage"></i> ' . __("Đặt sớm >3 ngày: Giảm 15% tổng tiền") . '</span>' : '<span style="background: rgba(255,255,255,0.1); color: #aaa; padding: 3px 8px; border-radius: 4px; font-size: 12px;">' . __("Đặt cận ngày: Giá tiêu chuẩn") . '</span>' ?>
+                    <?php if ($is_early_bird): ?>
+                        <span style="background: rgba(67, 233, 123, 0.2); color: #43e97b; padding: 4px 10px; border-radius: 4px; font-size: 13px; font-weight: bold;"><i class="fa fa-percentage"></i> <?= __("Đặt sớm ≥3 ngày: Giảm 15% tổng tiền") ?></span>
+                    <?php elseif ($days_diff == 2): ?>
+                        <span style="background: rgba(255,255,255,0.1); color: #ffd564; padding: 4px 10px; border-radius: 4px; font-size: 13px;"><i class="fa fa-calendar-check-o"></i> <?= __("Đặt trước 2 ngày: Giá tiêu chuẩn") ?></span>
+                    <?php elseif ($days_diff == 1): ?>
+                        <span style="background: rgba(255,255,255,0.1); color: #ffd564; padding: 4px 10px; border-radius: 4px; font-size: 13px;"><i class="fa fa-calendar-check-o"></i> <?= __("Đặt trước 1 ngày: Giá tiêu chuẩn") ?></span>
+                    <?php else: ?>
+                        <span style="background: rgba(255,255,255,0.1); color: #e5e0e3; padding: 4px 10px; border-radius: 4px; font-size: 13px;"><i class="fa fa-clock-o"></i> <?= __("Đặt trong ngày: Giá tiêu chuẩn") ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
 

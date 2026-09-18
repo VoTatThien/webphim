@@ -16,149 +16,12 @@ $status = $_GET['status'] ?? 'pending';
 // ====================================================
 
 if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
-    $base_path = '';
-    if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
-        $base_path = '/' . $matches[1];
-    }
-    header('Location: ' . $base_path . '/Trang-nguoi-dung/index.php?act=xacnhan&vietqr=1');
+    header('Location: index.php?act=xacnhan&vietqr=1');
     exit;
-}
-        // ====================================================
-        // 1. CREATE TỰ ĐỘNG: VÉ (VE)
-        // ====================================================
-
-        if (isset($_SESSION['ghe_da_chon']) && !empty($_SESSION['ghe_da_chon'])) {
-            $ghe_array = $_SESSION['ghe_da_chon'];
-            
-            foreach ($ghe_array as $ghe) {
-                // Insert vé - sửa id_khach_hang thành id_tk
-                $sql_ve = "INSERT INTO ve (id_ghe, id_lich_chieu, id_tk, ghi_chu, trang_thai, thoi_gian_dat) 
-                          VALUES (:id_ghe, :id_lich_chieu, :id_tk, :ghi_chu, 0, NOW())";
-                
-                $stmt = $pdo->prepare($sql_ve);
-                $stmt->execute([
-                    ':id_ghe' => $ghe['id_ghe'],
-                    ':id_lich_chieu' => $ghe['id_lich_chieu'],
-                    ':id_tk' => $user_id,
-                    ':ghi_chu' => 'VietQR Payment - Order: ' . $orderId,
-                ]);
-            }
-        }
-
-        // ====================================================
-        // 2. ADD LOYALTY POINTS
-        // ====================================================
-
-        $loyalty_points = (int)($amount / 1000); // 1 point per 1,000 VND (same as MoMo)
-        
-        $sql_loyalty = "UPDATE taikhoan SET diem_tich_luy = diem_tich_luy + :points, tong_diem_tich_luy = tong_diem_tich_luy + :points WHERE id = :id";
-        $stmt = $pdo->prepare($sql_loyalty);
-        $stmt->execute([
-            ':points' => $loyalty_points,
-            ':id' => $user_id,
-        ]);
-
-        // ====================================================
-        // 4. SEND EMAIL CONFIRMATION
-        // ====================================================
-        
-        $user_info = $pdo->query("SELECT email, name FROM taikhoan WHERE id = " . $user_id)->fetch(PDO::FETCH_ASSOC);
-        if ($user_info && !empty($user_info['email'])) {
-            $to = $user_info['email'];
-            $subject = "✓ Thanh toán thành công - Vé phim CinePass";
-            
-            $base_path = '';
-            if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
-                $base_path = '/' . $matches[1];
-            }
-
-            $message = "
-                <html>
-                <head>
-                    <meta charset='UTF-8'>
-                </head>
-                <body>
-                    <h2>✓ Thanh Toán Thành Công</h2>
-                    <p>Xin chào <strong>" . htmlspecialchars($user_info['name']) . "</strong>,</p>
-                    <p>Cảm ơn bạn đã đặt vé phim tại <strong>CinePass</strong>!</p>
-                    
-                    <h3>Thông tin thanh toán:</h3>
-                    <ul>
-                        <li><strong>Tổng tiền:</strong> " . number_format($amount, 0, ',', '.') . " VND</li>
-                        <li><strong>Phương thức:</strong> VietQR</li>
-                        <li><strong>Mã đơn hàng:</strong> " . htmlspecialchars($orderId) . "</li>
-                        <li><strong>Điểm thưởng nhận được:</strong> <strong>+" . $loyalty_points . " điểm</strong></li>
-                    </ul>
-                    
-                    <p>Vui lòng đến rạp chiếu trước giờ chiếu 15 phút để check-in với vé của bạn.</p>
-                    <p><a href='http://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $base_path . "/Trang-nguoi-dung/index.php?p=ve_cua_toi'>👉 Xem vé của tôi</a></p>
-                    
-                    <p>Cảm ơn bạn!</p>
-                </body>
-                </html>
-            ";
-            
-            require_once 'PHPMailer/src/Exception.php';
-            require_once 'PHPMailer/src/PHPMailer.php';
-            require_once 'PHPMailer/src/SMTP.php';
-            
-            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-            try {
-                $mail->SMTPDebug = PHPMailer\PHPMailer\SMTP::DEBUG_OFF;
-                $mail->isSMTP();
-                $mail->Host       = 'smtp.gmail.com';
-                $mail->SMTPAuth   = true;
-                $mail->Username   = 'thanhbang0162@gmail.com';
-                $mail->Password   = 'cooh jnvf szck cwux';
-                $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port       = 587;
-                
-                $mail->setFrom('thanhbang0162@gmail.com', 'Galaxy Studio');
-                $mail->addAddress($to);
-                $mail->isHTML(true);
-                $mail->Subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";
-                $mail->Body = $message;
-                $mail->send();
-                $mail_sent = true;
-            } catch (Exception $mailEx) {
-                $mail_sent = false;
-                error_log("PHPMailer error in vietqr_return.php: " . $mailEx->getMessage());
-            }
-            
-            // Debug log
-            $log_file = __DIR__ . '/logs/email_log.txt';
-            if (!is_dir(dirname($log_file))) {
-                @mkdir(dirname($log_file), 0755, true);
-            }
-            $log_message = date('Y-m-d H:i:s') . " - VietQR Email\n";
-            $log_message .= "To: $to\n";
-            $log_message .= "Status: " . ($mail_sent ? "SUCCESS" : "FAILED") . "\n";
-            $log_message .= "Subject: $subject\n";
-            $log_message .= "---\n";
-            @file_put_contents($log_file, $log_message, FILE_APPEND);
-        }
-
-        // ====================================================
-        // 5. CLEAR SESSION
-        // ====================================================
-
-        unset($_SESSION['ghe_da_chon']);
-        unset($_SESSION['tong']);
-
-        $success = true;
-        $message = "Thanh toán thành công! Vé của bạn đã được tạo.";
-
-    } catch (Exception $e) {
-        $success = false;
-        $message = "Lỗi: " . $e->getMessage();
-        
-        error_log("VietQR Payment Error: " . $e->getMessage());
-    }
 } else {
     $success = false;
     $message = "Thanh toán bị hủy hoặc không hợp lệ.";
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -381,16 +244,10 @@ if ($status === 'confirmed' && $amount > 0 && !empty($orderId)) {
 
             <!-- Buttons -->
             <div class="buttons">
-                <?php
-                $base_path = '';
-                if (preg_match('/^\/([^\/]+)\/(Trang-nguoi-dung|Trang-admin|Version_deploy)/', $_SERVER['REQUEST_URI'], $matches)) {
-                    $base_path = '/' . $matches[1];
-                }
-                ?>
-                <a href="<?= $base_path ?>/Trang-nguoi-dung/index.php?p=ve_cua_toi">
+                <a href="index.php?p=ve_cua_toi">
                     <button class="btn-primary">📽️ Xem Vé Của Tôi</button>
                 </a>
-                <a href="<?= $base_path ?>/Trang-nguoi-dung/index.php">
+                <a href="index.php">
                     <button class="btn-secondary">← Quay Lại Trang Chủ</button>
                 </a>
             </div>
