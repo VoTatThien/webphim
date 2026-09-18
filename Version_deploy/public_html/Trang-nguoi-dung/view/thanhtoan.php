@@ -392,10 +392,12 @@ $gia = number_format($gia_total, 0, ',', '.');
                     <div class="promo-input-group">
                         <input type="number" 
                                name="so_diem_doi" 
+                               id="so_diem_doi_input_deploy"
                                class="promo-input" 
                                placeholder="<?= __("Nhập số điểm muốn đổi") ?>" 
                                min="1000"
-                               step="100"
+                               step="1"
+                               max="<?= (int)($_SESSION['user']['diem_tich_luy'] ?? 0) ?>"
                                value="<?php echo $diem_doi; ?>"
                                <?php echo $diem_doi ? 'readonly' : ''; ?>>
                         <?php if (!$diem_doi): ?>
@@ -404,6 +406,19 @@ $gia = number_format($gia_total, 0, ',', '.');
                             <button type="submit" name="huy_diem" class="promo-btn" style="background: #ff6b6b; color: white;"><?= __("Hủy đổi") ?></button>
                         <?php endif; ?>
                     </div>
+                    <?php if (!$diem_doi && (int)($_SESSION['user']['diem_tich_luy'] ?? 0) >= 1000): ?>
+                        <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <span style="font-size: 12px; color: #a59b9f;"><?= __("Gợi ý nhanh:") ?></span>
+                            <button type="button" onclick="document.getElementById('so_diem_doi_input_deploy').value = <?= (int)$_SESSION['user']['diem_tich_luy'] ?>;" 
+                                    style="background: rgba(255, 213, 100, 0.15); border: 1px dashed #ffd564; color: #ffd564; padding: 3px 10px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                                ⭐ <?= __("Đổi tất cả") ?> (<?= number_format($_SESSION['user']['diem_tich_luy']) ?>)
+                            </button>
+                            <button type="button" onclick="document.getElementById('so_diem_doi_input_deploy').value = 1000;" 
+                                    style="background: rgba(255, 255, 255, 0.08); border: 1px dashed #888; color: #ccc; padding: 3px 10px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                                1,000 <?= __("điểm") ?>
+                            </button>
+                        </div>
+                    <?php endif; ?>
                     
                     <?php if ($error_diem): ?>
                         <div class="promo-error"><i class="fa fa-exclamation-circle"></i> <?php echo $error_diem; ?></div>
