@@ -158,17 +158,23 @@ $gia = number_format($gia_total, 0, ',', '.');
         padding: 0;
     }
     
+    .checkout-wrapper .book-result .book-result__item,
     .book-result__item {
         padding: 12px 0;
         font-size: 16px;
-        color: #e5e0e3;
+        color: #ffffff !important;
         border-bottom: 1px solid #363033;
+        display: block !important;
+        padding-right: 0 !important;
     }
     
-    .book-result__count {
+    .checkout-wrapper .book-result .book-result__count,
+    .checkout-wrapper .book-result .booking-cost {
         float: right;
         font-weight: 600;
-        color: #ffd564;
+        color: #ffd564 !important;
+        font-size: 16px !important;
+        padding: 0 !important;
     }
     
     /* Style cho ô nhập mã khuyến mãi */
@@ -322,7 +328,7 @@ $gia = number_format($gia_total, 0, ',', '.');
                 <li class="book-result__item"><i class="fa fa-circle-o" style="color: #ffd564; margin-right: 8px;"></i> <?= __("Số ghế:") ?> <span class="book-result__count booking-cost"><?php
                         if (isset($ten_ghe['ghe'])) {
                             $ghes = $ten_ghe['ghe'];
-                            echo '<span class="choosen-plac">' . implode(', ', $ghes) . '</span>';
+                            echo '<span class="choosen-place" style="background:#ffd564; color:#1c181c; font-weight:bold; padding: 2px 8px; border-radius: 4px;">' . implode(', ', $ghes) . '</span>';
 
                             foreach ($ghes as $ghe) {
                                 echo '<input type="hidden" name="ten_ghe[]" value="' . $ghe . '">';
@@ -360,6 +366,14 @@ $gia = number_format($gia_total, 0, ',', '.');
                             <button type="submit" name="huy_ma" class="promo-btn" style="background: #ff6b6b; color: white;"><?= __("Hủy mã") ?></button>
                         <?php endif; ?>
                     </div>
+                    <?php if (!$ma_giam_gia): ?>
+                    <div style="margin-top: 8px; font-size: 13px; color: #aaa;">
+                        <span style="color: #ffd564; font-weight: 500;"><?= __("Mã ưu đãi:") ?></span>
+                        <a href="javascript:void(0)" onclick="document.querySelector('[name=ma_khuyen_mai]').value='CINE50';" style="color: #ffd564; background: rgba(255,213,100,0.15); padding: 2px 6px; border-radius: 4px; text-decoration: none; margin-right: 6px;">CINE50 (-50K)</a>
+                        <a href="javascript:void(0)" onclick="document.querySelector('[name=ma_khuyen_mai]').value='CINE20';" style="color: #ffd564; background: rgba(255,213,100,0.15); padding: 2px 6px; border-radius: 4px; text-decoration: none; margin-right: 6px;">CINE20 (-20%)</a>
+                        <a href="javascript:void(0)" onclick="document.querySelector('[name=ma_khuyen_mai]').value='WELCOME';" style="color: #ffd564; background: rgba(255,213,100,0.15); padding: 2px 6px; border-radius: 4px; text-decoration: none;">WELCOME (-30K)</a>
+                    </div>
+                    <?php endif; ?>
                     
                     <?php if ($error_km): ?>
                         <div class="promo-error"><i class="fa fa-exclamation-circle"></i> <?php echo $error_km; ?></div>

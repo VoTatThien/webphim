@@ -65,13 +65,16 @@
         //----------------------------------------------------------------------
         private static function image($frame, $pixelPerPoint = 4, $outerFrame = 4) 
         {
+            if (!function_exists('imagecreate')) {
+                throw new Exception("PHP GD extension is not installed or enabled.");
+            }
             $h = count($frame);
             $w = strlen($frame[0]);
             
             $imgW = $w + 2*$outerFrame;
             $imgH = $h + 2*$outerFrame;
             
-            $base_image =ImageCreate($imgW, $imgH);
+            $base_image = ImageCreate($imgW, $imgH);
             
             $col[0] = ImageColorAllocate($base_image,255,255,255);
             $col[1] = ImageColorAllocate($base_image,0,0,0);

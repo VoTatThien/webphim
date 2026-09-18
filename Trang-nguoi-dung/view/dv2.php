@@ -31,7 +31,7 @@
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
-            <i class="fa fa-door-open" style="font-size: 24px; color: #ffd564;"></i>
+            <i class="fa fa-desktop" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
                 <strong><?= __("Phòng:") ?></strong><br>
                 <?= isset($_SESSION['tong']['ten_phong']) ? htmlspecialchars($_SESSION['tong']['ten_phong']) : 'N/A' ?>
@@ -45,7 +45,7 @@
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
-            <i class="fa fa-clock" style="font-size: 24px; color: #ffd564;"></i>
+            <i class="fa fa-clock-o" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
                 <strong><?= __("Giờ chiếu:") ?></strong><br>
                 <?= isset($_SESSION['tong']['thoi_gian_chieu']) ? htmlspecialchars($_SESSION['tong']['thoi_gian_chieu']) : 'N/A' ?>

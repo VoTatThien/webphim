@@ -240,7 +240,7 @@
             </div>
         </div>
         <div style="margin: 10px; text-align: center;">
-            <i class="fa fa-clock" style="font-size: 24px; color: #ffd564;"></i>
+            <i class="fa fa-clock-o" style="font-size: 24px; color: #ffd564;"></i>
             <div style="margin-top: 5px;">
                 <strong><?= __("Giờ chiếu:") ?></strong><br>
                 <?= isset($_SESSION['tong']['thoi_gian_chieu']) ? htmlspecialchars($_SESSION['tong']['thoi_gian_chieu']) : 'N/A' ?>
@@ -383,16 +383,16 @@
 
 <form action="index.php?act=dv4" method="post">
     <div class="col-lg-offset-1">
-        <div class="tong">
-            <h2 class="phim" style="color: #ffd564;"><?= __("Thông tin đặt vé") ?></h2>
+        <div class="tong" style="background: #232023; border: 1px solid #4a3e43; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); color: #ffffff; margin-top: 20px;">
+            <h2 class="phim" style="color: #ffd564; margin-top: 0; font-size: 22px; border-bottom: 2px solid #ffd564; padding-bottom: 10px;"><?= __("Thông tin đặt vé") ?></h2>
             
-            <div style="display: flex; margin-bottom: 10px; align-items: center;">
-                <span style="color: #fff;"><i class="fa fa-circle-o" style="color: #ffd564; margin-right: 5px;"></i> <?= __("Ghế đã chọn:") ?></span>
+            <div style="display: flex; margin-bottom: 12px; align-items: center;">
+                <span style="color: #e5e0e3; font-size: 15px; font-weight: 500;"><i class="fa fa-circle-o" style="color: #ffd564; margin-right: 8px; font-size: 16px;"></i> <?= __("Ghế đã chọn:") ?></span>
                 <div class="checked-place" style="margin-left: 10px;">
                     <?php
                     if (isset($ten_ghe['ghe'])) {
                         $ghes = $ten_ghe['ghe'];
-                        echo '<span class="choosen-place" style="background:#ffd564; color:#4c4145; font-weight:bold;">' . implode(', ', $ghes) . '</span>';
+                        echo '<span class="choosen-place" style="background:#ffd564; color:#1c181c; font-weight:bold; padding: 4px 12px; border-radius: 4px; font-size: 14px;">' . implode(', ', $ghes) . '</span>';
 
                         // Tạo các hidden input cho mỗi ghế
                         foreach ($ghes as $ghe) {
@@ -403,22 +403,22 @@
                 </div>
             </div>
             
-            <div style="display: flex; margin-bottom: 10px; align-items: center;">
-                <span style="color: #fff;"><i class="fa fa-coffee" style="color: #ffd564; margin-right: 5px;"></i> <?= __("Combo đã chọn:") ?></span>
+            <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                <span style="color: #e5e0e3; font-size: 15px; font-weight: 500;"><i class="fa fa-coffee" style="color: #ffd564; margin-right: 8px; font-size: 16px;"></i> <?= __("Combo đã chọn:") ?></span>
                 <div class="check-doan" id="selected-combos-display" style="margin-left: 10px;">
                     <!-- Combos will be dynamically added here -->
                 </div>
             </div>
 
-            <div class="tongtien">
-                <div class="checked-result">
-                    <span style="color: #fff;"><?= __("Tổng cộng:") ?></span>
-                    <input name="giaghe" style="width: 120px; font-size: 20px; border: none; background: transparent; color: #fe505a; font-weight: bold;" type="text" id="gia_ghe"
+            <div class="tongtien" style="border-top: 1px solid #363033; padding-top: 15px; margin-top: 10px;">
+                <div class="checked-result" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <span style="color: #ffd564; font-size: 16px; font-weight: bold; margin-right: 8px;"><?= __("Tổng cộng:") ?></span>
+                    <input name="giaghe" style="width: 140px; font-size: 22px; border: none; background: transparent; color: #fe505a; font-weight: bold; text-align: right; margin-right: 5px;" type="text" id="gia_ghe"
                            value="<?php 
                            // Get seat price from session
                            $seat_price = $_SESSION['tong']['gia_ghe'] ?? 0;
                            echo $seat_price; 
-                           ?>" readonly> VND
+                           ?>" readonly> <span style="color: #e5e0e3; font-weight: bold; font-size: 16px;">VND</span>
                 </div>
             </div>
         </div>
@@ -480,7 +480,7 @@
             });
             
             if (!hasCombo) {
-                displayHtml = '<span style="color: #999; font-style: italic;">' + '<?= __("Chưa chọn combo nào") ?>' + '</span>';
+                displayHtml = '<span style="color: #aaa; font-style: italic;">' + '<?= __("Chưa chọn combo nào") ?>' + '</span>';
             }
             
             $('#selected-combos-display').html($('#selected-combos-display').html() + displayHtml);

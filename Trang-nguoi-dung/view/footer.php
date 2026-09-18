@@ -493,9 +493,15 @@ function sendChat() {
     // Hiển thị gõ loading
     showTypingIndicator();
     
-    // Call API Backend
-    const baseDir = window.location.pathname.includes('/webphim_hung/') ? '/webphim_hung/' : '/';
-    const endpoint = baseDir + 'Trang-nguoi-dung/api_chatbot.php';
+    // Call API Backend: Tự động xác định đường dẫn api_chatbot.php linh hoạt trên mọi thư mục
+    let endpoint = 'api_chatbot.php';
+    const curPath = window.location.pathname;
+    const tIdx = curPath.indexOf('/Trang-nguoi-dung');
+    if (tIdx !== -1) {
+        endpoint = curPath.substring(0, tIdx) + '/Trang-nguoi-dung/api_chatbot.php';
+    } else {
+        endpoint = '<?= rtrim(dirname($_SERVER["PHP_SELF"] ?? ""), "/\\") ?>/api_chatbot.php';
+    }
     
     // Chỉ lấy 6 tin nhắn gần nhất để làm ngữ cảnh tránh quá tải token
     const contextHistory = cpChatHistory.slice(-6);

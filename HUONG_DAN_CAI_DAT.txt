@@ -104,18 +104,18 @@
     - Rạp Galaxy Quận 1:  User: HuyHung_rap2    | Pass: 123456
     - Rạp Galaxy Tuy Hòa: User: admin_rap3   | Pass: 123456
 
-  ★ KHÁCH HÀNG THÀNH VIÊN (test đặt vé đăng nhập & test gợi ý combo):
-    - User: minhtuan   | Pass: 123456 (Nam, 2000 - thích phim Hài/Hành động)
-    - User: thihuong   | Pass: 123456 (Nữ, 1998 - thích phim Ngôn tình/Lãng mạn)
-    - User: vankhoa    | Pass: 123456 (Nam, 1995 - hay xem suất tối)
-    - User: ngocanh    | Pass: 123456 (Nữ, 2003 - Gen Z thích bắp nước ngọt)
+  ★ KHÁCH HÀNG THÀNH VIÊN (test đặt vé đăng nhập & test gợi ý combo thông minh):
+    - User: minhtuan   | Pass: 123456 (Nam, 18-25 - thích phim Hài/Hành động)
+    - User: thihuong   | Pass: 123456 (Nữ, 26-35 - thích phim Ngôn tình/Lãng mạn)
+    - User: vankhoa    | Pass: 123456 (Nam, >45 tuổi - thích combo thanh đạm)
+    - User: ngocanh    | Pass: 123456 (Nữ, <18 tuổi - thích combo đồ ngọt)
     - User: huyhung    | Pass: 123456
     - User: admin      | Pass: 123456
 
-  ★ KHÁCH VÃNG LAI (không cần đăng nhập):
-    - Khi đặt vé chọn "Tiếp tục không cần đăng nhập", nhập họ tên,
-      SĐT và Gmail (phải là Gmail thật tồn tại trên Google).
-
+  ★ LƯU Ý VỀ ĐẶT VÉ:
+    - Để tối ưu hóa việc cá nhân hóa gợi ý combo bắp nước AI (Decision Tree),
+      hệ thống yêu cầu khách hàng đăng ký / đăng nhập tài khoản trước khi chọn ghế.
+    - Trong form đăng ký đã có sẵn thông tin Giới tính và Khoảng tuổi.
 
 
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -124,13 +124,17 @@
 
   [TRANG KHÁCH HÀNG]
   1. Xem danh sách phim, chi tiết phim
-  2. Đặt vé xem phim (chọn rạp -> ngày -> giờ -> ghế -> combo -> thanh toán)
-  3. Đăng ký tài khoản mới
+  2. Đặt vé xem phim:
+     - Chọn 1 người, 2 người (Cặp đôi), hoặc 3-4 người (Gia đình / Nhóm).
+     - Hệ thống AI (Cây quyết định ID3) tự động gợi ý combo phù hợp
+       (Combo Couple 96%, Combo Family 94%, Combo Solo King, Combo Kid...)
+  3. Đăng ký tài khoản mới (chọn Khoảng tuổi, Giới tính)
   4. Đăng nhập / Đổi mật khẩu / Quên mật khẩu (OTP qua email)
   5. Xem vé đã đặt, chi tiết vé, mã QR
   6. Gửi liên hệ (kiểm tra email thời gian thực)
-  7. Chatbot AI tư vấn (góc dưới phải)
-  8. Xem khuyến mãi / Đổi điểm tích lũy
+  7. Chatbot AI tư vấn thông minh (tự động nhận diện rạp, phim, giá vé)
+  8. Áp dụng mã khuyến mãi & Đổi điểm tích lũy:
+     - Mã test sẵn: CINE50 (giảm 50.000đ), CINE20 (giảm 20%), WELCOME (giảm 30.000đ)
   9. Chuyển đổi ngôn ngữ Việt/Anh (VI | EN trên menu)
 
   [TRANG ADMIN]
@@ -147,24 +151,38 @@
 
 
 ╔══════════════════════════════════════════════════════════════════════╗
-║  LƯU Ý KHI TEST                                                    ║
+║  LƯU Ý KHI TEST THANH TOÁN & TIỆN ÍCH                               ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
-  1. CHỨC NĂNG GỬI EMAIL (quên mật khẩu, nhận vé qua email, phản hồi
-     liên hệ) sẽ hoạt động bình thường vì đã cấu hình sẵn SMTP Gmail.
-     Không cần thay đổi gì thêm.
+  1. TEST THANH TOÁN MOMO DEMO (CỔNG THỬ NGHIỆM):
+     - Vì cổng MoMo ở môi trường Thử nghiệm (Sandbox), nên MoMo KHÔNG
+       chấp nhận số thẻ ngân hàng thật của bạn (sẽ báo "Số thẻ không đúng").
+     - Vui lòng nhập thẻ TEST chính thức của MoMo Sandbox như sau:
+       + Số thẻ ATM: 9704000000000018
+       + Tên in trên thẻ: NGUYEN VAN A
+       + Ngày phát hành: 07/15
+       + Mã OTP xác nhận: 000000
 
-  2. CHATBOT AI: Chatbot đã được cấu hình API key sẵn. Nếu hết hạn
-     miễn phí hoặc hết quota, chatbot sẽ tự chuyển sang chế độ Fallback
-     trả lời bằng dữ liệu thật từ database, vẫn hoạt động bình thường.
+  2. MÃ KHUYẾN MÃI (VOUCHER):
+     - Các mã sau đã được kích hoạt hạn dùng dài hạn:
+       + CINE50 : Giảm 50.000đ
+       + CINE20 : Giảm 20%
+       + WELCOME: Giảm 30.000đ
+     - Tại trang thanh toán, bạn có thể click trực tiếp vào nút mã gợi ý
+       để tự động điền mã mà không cần gõ phím.
 
-  3. THANH TOÁN: Hệ thống tích hợp thanh toán qua Sepay (chuyển khoản
-     ngân hàng). Khi test, có thể chọn phương thức thanh toán bất kỳ
-     để xem giao diện.
+  3. MÃ QR CODE & PHP GD EXTENSION:
+     - Hệ thống đã tích hợp sẵn cơ chế dự phòng tự động (Fallback Online API).
+       Dù máy tính của bạn chưa bật GD extension thì mã QR vẫn hiển thị mượt mà.
+     - Để tạo QR cục bộ offline nhanh hơn:
+       Mở XAMPP -> Hàng Apache click "Config" -> chọn "PHP (php.ini)"
+       Tìm dòng ";extension=gd" -> Xóa dấu chấm phẩy ";" ở đầu thành:
+       extension=gd
+       Lưu file và Restart lại Apache trong XAMPP.
 
-  4. CHECK EMAIL GMAIL: Khi đặt vé (khách vãng lai), hệ thống chỉ chấp
-     nhận email Gmail thật (@gmail.com). Hệ thống sẽ kiểm tra xem Gmail
-     đó có tồn tại trên Google không.
+  4. CHATBOT AI:
+     - Chatbot đã được tối ưu đường dẫn động, tự động nhận diện chính xác
+       thư mục bạn clone dự án (dù đặt tên là webphim hay webphim_hung...).
 
 
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -178,14 +196,13 @@
      -> Kiểm tra Apache và MySQL đã Start chưa trên XAMPP.
 
   ❌ Lỗi "Table doesn't exist":
-     -> Chưa import database. Quay lại Bước 3.
+     -> Chưa import database. Quay lại Bước 3 để import DB\cinepass.sql.
 
   ❌ Giao diện bị vỡ, ảnh không hiển thị:
-     -> Kiểm tra đường dẫn: thư mục phải tên chính xác "webphim_hung"
-        nằm trong htdocs.
+     -> Kiểm tra đường dẫn thư mục trong htdocs.
 
   ❌ Không vào được trang Admin:
-     -> Truy cập đúng link: http://localhost/webphim_hung/Trang-admin/
+     -> Truy cập đúng link: http://localhost/{tên_thư_mục}/Trang-admin/
         (Lưu ý chữ T viết hoa ở "Trang-admin").
 
 ========================================================================
