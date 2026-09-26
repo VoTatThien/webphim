@@ -72,28 +72,28 @@ if ($result['success']) {
     
     $test_cases = [
         [
-            'desc' => 'Gia đình (3+ ghế) xem Hài buổi tối',
-            'features' => ['the_loai' => 'Hài', 'gio_chieu' => 'toi', 'khoang_tuoi' => '26_35', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '3+']
+            'desc' => 'Gia đình / Nhóm (3+ ghế) xem buổi tối cuối tuần',
+            'features' => ['gio_chieu' => 'toi', 'khoang_tuoi' => '26_35', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '3+']
         ],
         [
-            'desc' => 'Cặp đôi (2 ghế) xem Ngôn Tình buổi tối',
-            'features' => ['the_loai' => 'Ngôn Tình', 'gio_chieu' => 'toi', 'khoang_tuoi' => '18_25', 'gioi_tinh' => 'nu', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '2']
+            'desc' => 'Cặp đôi (2 ghế) xem buổi tối cuối tuần',
+            'features' => ['gio_chieu' => 'toi', 'khoang_tuoi' => '18_25', 'gioi_tinh' => 'nu', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '2']
         ],
         [
-            'desc' => 'Học sinh (<18) xem Hoạt Hình buổi sáng',
-            'features' => ['the_loai' => 'Hoạt hình', 'gio_chieu' => 'sang', 'khoang_tuoi' => 'duoi_18', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekday', 'so_ghe' => '1']
+            'desc' => 'Học sinh (<18 tuổi) xem buổi sáng',
+            'features' => ['gio_chieu' => 'sang', 'khoang_tuoi' => 'duoi_18', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekday', 'so_ghe' => '1']
         ],
         [
-            'desc' => 'Nam 20 tuổi xem Kinh Dị buổi tối',
-            'features' => ['the_loai' => 'Kinh Dị', 'gio_chieu' => 'toi', 'khoang_tuoi' => '18_25', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '1']
+            'desc' => 'Nam giới trẻ (18-25) xem buổi tối cuối tuần',
+            'features' => ['gio_chieu' => 'toi', 'khoang_tuoi' => '18_25', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '1']
         ],
         [
-            'desc' => 'Người lớn tuổi (>45) xem Cổ Trang buổi chiều',
-            'features' => ['the_loai' => 'Cổ Trang', 'gio_chieu' => 'chieu', 'khoang_tuoi' => 'tren_45', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekday', 'so_ghe' => '1']
+            'desc' => 'Người lớn tuổi (>45) xem buổi chiều ngày thường',
+            'features' => ['gio_chieu' => 'chieu', 'khoang_tuoi' => 'tren_45', 'gioi_tinh' => 'nam', 'thu_trong_tuan' => 'weekday', 'so_ghe' => '1']
         ],
         [
-            'desc' => 'Nữ 22 tuổi xem Tình cảm cuối tuần',
-            'features' => ['the_loai' => 'Tình cảm', 'gio_chieu' => 'toi', 'khoang_tuoi' => '18_25', 'gioi_tinh' => 'nu', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '2']
+            'desc' => 'Nữ giới trẻ (18-25) đi 1 mình buổi tối',
+            'features' => ['gio_chieu' => 'toi', 'khoang_tuoi' => '18_25', 'gioi_tinh' => 'nu', 'thu_trong_tuan' => 'weekend', 'so_ghe' => '1']
         ],
     ];
     

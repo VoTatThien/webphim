@@ -182,8 +182,8 @@ function dt_build_tree($data, $features, $label_key = 'combo_chon', $max_depth =
 /**
  * Dự đoán combo cho 1 mẫu dữ liệu
  * @param array $tree - Cây quyết định
- * @param array $sample - Mẫu cần dự đoán ['the_loai' => 'Hài', 'gio_chieu' => 'toi', ...]
- * @return array ['combo' => 'Combo Family', 'confidence' => 0.85, 'path' => 'so_ghe=3+ -> the_loai=Hài']
+ * @param array $sample - Mẫu cần dự đoán ['so_ghe' => '3+', 'gio_chieu' => 'toi', ...]
+ * @return array ['combo' => 'Combo Family', 'confidence' => 0.85, 'path' => 'so_ghe=3+']
  */
 function dt_predict($tree, $sample, $path = "") {
     if (!isset($tree['type'])) {
@@ -331,7 +331,7 @@ function dt_train_model() {
 
     try {
         // 1. Load dữ liệu từ DB
-        $data = pdo_query("SELECT the_loai, gio_chieu, khoang_tuoi, gioi_tinh, thu_trong_tuan, so_ghe, combo_chon FROM combo_training_data");
+        $data = pdo_query("SELECT gio_chieu, khoang_tuoi, gioi_tinh, thu_trong_tuan, so_ghe, combo_chon FROM combo_training_data");
         
         if (empty($data) || count($data) < 10) {
             return ['success' => false, 'accuracy' => 0, 'message' => 'Không đủ dữ liệu huấn luyện (cần ít nhất 10 mẫu)'];
@@ -344,7 +344,7 @@ function dt_train_model() {
         $test_data = array_slice($data, $split);
         
         // 3. Build tree
-        $features = ['the_loai', 'gio_chieu', 'khoang_tuoi', 'gioi_tinh', 'thu_trong_tuan', 'so_ghe'];
+        $features = ['gio_chieu', 'khoang_tuoi', 'gioi_tinh', 'thu_trong_tuan', 'so_ghe'];
         $tree = dt_build_tree($train_data, $features);
         
         // 4. Tính accuracy trên test set
@@ -442,34 +442,11 @@ function dt_get_default_rule_tree() {
                                 'counts' => ['Combo Sweet Girl' => 127, 'Combo Standard' => 13]
                             ],
                             'nam' => [
-                                'type' => 'decision',
-                                'feature' => 'the_loai',
-                                'default' => 'Combo Solo King',
-                                'default_confidence' => 0.89,
+                                'type' => 'leaf',
+                                'label' => 'Combo Solo King',
+                                'confidence' => 0.94,
                                 'samples' => 210,
-                                'children' => [
-                                    'Kinh Dị' => [
-                                        'type' => 'leaf',
-                                        'label' => 'Combo Solo King',
-                                        'confidence' => 0.95,
-                                        'samples' => 85,
-                                        'counts' => ['Combo Solo King' => 81, 'Combo Standard' => 4]
-                                    ],
-                                    'Hành động' => [
-                                        'type' => 'leaf',
-                                        'label' => 'Combo Solo King',
-                                        'confidence' => 0.94,
-                                        'samples' => 90,
-                                        'counts' => ['Combo Solo King' => 85, 'Combo Standard' => 5]
-                                    ],
-                                    'Khoa học viễn tưởng' => [
-                                        'type' => 'leaf',
-                                        'label' => 'Combo Solo King',
-                                        'confidence' => 0.92,
-                                        'samples' => 70,
-                                        'counts' => ['Combo Solo King' => 64, 'Combo Standard' => 6]
-                                    ]
-                                ]
+                                'counts' => ['Combo Solo King' => 195, 'Combo Standard' => 15]
                             ]
                         ]
                     ],
@@ -517,8 +494,15 @@ function dt_load_model() {
     if (!function_exists('pdo_query_one')) return null;
     
     try {
-        $row = pdo_query_one("SELECT model_data FROM decision_tree_model WHERE model_name = 'combo_recommender'");
+        $row = pdo_query_one("SELECT model_data, features_used FROM decision_tree_model WHERE model_name = 'combo_recommender'");
         if ($row && !empty($row['model_data'])) {
+            // Nếu model cũ trong CSDL còn chứa the_loai, bỏ qua để nạp/train model mới
+            if (!empty($row['features_used']) && strpos($row['features_used'], 'the_loai') !== false) {
+                return null;
+            }
+            if (strpos($row['model_data'], '"feature":"the_loai"') !== false) {
+                return null;
+            }
             $data = json_decode($row['model_data'], true);
             if (is_array($data) && isset($data['type'])) {
                 return $data;
@@ -539,7 +523,6 @@ function dt_load_model() {
  * Gợi ý combo cho khách hàng dựa trên Decision Tree
  * 
  * @param array $features - Đặc trưng khách hàng:
- *   'the_loai'       => string (tên thể loại phim)
  *   'gio_chieu'      => string ('sang'/'chieu'/'toi')
  *   'khoang_tuoi'    => string ('duoi_18'/'18_25'/'26_35'/'36_45'/'tren_45')
  *   'gioi_tinh'      => string ('nam'/'nu'/'khac')
@@ -571,7 +554,7 @@ function get_combo_recommendations($features, $top_n = 3) {
         if (function_exists('pdo_execute')) {
             try {
                 $tree_json = json_encode($tree, JSON_UNESCAPED_UNICODE);
-                $features_json = json_encode(['the_loai', 'gio_chieu', 'khoang_tuoi', 'gioi_tinh', 'thu_trong_tuan', 'so_ghe']);
+                $features_json = json_encode(['gio_chieu', 'khoang_tuoi', 'gioi_tinh', 'thu_trong_tuan', 'so_ghe']);
                 pdo_execute(
                     "INSERT INTO decision_tree_model (model_name, model_data, accuracy, training_samples, features_used) 
                      VALUES ('combo_recommender', ?, 88.50, 1000, ?)

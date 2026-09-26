@@ -71,35 +71,23 @@ function recommend_combo($user_id, $id_phim, $gio_chieu, $so_ghe, $available_com
         }
     }
     
-    // 1b. Thể loại phim
-    $the_loai = 'unknown';
-    if ($id_phim > 0) {
-        $phim_info = pdo_query_one(
-            "SELECT lp.name as the_loai FROM phim p 
-             LEFT JOIN loaiphim lp ON p.id_loai = lp.id 
-             WHERE p.id = ?", $id_phim
-        );
-        $the_loai = $phim_info['the_loai'] ?? 'unknown';
-    }
-    
-    // 1c. Khung giờ chiếu → phân loại
+    // 1b. Khung giờ chiếu → phân loại
     $hour = (int) explode(':', $gio_chieu)[0];
     if ($hour < 12) $gio_chieu_slot = 'sang';
     elseif ($hour < 18) $gio_chieu_slot = 'chieu';
     else $gio_chieu_slot = 'toi';
     
-    // 1d. Thứ trong tuần
+    // 1c. Thứ trong tuần
     $day_of_week = date('N'); // 1=Mon, 7=Sun
     $thu = ($day_of_week >= 6) ? 'weekend' : 'weekday';
     
-    // 1e. Số ghế → phân loại
+    // 1d. Số ghế → phân loại
     if ($so_ghe >= 3) $so_ghe_cat = '3+';
     elseif ($so_ghe == 2) $so_ghe_cat = '2';
     else $so_ghe_cat = '1';
     
     // --- Bước 2: Gọi Decision Tree dự đoán ---
     $features = [
-        'the_loai'       => $the_loai,
         'gio_chieu'      => $gio_chieu_slot,
         'khoang_tuoi'    => $khoang_tuoi,
         'gioi_tinh'      => $gioi_tinh,
@@ -159,9 +147,9 @@ function recommend_combo($user_id, $id_phim, $gio_chieu, $so_ghe, $available_com
         } elseif (strpos($combo_name, 'Healthy') !== false || ($khoang_tuoi === 'tren_45' && $so_ghe_cat === '1')) {
             $reco_title = __("Đề xuất chăm sóc sức khỏe cho Khách hàng lớn tuổi (" . $confidence_pct . "%)");
             $reco_desc = __("Khẩu phần thanh nhẹ với bắp ít đường, thay thế nước ngọt có gas bằng nước khoáng thiên nhiên Aquafina tốt cho tim mạch và huyết áp.");
-        } elseif (strpos($combo_name, 'Solo King') !== false || ($gioi_tinh === 'nam' && in_array($the_loai, ['Kinh Dị', 'Hành động', 'Khoa học viễn tưởng']))) {
-            $reco_title = __("Combo tiếp năng lượng cho Nam giới xem phim (" . $confidence_pct . "%)");
-            $reco_desc = __("Khẩu phần bắp lớn, nước ngọt lớn kèm xúc xích Hotdog nướng nóng hổi tiếp sức trọn vẹn suốt bộ phim kịch tính và gay cấn.");
+        } elseif (strpos($combo_name, 'Solo King') !== false || $gioi_tinh === 'nam') {
+            $reco_title = __("Combo tiếp năng lượng cho Nam giới (" . $confidence_pct . "%)");
+            $reco_desc = __("Khẩu phần bắp lớn, nước ngọt lớn kèm xúc xích Hotdog nướng nóng hổi tiếp sức trọn vẹn suốt buổi xem phim.");
         } elseif (strpos($combo_name, 'Sweet Girl') !== false || $gioi_tinh === 'nu') {
             $reco_title = __("Combo ngọt ngào dành riêng cho Nữ giới (" . $confidence_pct . "%)");
             $reco_desc = __("Bắp rang bơ phô mai / caramel béo ngậy giòn tan kèm nước giải khát thanh mát vừa vặn, chuẩn gu thư giãn.");
